@@ -121,6 +121,18 @@ namespace Mewtations.Dialogue
                 if (GUILayout.Button(_choices[i], _buttonStyle, GUILayout.Width((winWidth - 80) / _choices.Count), GUILayout.Height(45)))
                 {
                     _isVisible = false;
+                    
+                    bool shouldKeepFrozen = (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.IsExpeditionActive) ||
+                                           (Mewtations.Combat.TurnBasedCombatManager.Instance != null && Mewtations.Combat.TurnBasedCombatManager.Instance.IsCombatActive);
+                    if (shouldKeepFrozen)
+                    {
+                        Time.timeScale = 0f;
+                    }
+                    else
+                    {
+                        Time.timeScale = 1f;
+                    }
+                    
                     _onChoiceSelected?.Invoke(i);
                 }
                 if (i < _choices.Count - 1)

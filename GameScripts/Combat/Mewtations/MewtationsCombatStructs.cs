@@ -8,7 +8,7 @@ namespace Mewtations.Combat
     {
         Single,
         Row,
-        Column,
+        ColumnAttack,
         Cleave,
         RageDrain,
         RageGain

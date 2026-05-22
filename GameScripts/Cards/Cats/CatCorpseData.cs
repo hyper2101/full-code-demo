@@ -17,7 +17,98 @@ public class CatCorpseData : CardData
     [ExtraData("original_cat_element")]
     public CatElement OriginalCatElement;
 
-    // TODO: Lưu thêm các chỉ số phụ và trạng thái đột phá để có thể khôi phục 100% sức mạnh
+    [ExtraData("original_breakthrough_level")]
+    public int OriginalBreakthroughLevel = 0;
+
+    [ExtraData("original_has_pill_slot")]
+    public bool OriginalHasPillSlot = false;
+
+    [ExtraData("original_has_food_slot")]
+    public bool OriginalHasFoodSlot = false;
+
+    [ExtraData("original_has_passive1_slot")]
+    public bool OriginalHasPassive1Slot = false;
+
+    [ExtraData("original_has_passive2_slot")]
+    public bool OriginalHasPassive2Slot = false;
+
+    [ExtraData("original_speed")]
+    public int OriginalSpeed = 100;
+
+    [ExtraData("original_max_health")]
+    public int OriginalMaxHealth = 0;
+
+    public override void UpdateCard()
+    {
+        base.UpdateCard();
+
+        // If item_revive_pill is stacked on top of the corpse, start the resurrection timer
+        if (this.MyGameCard != null && !this.MyGameCard.TimerRunning && this.MyGameCard.HasChild)
+        {
+            CardData childData = this.MyGameCard.Child.CardData;
+            if (childData.Id == "item_revive_pill")
+            {
+                this.MyGameCard.StartTimer(5.0f, new TimerAction(this.PerformResurrection), "Hồi sinh Thần Miêu...", "resurrect");
+            }
+        }
+    }
+
+    private void PerformResurrection()
+    {
+        if (this.MyGameCard != null && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.Id == "item_revive_pill")
+        {
+            GameCard pill = this.MyGameCard.Child;
+            pill.DestroyCard(true, true);
+        }
+
+        Vector3 spawnPos = this.transform.position;
+        string catId = string.IsNullOrEmpty(OriginalCatId) ? "cat_basic" : OriginalCatId;
+
+        GameCard newCat = WorldManager.instance.CreateCard(spawnPos, catId, true, true, true);
+        CatCardData catData = newCat.CardData as CatCardData;
+
+        if (catData != null)
+        {
+            catData.Role = OriginalCatRole;
+            catData.Element = OriginalCatElement;
+            if (!string.IsNullOrEmpty(OriginalCatName))
+            {
+                catData.CustomName = OriginalCatName;
+            }
+
+            // Restore cultivation level & breakthrough slots progress
+            catData.BreakthroughLevel = OriginalBreakthroughLevel;
+            catData.HasPillSlot = OriginalHasPillSlot;
+            catData.HasFoodSlot = OriginalHasFoodSlot;
+            catData.HasPassive1Slot = OriginalHasPassive1Slot;
+            catData.HasPassive2Slot = OriginalHasPassive2Slot;
+            catData.Speed = OriginalSpeed;
+            if (OriginalMaxHealth > 0)
+            {
+                catData.BaseCombatStats.MaxHealth = OriginalMaxHealth;
+            }
+
+            catData.HealthPoints = catData.ProcessedCombatStats.MaxHealth / 2; // Resurrect with 50% HP
+            catData.CurrentRage = 0;
+        }
+
+        // Celebrate via dialogue system
+        string title = "THẦN MIÊU PHỤC SINH!";
+        string text = $"Linh Đan Hồi Sinh dung nhập cốt tủy, thần tích xuất hiện!\n\n" +
+                      $"Thần Miêu <b>{OriginalCatName}</b> ({OriginalCatRole}) đã đập tan u minh giới, phục sinh quay trở lại nhân gian!\n\n" +
+                      $"Lực lượng phục hồi: <b>{catData?.HealthPoints} HP</b>. Hãy chuẩn bị bồi bổ linh thực để khôi phục đỉnh phong!";
+
+        if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+        {
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "Chào mừng trở lại!" }, (choiceIdx) => { });
+        }
+
+        // Destroy corpse
+        if (this.MyGameCard != null)
+        {
+            this.MyGameCard.DestroyCard(true, true);
+        }
+    }
 
     public override bool DetermineCanHaveCardsWhenIsRoot
     {
@@ -27,7 +118,7 @@ public class CatCorpseData : CardData
         }
     }
 
-    public override bool CanHaveCard(CardData otherCard)
+    protected override bool CanHaveCard(CardData otherCard)
     {
         // Có thể ghép với Linh Đan Hồi Sinh, hoặc thẻ Tế Lễ
         if (otherCard.Id == "item_revive_pill")

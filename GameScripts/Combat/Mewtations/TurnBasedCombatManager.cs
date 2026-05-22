@@ -171,7 +171,7 @@ namespace Mewtations.Combat
         {
             AddLog($"☠ {unit.Name} đã gục ngã!");
 
-            if (unit.IsPlayer)
+            if (unit.IsPlayer && unit.Source != null)
             {
                 // Check Insurance
                 bool hasInsurance = false;
@@ -180,7 +180,10 @@ namespace Mewtations.Combat
                 {
                     hasInsurance = true;
                     unit.Source.UnequipItem(insuranceItem); // Insurance consumed
-                    insuranceItem.MyGameCard.DestroyCard(true, true);
+                    if (insuranceItem.MyGameCard != null)
+                    {
+                        insuranceItem.MyGameCard.DestroyCard(true, true);
+                    }
                 }
 
                 if (hasInsurance)
@@ -205,11 +208,26 @@ namespace Mewtations.Combat
                         {
                             corpseData.OriginalCatRole = cat.Role;
                             corpseData.OriginalCatElement = cat.Element;
+
+                            // Save breakthrough and stats
+                            corpseData.OriginalBreakthroughLevel = cat.BreakthroughLevel;
+                            corpseData.OriginalHasPillSlot = cat.HasPillSlot;
+                            corpseData.OriginalHasFoodSlot = cat.HasFoodSlot;
+                            corpseData.OriginalHasPassive1Slot = cat.HasPassive1Slot;
+                            corpseData.OriginalHasPassive2Slot = cat.HasPassive2Slot;
+                            corpseData.OriginalSpeed = cat.Speed;
+                            if (cat.BaseCombatStats != null)
+                            {
+                                corpseData.OriginalMaxHealth = cat.BaseCombatStats.MaxHealth;
+                            }
                         }
                     }
                     
                     // Destroy original cat
-                    unit.Source.MyGameCard.DestroyCard(true, true);
+                    if (unit.Source.MyGameCard != null)
+                    {
+                        unit.Source.MyGameCard.DestroyCard(true, true);
+                    }
                     Formation.PlayerUnits.Remove(unit);
                 }
             }

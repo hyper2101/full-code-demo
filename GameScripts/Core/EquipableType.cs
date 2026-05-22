@@ -1,8 +1,11 @@
-﻿using System;
+using System;
 
 public enum EquipableType
 {
 	Head,
 	Torso,
-	Weapon
+	Weapon,
+	Food,
+	Talisman
 }
+

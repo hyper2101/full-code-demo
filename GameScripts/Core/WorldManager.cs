@@ -647,6 +647,10 @@ public class WorldManager : MonoBehaviour
 	public void IncrementMonth()
 	{
 		this.BoardMonths.IncrementMonth();
+		if (this.DayEvent != null)
+		{
+			this.DayEvent.TriggerDayEvent(this.CurrentMonth);
+		}
 	}
 
 	private void Update()

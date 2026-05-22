@@ -55,7 +55,7 @@ public class CatCardData : Combatable
 
     public void PerformBreakthrough()
     {
-        if (this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.Id == "item_breakthrough_pill")
+        if (this.MyGameCard != null && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.Id == "item_breakthrough_pill")
         {
             GameCard pill = this.MyGameCard.Child;
             pill.DestroyCard(true, true);
@@ -105,7 +105,7 @@ public class CatCardData : Combatable
         }
     }
 
-    public override bool CanHaveCard(CardData otherCard)
+    protected override bool CanHaveCard(CardData otherCard)
     {
         // 1. Validate food slot (BT level 2)
         if (otherCard.MyCardType == CardType.Food) 

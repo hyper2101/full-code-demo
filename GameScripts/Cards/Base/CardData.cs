@@ -919,6 +919,10 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 				{
 					list.Add(new ExtraCardData(extraDataAttribute.Identifier, (int)fieldInfo.GetValue(o)));
 				}
+				else if (fieldInfo.FieldType.IsEnum)
+				{
+					list.Add(new ExtraCardData(extraDataAttribute.Identifier, (int)fieldInfo.GetValue(o)));
+				}
 				else if (fieldInfo.FieldType == typeof(float))
 				{
 					list.Add(new ExtraCardData(extraDataAttribute.Identifier, (float)fieldInfo.GetValue(o)));
@@ -968,6 +972,10 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 					else if (fieldInfo.FieldType == typeof(int))
 					{
 						fieldInfo.SetValue(o, extraCardData.IntValue);
+					}
+					else if (fieldInfo.FieldType.IsEnum)
+					{
+						fieldInfo.SetValue(o, Enum.ToObject(fieldInfo.FieldType, extraCardData.IntValue));
 					}
 					else if (fieldInfo.FieldType == typeof(float))
 					{

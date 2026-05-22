@@ -34,9 +34,10 @@ public class CatGodMouth : CardData
 
     private void ConsumeOffering()
     {
-        if (!this.MyGameCard.HasChild) return;
+        if (this.MyGameCard == null || !this.MyGameCard.HasChild) return;
 
         GameCard offeringCard = this.MyGameCard.Child;
+        if (offeringCard == null || offeringCard.CardData == null) return;
         CardData offeringData = offeringCard.CardData;
 
         // Calculate offering value: use custom value if set, else base gold value * 2
@@ -131,7 +132,7 @@ public class CatGodMouth : CardData
         }
     }
 
-    public override bool CanHaveCard(CardData otherCard)
+    protected override bool CanHaveCard(CardData otherCard)
     {
         // Don't stack human/cat cards directly, only stack resource/item cards
         if (otherCard.MyCardType == CardType.Humans || otherCard is CatCardData)
