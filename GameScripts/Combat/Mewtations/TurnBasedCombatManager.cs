@@ -80,6 +80,64 @@ namespace Mewtations.Combat
             {
                 AddLog($"--- VÒNG LẦT {round} ---");
 
+                // Cat God's Punishment Curse (Linh Thần Trừng Phạt) for high Greed
+                if (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive && ExpeditionManager.Instance.RunState.GreedLevel >= 75)
+                {
+                    AddLog("⚡ LÔI PHẠT TRỪNG PHẠT! Thần Mèo phẫn nộ trước lòng tham vô độ (Greed >= 75)! Sét đánh giáng xuống toàn bộ Thần Miêu!");
+                    var aliveUnits = Formation.PlayerUnits.FindAll(u => u.IsAlive);
+                    foreach (var unit in aliveUnits)
+                    {
+                        unit.CurrentHP = Mathf.Max(0, unit.CurrentHP - 3);
+                        if (unit.Source != null)
+                        {
+                            unit.Source.HealthPoints = unit.CurrentHP;
+                        }
+                        AddLog($"   • {unit.Name} gánh chịu 3 sát thương lôi phạt (Máu hiện tại: {unit.CurrentHP} HP)");
+                    }
+                    
+                    // Check deaths caused by curse
+                    foreach (var unit in aliveUnits)
+                    {
+                        if (unit.CurrentHP <= 0)
+                        {
+                            CheckUnitDeath(unit);
+                        }
+                    }
+                    CheckCombatEndConditions();
+                    if (Result != CombatResult.Ongoing) break;
+                }
+
+                // Kiếp Lôi Bạo Phá hazard (Thiên Lôi Theme)
+                if (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive && ExpeditionManager.Instance.ActiveNode != null && ExpeditionManager.Instance.ActiveNode.Theme == Mewtations.Expedition.RouteTheme.ThienLoi)
+                {
+                    if (UnityEngine.Random.value <= 0.15f)
+                    {
+                        var alivePlayerUnits = Formation.PlayerUnits.FindAll(u => u.IsAlive);
+                        var aliveEnemyUnits = Formation.EnemyUnits.FindAll(u => u.IsAlive);
+                        var allAlive = new List<CombatUnit>();
+                        allAlive.AddRange(alivePlayerUnits);
+                        allAlive.AddRange(aliveEnemyUnits);
+
+                        if (allAlive.Count > 0)
+                        {
+                            var targetUnit = allAlive[UnityEngine.Random.Range(0, allAlive.Count)];
+                            targetUnit.CurrentHP = Mathf.Max(0, targetUnit.CurrentHP - 5);
+                            if (targetUnit.Source != null)
+                            {
+                                targetUnit.Source.HealthPoints = targetUnit.CurrentHP;
+                            }
+                            AddLog($"⚡ KIẾP LÔI BẠO PHÁ! Sét đánh ngẫu nhiên giáng xuống {targetUnit.Name} gây 5 sát thương lôi pháp! (Máu hiện tại: {targetUnit.CurrentHP} HP)");
+
+                            if (targetUnit.CurrentHP <= 0)
+                            {
+                                CheckUnitDeath(targetUnit);
+                            }
+                            CheckCombatEndConditions();
+                            if (Result != CombatResult.Ongoing) break;
+                        }
+                    }
+                }
+
                 // Get all active combat units
                 List<CombatUnit> allUnits = new List<CombatUnit>();
                 allUnits.AddRange(Formation.PlayerUnits.FindAll(u => u.IsAlive));
@@ -220,6 +278,14 @@ namespace Mewtations.Combat
                             {
                                 corpseData.OriginalMaxHealth = cat.BaseCombatStats.MaxHealth;
                             }
+
+                            // Write death milestone to memoirs and serialize
+                            string layerInfo = (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive) 
+                                ? "Tầng " + ExpeditionManager.Instance.RunState.CurrentLayer 
+                                : "Căn Cứ";
+                            cat.AddMemoir("Tử trận tại viễn chinh " + layerInfo);
+                            corpseData.OriginalLineageGeneration = cat.LineageGeneration;
+                            corpseData.OriginalCharacterMemoirs = cat.CharacterMemoirsString;
                         }
                     }
                     

@@ -40,6 +40,9 @@ namespace Mewtations.Expedition
         public int CurrentLayer = 0;
         public int TotalGoldCollected = 0;
         public List<string> RunActiveMutations = new List<string>();
+        
+        public int BaseAppeasementGreed = 0;
+        public int BaseAppeasementCorruption = 0;
 
         public void AddGreed(int val)
         {
@@ -58,6 +61,8 @@ namespace Mewtations.Expedition
             CurrentLayer = 0;
             TotalGoldCollected = 0;
             RunActiveMutations.Clear();
+            BaseAppeasementGreed = 0;
+            BaseAppeasementCorruption = 0;
         }
     }
 
@@ -133,6 +138,7 @@ namespace Mewtations.Expedition
         public NodeType Type;
         public NodeState State = NodeState.Locked;
         public List<int> OutgoingConnections = new List<int>(); // List of destination Node IDs
+        public RouteTheme Theme = RouteTheme.Standard;
 
         public ExpeditionNode(int id, int layer, int position, NodeType type)
         {

@@ -240,6 +240,14 @@ namespace Mewtations.Combat
 
             int baseDamage = attacker.Source.ProcessedCombatStats.AttackDamage;
 
+            // Check Spiritual Backlash (Tẩu Hỏa Nhập Ma) if attacker has >= 2 active mutations
+            bool isSpiritualBacklash = false;
+            if (attacker.Source is CatCardData catData && catData.ActiveMutations.Count >= 2)
+            {
+                isSpiritualBacklash = true;
+                baseDamage = Mathf.RoundToInt(baseDamage * 1.5f);
+            }
+
             // Apply UnstableClaws damage boost
             if (attacker.HasMutation(Mewtations.Expedition.UnstableMutation.UnstableClaws))
             {
@@ -342,6 +350,13 @@ namespace Mewtations.Combat
             {
                 attacker.TakeDamage(2);
                 logCallback?.Invoke($"☣️ {attacker.Name} bị đột biến tự phế kinh mạch, hao tổn 2 HP!");
+            }
+
+            // Apply Spiritual Backlash (Tẩu Hỏa Nhập Ma) self-damage
+            if (isSpiritualBacklash && attacker.IsAlive)
+            {
+                attacker.TakeDamage(4);
+                logCallback?.Invoke($"☣️ [TẨU HỎA NHẬP MA] Sức mạnh biến dị quá tải bùng nổ! {attacker.Name} gánh chịu 4 sát thương linh lực phản phệ!");
             }
         }
     }

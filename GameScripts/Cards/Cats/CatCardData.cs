@@ -38,6 +38,38 @@ public class CatCardData : Combatable
     public int Speed = 100;
 
     [Header("Traits and Mutations")]
+    [ExtraData("lineage_generation")]
+    public int LineageGeneration = 1;
+
+    [ExtraData("character_memoirs")]
+    public string CharacterMemoirsString = "";
+
+    public List<Mewtations.Expedition.MemoirEntry> CharacterMemoirs
+    {
+        get
+        {
+            return string.IsNullOrEmpty(CharacterMemoirsString)
+                ? new List<Mewtations.Expedition.MemoirEntry>()
+                : CharacterMemoirsString.Split(new char[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries)
+                    .Select(Mewtations.Expedition.MemoirEntry.Parse)
+                    .Where(e => e != null)
+                    .ToList();
+        }
+    }
+
+    public void AddMemoir(Mewtations.Expedition.MemoirType type, string paramA = "", string paramB = "")
+    {
+        int day = (WorldManager.instance != null) ? WorldManager.instance.CurrentMonth : 1;
+        var list = CharacterMemoirs;
+        list.Add(new Mewtations.Expedition.MemoirEntry(type, paramA, paramB, day));
+        CharacterMemoirsString = string.Join(";", list.Select(m => m.ToString()));
+    }
+
+    public void AddMemoir(string milestone)
+    {
+        AddMemoir(Mewtations.Expedition.MemoirType.Birth, milestone);
+    }
+
     [ExtraData("permanent_traits")]
     public string PermanentTraitsString = "";
 
@@ -67,6 +99,12 @@ public class CatCardData : Combatable
     public void AddTrait(string traitId)
     {
         var list = PermanentTraits;
+        if (list.Count >= 2)
+        {
+            Debug.LogWarning($"[Song Trọng Dị Biến] Không thể dung hợp thêm thiên phú vĩnh cửu {traitId} cho {Name} vì đã đạt cực hạn (2).");
+            return;
+        }
+
         if (!list.Contains(traitId))
         {
             list.Add(traitId);
@@ -105,6 +143,24 @@ public class CatCardData : Combatable
     public void ClearMutations()
     {
         ActiveMutationsString = "";
+    }
+
+    public override void OnEquipItem(Equipable equipable)
+    {
+        base.OnEquipItem(equipable);
+        if (equipable != null && !string.IsNullOrEmpty(equipable.Name))
+        {
+            AddMemoir(Mewtations.Expedition.MemoirType.Equip, equipable.Name);
+        }
+    }
+
+    public override void OnUnequipItem(Equipable equipable)
+    {
+        base.OnUnequipItem(equipable);
+        if (equipable != null && !string.IsNullOrEmpty(equipable.Name))
+        {
+            AddMemoir(Mewtations.Expedition.MemoirType.Unequip, equipable.Name);
+        }
     }
 
     public bool HasTrait(string id)
@@ -166,6 +222,10 @@ public class CatCardData : Combatable
                 cảnhGiới = $"Hóa Thần Cảnh Tầng {BreakthroughLevel - 4} (Tăng mạnh Sinh mệnh & Thần tốc)";
                 break;
         }
+
+        // Add Memoir hook
+        string simpleCảnhGiới = cảnhGiới.Split(' ')[0];
+        AddMemoir("Đột phá thành công lên " + simpleCảnhGiới);
 
         // Upgrade core combat stats
         this.BaseCombatStats.MaxHealth += 10;

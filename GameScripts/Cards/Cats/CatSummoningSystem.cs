@@ -32,6 +32,20 @@ public class CatSummoningSystem
             
             // Randomize Speed (80 to 120)
             catData.Speed = Random.Range(80, 121);
+            catData.LineageGeneration = 1;
+            
+            string[] backgrounds = {
+                "Truyền nhân của U Minh Miêu Tộc thế gia",
+                "Thiên kiêu đệ tử của Thần Miêu Cổ Giáo",
+                "Kẻ thức tỉnh linh căn ẩn giấu từ hoang dã",
+                "Tán tu miêu tộc đắc đạo từ Phế tích viễn cổ",
+                "Vạn cổ linh thú phục sinh tái thế",
+                "Miêu tiên truyền nhân nắm giữ Lôi pháp thiên kiếp",
+                "Chiến thần ngự tiền của Thần Mèo Đế Quốc",
+                "Huyết mạch dị chủng thức tỉnh thời Thượng cổ"
+            };
+            string bg = backgrounds[Random.Range(0, backgrounds.Length)];
+            catData.AddMemoir(Mewtations.Expedition.MemoirType.Birth, bg);
 
             if (isThienKieu)
             {
@@ -47,6 +61,7 @@ public class CatSummoningSystem
                 
                 catData.CustomName = $"{Mewtations.Expedition.HeavenlyTalent.GetDisplayName(rolledTalent)} {catData.Name}";
                 catData.Speed += 30; // Thần tốc tăng mạnh
+                catData.AddMemoir(Mewtations.Expedition.MemoirType.Breakthrough, Mewtations.Expedition.HeavenlyTalent.GetDisplayName(rolledTalent), "Thiên biến thức tỉnh");
             }
         }
 

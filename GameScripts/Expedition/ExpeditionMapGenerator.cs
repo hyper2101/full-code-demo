@@ -30,6 +30,7 @@ namespace Mewtations.Expedition
                     {
                         NodeType type = (UnityEngine.Random.value < 0.7f) ? NodeType.Combat : NodeType.Resource;
                         var node = new ExpeditionNode(nextId++, layerIndex, pos, type);
+                        node.Theme = RollRouteTheme(type);
                         node.State = NodeState.Available; // Start layer is immediately available
                         layers[layerIndex].Add(node);
                         map.Add(node);
@@ -39,6 +40,7 @@ namespace Mewtations.Expedition
                 {
                     // Boss Layer: exactly 1 Boss node
                     var node = new ExpeditionNode(nextId++, layerIndex, 0, NodeType.Boss);
+                    node.Theme = RouteTheme.Standard;
                     layers[layerIndex].Add(node);
                     map.Add(node);
                 }
@@ -50,6 +52,7 @@ namespace Mewtations.Expedition
                     {
                         NodeType type = RollNodeType(layerIndex, maxLayers);
                         var node = new ExpeditionNode(nextId++, layerIndex, pos, type);
+                        node.Theme = RollRouteTheme(type);
                         layers[layerIndex].Add(node);
                         map.Add(node);
                     }
@@ -128,6 +131,39 @@ namespace Mewtations.Expedition
             if (r < 0.80f) return NodeType.Ruins;      // 10% ruins
             if (r < 0.90f) return NodeType.Altar;      // 10% Cat God's Altar
             return NodeType.Lore;                      // 10% lore/story card
+        }
+
+        private static RouteTheme RollRouteTheme(NodeType type)
+        {
+            if (type == NodeType.Boss || type == NodeType.Lore) return RouteTheme.Standard;
+
+            float r = UnityEngine.Random.value;
+            if (type == NodeType.Combat)
+            {
+                if (r < 0.25f) return RouteTheme.ThuTrieu;
+                if (r < 0.50f) return RouteTheme.ThienLoi;
+                if (r < 0.75f) return RouteTheme.TaDao;
+                return RouteTheme.Standard;
+            }
+            else if (type == NodeType.Resource)
+            {
+                if (r < 0.40f) return RouteTheme.ThamLam;
+                if (r < 0.70f) return RouteTheme.TaDao;
+                return RouteTheme.Standard;
+            }
+            else if (type == NodeType.Altar || type == NodeType.Ruins)
+            {
+                if (r < 0.50f) return RouteTheme.TaDao;
+                if (r < 0.80f) return RouteTheme.ThienLoi;
+                return RouteTheme.Standard;
+            }
+
+            // Fallback
+            if (r < 0.20f) return RouteTheme.TaDao;
+            if (r < 0.40f) return RouteTheme.ThienLoi;
+            if (r < 0.60f) return RouteTheme.ThamLam;
+            if (r < 0.80f) return RouteTheme.ThuTrieu;
+            return RouteTheme.Standard;
         }
     }
 }

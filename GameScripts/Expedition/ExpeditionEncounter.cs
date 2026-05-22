@@ -32,6 +32,13 @@ namespace Mewtations.Expedition
             int enemyCount = UnityEngine.Random.Range(1, 4);
             if (_isBoss) enemyCount = 1;
 
+            bool isThuTrieu = manager.ActiveNode != null && manager.ActiveNode.Theme == RouteTheme.ThuTrieu;
+            if (isThuTrieu && !_isBoss)
+            {
+                enemyCount += 1;
+                Debug.Log("[Expedition] Lộ trình Thú Triều! Quái vật vây quanh tăng thêm 1 đơn vị.");
+            }
+
             Vector3 spawnPos = Vector3.zero;
             for (int i = 0; i < enemyCount; i++)
             {
@@ -76,6 +83,33 @@ namespace Mewtations.Expedition
                     RollLoot(manager, _isBoss);
                     runState.AddCorruption(15);
                     
+                    // Add specific Route Theme and Boss memoirs
+                    bool isThienLoi = manager.ActiveNode != null && manager.ActiveNode.Theme == RouteTheme.ThienLoi;
+                    if (isThienLoi)
+                    {
+                        foreach (var cat in manager.ActiveCats)
+                        {
+                            cat.Speed += 15;
+                            cat.AddMemoir(MemoirType.Breakthrough, "Lôi Đình Tẩy Tủy", "Vượt qua Kiếp Lôi, rèn luyện thân thể tăng 15 Thần Tốc");
+                        }
+                    }
+
+                    if (isThuTrieu)
+                    {
+                        foreach (var cat in manager.ActiveCats)
+                        {
+                            cat.AddMemoir(MemoirType.BossKill, "Dị Thú Vương", "Trảm sát Thú Vương trong biển thú cuồng trào");
+                        }
+                    }
+
+                    if (_isBoss)
+                    {
+                        foreach (var cat in manager.ActiveCats)
+                        {
+                            cat.AddMemoir(MemoirType.BossKill, "Goblin Đế Vương", "Trảm sát Thống soái viễn chinh");
+                        }
+                    }
+
                     // Trigger unstable mutations if corruption is high (> 50)
                     ApplyHighCorruptionCheck(manager);
 
@@ -105,6 +139,14 @@ namespace Mewtations.Expedition
             int lootCount = isBoss ? 4 : UnityEngine.Random.Range(1, 3);
             string[] possibleLoot = { "resource_gold", "resource_food", "item_healing_potion", "item_iron_ore", "item_wood", "item_stone" };
 
+            bool isThamLam = manager.ActiveNode != null && manager.ActiveNode.Theme == RouteTheme.ThamLam;
+            bool isThuTrieu = manager.ActiveNode != null && manager.ActiveNode.Theme == RouteTheme.ThuTrieu;
+            if (isThamLam || isThuTrieu)
+            {
+                lootCount *= 2;
+                Debug.Log($"[Expedition] Nhân đôi chiến lợi phẩm do lộ trình {(isThamLam ? "Tham Lam" : "Thú Triều")}.");
+            }
+
             for (int i = 0; i < lootCount; i++)
             {
                 string loot = possibleLoot[UnityEngine.Random.Range(0, possibleLoot.Length)];
@@ -131,6 +173,7 @@ namespace Mewtations.Expedition
                     if (!cat.HasMutation(mutation))
                     {
                         cat.AddMutation(mutation);
+                        cat.AddMemoir(MemoirType.Mutation, UnstableMutation.GetDisplayName(mutation), "Ma khí thâm nhập gây dị biến linh mạch");
                         string msg = $"<color=red>☣️ Ô NHIỄM CỰC HẠN!</color>\n\nSát khí linh lực tích tụ quá cao ({runState.CorruptionLevel}%) đã thâm nhập cơ thể của <b>{cat.Name}</b>, gây ra dị biến: <b><color=#ff3333>{UnstableMutation.GetDisplayName(mutation)}</color></b>!\n\n<i>{UnstableMutation.GetDescription(mutation)}</i>";
                         
                         if (Mewtations.Dialogue.DialogueSystem.Instance != null)
@@ -153,8 +196,8 @@ namespace Mewtations.Expedition
             string title = "Bãi Khai Thác Hoang Dã";
             string text = "Đội ngũ Thần Miêu phát hiện một mỏ quặng linh thạch khổng lồ hoang phế nằm ven đường.\n\n" +
                           "Bạn muốn khai thác nó như thế nào?\n\n" +
-                          "• <b>Khai thác chuẩn mực:</b> Nhận tài nguyên cơ bản an toàn.\n" +
-                          "• <b>Khai thác cạn kiệt (Tham lam):</b> Nhận gấp đôi tài nguyên nhưng tăng <b>+20 Greed</b> (Quái vật tầng sâu mạnh lên).";
+                          "• <b>Khai thác chuẩn mực:</b> Nhận tài nguyên linh thạch dồi dào trên bảng.\n" +
+                          "• <b>Khai thác cạn kiệt (Tham lam):</b> Nhận gấp đôi tài nguyên linh thạch nhưng tăng <b>+20 Greed</b> (Quái vật tầng sâu mạnh lên).";
 
             var choices = new List<string> { "Khai thác chuẩn mực", "Khai thác cạn kiệt (+20 Greed)" };
             
@@ -166,34 +209,37 @@ namespace Mewtations.Expedition
                     runState.AddGreed(20);
                 }
 
-                int lootCount = UnityEngine.Random.Range(2, 4) * harvests;
+                int lootCount = UnityEngine.Random.Range(3, 5) * harvests;
                 string[] resources = { "resource_food", "item_wood", "item_stone", "resource_gold", "item_iron_ore" };
 
-                List<string> added = new List<string>();
+                // Get portal position for physical spawning
+                Vector3 spawnPos = Vector3.zero;
+                if (manager.PortalCardSource != null)
+                {
+                    spawnPos = manager.PortalCardSource.transform.position;
+                }
+
+                // Unfreeze the board so player can physically interact and collect
+                Time.timeScale = 1f;
+
+                // Spawn resources physically on the board!
                 for (int i = 0; i < lootCount; i++)
                 {
                     string res = resources[UnityEngine.Random.Range(0, resources.Length)];
-                    if (manager.CurrentBackpack.AddItem(res))
-                    {
-                        added.Add(res);
-                    }
+                    Vector3 jitterPos = spawnPos + new Vector3(UnityEngine.Random.Range(-1.5f, 1.5f), 0, UnityEngine.Random.Range(-1.5f, 1.5f));
+                    WorldManager.instance.CreateCard(jitterPos, res, true, true, true);
                 }
-
-                string resMsg = added.Count > 0 
-                    ? string.Join(", ", added.Select(id => id.Replace("resource_", "").Replace("item_", "")))
-                    : "Không có đủ khoảng trống balo!";
 
                 runState.AddCorruption(15);
 
-                string resTitle = (choiceIdx == 1) ? "Khai Thác Cạn Kiệt!" : "Khai Thác Hoàn Tất";
-                string resText = (choiceIdx == 1)
-                    ? $"Sự tham lam thúc đẩy bạn đào bới đến tận gốc rễ!\n\nNhận được lượng tài nguyên dồi dào: {resMsg}\n\nGreed tăng lên: <b>{runState.GreedLevel}/100</b>."
-                    : $"Khai thác ôn hòa an toàn.\n\nNhận được: {resMsg}";
-
-                Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(resTitle, resText, new List<string> { "Tiếp tục" }, (idx) =>
+                // Spawn Gathering Room Helper
+                GameObject helperGo = new GameObject("GatheringRoomHelper");
+                var helper = helperGo.AddComponent<GatheringRoomHelper>();
+                helper.OnFinished = () =>
                 {
+                    // Clean up and complete
                     onComplete?.Invoke();
-                });
+                };
             });
         }
     }
@@ -206,12 +252,31 @@ namespace Mewtations.Expedition
             var runState = manager.RunState;
             var backpack = manager.CurrentBackpack;
 
+            bool isTaDao = manager.ActiveNode != null && manager.ActiveNode.Theme == RouteTheme.TaDao;
+
             string title = "Miệng Thần Mèo - Hiến Tế Đàn";
             string text = "Một khe vực khổng lồ mở ra, tạo hình như một chiếc Miệng Thần Mèo đói khát cổ xưa. Linh khí từ miệng vực thốt ra rợn người.\n\n" +
                           "Để đổi lấy sự bình yên hoặc linh căn thiên phú, thần linh đòi hỏi một sự đánh đổi công bằng.\n\n" +
                           $"Balo hiện tại có: <b>{backpack.ContainedCardIds.Count} vật phẩm</b>.";
 
-            var choices = new List<string> { "Thanh tẩy Ô Nhiễm (-30 Corruption - Cần 2 vật phẩm)", "Hối lộ Luật Pháp (-35 Greed - Cần 2 vật phẩm)", "Cầu nguyện Thiên Phú (Ngẫu nhiên Thiên Kiêu - Tăng +25 Corruption)", "Rời đi bình yên" };
+            if (isTaDao)
+            {
+                text += "\n\n<color=#ff33cc>☠️ NƠI NÀY LÀ TÀ ĐẠO HUYỆT! Trận pháp tà môn cho phép thực hiện hiến tế đẫm máu cướp đoạt thiên phú.</color>";
+            }
+
+            var choices = new List<string> { 
+                "Thanh tẩy Ô Nhiễm (-30 Corruption - Cần 2 vật phẩm)", 
+                "Hối lộ Luật Pháp (-35 Greed - Cần 2 vật phẩm)", 
+                "Cầu nguyện Thiên Phú (Ngẫu nhiên Thiên Kiêu - Tăng +25 Corruption)", 
+                "Trục xuất An Toàn về Base (Bảo toàn 100% Loot)"
+            };
+
+            if (isTaDao)
+            {
+                choices.Add("Nghi thức Tà Đạo: Tế lễ đồng đội (Nhận Thần Thể Kịch Độc - Tăng +15 Corruption)");
+            }
+
+            choices.Add("Rời đi bình yên");
 
             Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices, (choiceIdx) =>
             {
@@ -260,13 +325,63 @@ namespace Mewtations.Expedition
                     
                     cat.AddTrait(rolledTalent);
                     cat.CustomName = $"{HeavenlyTalent.GetDisplayName(rolledTalent)} {cat.Name}";
+                    cat.AddMemoir(MemoirType.Breakthrough, HeavenlyTalent.GetDisplayName(rolledTalent), "Khai mở Thiên phúc tại Miệng Thần Mèo");
                     runState.AddCorruption(25);
 
                     string talentDesc = $"★ {cat.Name} được ban phúc thành tựu <b>{HeavenlyTalent.GetDisplayName(rolledTalent)}</b>!\n\nCorruption tăng thêm +25% vì dám cướp đoạt sinh cơ.";
 
                     Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue("Linh Căn Tẩy Tủy", talentDesc, new List<string> { "Nhận Thần Lực!" }, (idx) => onComplete?.Invoke());
                 }
-                else
+                else if (choiceIdx == 3) // Safe extraction portal
+                {
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(
+                        "Cổng Trục Xuất An Toàn", 
+                        "Miệng Thần Mèo phát ra hào quang bao phủ toàn đội. Bạn sẽ quay về Base Camp an toàn với toàn bộ chiến lợi phẩm bảo toàn!", 
+                        new List<string> { "Kích hoạt Cổng Dịch Chuyển" }, 
+                        (idx) => manager.ReturnToBase(isDefeat: false)
+                    );
+                }
+                else if (isTaDao && choiceIdx == 4) // Sacrifice teammate moral temptation
+                {
+                    if (manager.ActiveCats.Count < 2)
+                    {
+                        Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue("Hiến Tế Thất Bại", "Phải có ít nhất 2 Thần Miêu trong đội hình mới có thể thực hiện hiến tế đồng đội!", new List<string> { "Quay lại" }, (idx) => Resolve(onComplete));
+                    }
+                    else
+                    {
+                        // Select a cat to sacrifice
+                        string sacTitle = "LỰA CHỌN TẾ PHẨM";
+                        string sacText = "Chọn một đồng đội để hiến tế linh hồn vào Tà Huyệt. Chú mèo này sẽ vĩnh viễn biến mất, nhưng linh lực hiến tế sẽ gieo mầm 'Thần Thể Kịch Độc' vào kinh mạch của đồng đội còn lại.";
+                        var catNames = manager.ActiveCats.Select(c => c.Name).ToList();
+
+                        Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(sacTitle, sacText, catNames, (sacIdx) =>
+                        {
+                            var sacrificedCat = manager.ActiveCats[sacIdx];
+                            manager.ActiveCats.RemoveAt(sacIdx);
+
+                            // Destroy card
+                            if (sacrificedCat.MyGameCard != null)
+                            {
+                                sacrificedCat.MyGameCard.DestroyCard(true, true);
+                            }
+
+                            // Pick another cat to receive the talent
+                            var beneficiary = manager.ActiveCats[UnityEngine.Random.Range(0, manager.ActiveCats.Count)];
+                            beneficiary.AddTrait(HeavenlyTalent.HeavenlyPoisonBody);
+                            beneficiary.CustomName = $"{HeavenlyTalent.GetDisplayName(HeavenlyTalent.HeavenlyPoisonBody)} {beneficiary.Name}";
+                            beneficiary.AddMemoir(MemoirType.Birth, $"Nhận dâng hiến tế lễ từ {sacrificedCat.Name}, thức tỉnh Thần Thể Kịch Độc");
+
+                            runState.AddCorruption(15);
+
+                            string resText = $"🔴 HIẾN TẾ HOÀN THÀNH!\n\n<b>{sacrificedCat.Name}</b> đã tan biến vào làn khói máu.\n\n" +
+                                             $"Cơ thể của <b>{beneficiary.Name}</b> bùng phát độc lực mạnh mẽ, thức tỉnh thành công <b><color=red>{HeavenlyTalent.GetDisplayName(HeavenlyTalent.HeavenlyPoisonBody)}</color></b>!\n\n" +
+                                             $"Ô Nhiễm linh mạch tăng thêm +15 Corruption.";
+
+                            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue("Huyết Tế Ma Công", resText, new List<string> { "Chấp nhận lực lượng" }, (idx) => onComplete?.Invoke());
+                        });
+                    }
+                }
+                else // Rời đi bình yên
                 {
                     onComplete?.Invoke();
                 }
@@ -281,36 +396,108 @@ namespace Mewtations.Expedition
             var manager = ExpeditionManager.Instance;
             var runState = manager.RunState;
 
-            string title = "Vực Thẳm Dị Biến";
-            string text = "Đội ngũ Thần Miêu vô tình giẫm phải một mạch khoáng linh thạch bị ô nhiễm nặng nề. Linh lực bạo tàn cuộn trào vây kín!\n\n" +
-                          "Lực lượng này sẽ ép buộc một chú mèo trong đội tiếp nhận Đột biến linh khí bất ổn.\n\n" +
-                          "Ai sẽ đứng ra chịu đựng luồng sức mạnh cuồng bạo này?";
+            bool isTaDao = manager.ActiveNode != null && manager.ActiveNode.Theme == RouteTheme.TaDao;
 
-            var choices = manager.ActiveCats.Select(c => c.Name).ToList();
-
-            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices, (choiceIdx) =>
+            if (isTaDao)
             {
-                var cat = manager.ActiveCats[choiceIdx];
-
-                string[] possibleMutations = { 
-                    UnstableMutation.UnstableClaws, 
-                    UnstableMutation.LethargicNap, 
-                    UnstableMutation.CursedFur 
-                };
-                string mutation = possibleMutations[UnityEngine.Random.Range(0, possibleMutations.Length)];
+                string title = "Lò Đan Xác Chết - Phế Tích Tà Đạo";
+                string text = "Bên trong phế tích âm u này, lò luyện đan cổ xưa đang rực lửa máu. Một làn khói cốt tủy bốc lên tỏa mùi hương cám dỗ ghê rợn.\n\n" +
+                              "Lò đan ẩn chứa 'Xác Đan' chế luyện từ linh thể quái thú cổ đại. \n\n" +
+                              "Bạn muốn chọn Thần Miêu nào để thực hiện?";
                 
-                cat.AddMutation(mutation);
-                runState.AddCorruption(15);
+                var choices = new List<string>();
+                choices.AddRange(manager.ActiveCats.Select(c => $"Chọn {c.Name} Nuốt Xác Đan (+10 Max HP, nhận Nguyền Rủa Lông Tơ +10 Corruption)"));
+                choices.Add("Từ chối tà pháp, rút lui an toàn");
 
-                string resText = $"<b>{cat.Name}</b> đã cắn răng tiếp thụ luồng linh lực cuồng bạo!\n\n" +
-                                $"Hậu quả dị biến: <b><color=red>{UnstableMutation.GetDisplayName(mutation)}</color></b>\n" +
-                                $"<i>{UnstableMutation.GetDescription(mutation)}</i>";
-
-                Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue("Dị Biến Kết Thúc", resText, new List<string> { "Tiếp tục" }, (idx) =>
+                Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices, (choiceIdx) =>
                 {
-                    onComplete?.Invoke();
+                    if (choiceIdx < manager.ActiveCats.Count)
+                    {
+                        var cat = manager.ActiveCats[choiceIdx];
+                        cat.BaseCombatStats.MaxHealth += 10;
+                        cat.HealthPoints += 10;
+                        cat.AddMutation(UnstableMutation.CursedFur);
+                        cat.AddMemoir(MemoirType.Mutation, "Xác Đan Nghịch Thiên", "Nuốt đan dược ma đạo tăng +10 HP cực hạn, gánh chịu Nguyền rủa Lông Tơ");
+                        
+                        runState.AddCorruption(10);
+
+                        string resText = $"🔴 NUỐT XÁC ĐAN THÀNH CÔNG!\n\n<b>{cat.Name}</b> đã nuốt chửng linh đan luyện từ xác chết. Khí huyết cuồn cuộn dâng trào vượt bậc (+10 Max HP)!\n\n" +
+                                        $"Tuy nhiên tà khí ô nhiễm nặng nề đã ăn mòn lông tơ của chú: <b><color=red>{UnstableMutation.GetDisplayName(UnstableMutation.CursedFur)}</color></b> (Giảm 5 Giáp, không thể nhận Giáp bảo hộ)!\n\n" +
+                                        $"Corruption tăng thêm +10%.";
+
+                        Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue("Xác Đan Nghịch Thiên", resText, new List<string> { "Đành chịu vậy..." }, (idx) => onComplete?.Invoke());
+                    }
+                    else
+                    {
+                        onComplete?.Invoke();
+                    }
                 });
-            });
+            }
+            else
+            {
+                string title = "Vực Thẳm Dị Biến";
+                string text = "Đội ngũ Thần Miêu vô tình giẫm phải một mạch khoáng linh thạch bị ô nhiễm nặng nề. Linh lực bạo tàn cuộn trào vây kín!\n\n" +
+                              "Lực lượng này sẽ ép buộc một chú mèo trong đội tiếp nhận Đột biến linh khí bất ổn.\n\n" +
+                              "Ai sẽ đứng ra chịu đựng luồng sức mạnh cuồng bạo này?";
+
+                var choices = manager.ActiveCats.Select(c => c.Name).ToList();
+
+                Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices, (choiceIdx) =>
+                {
+                    var cat = manager.ActiveCats[choiceIdx];
+
+                    string[] possibleMutations = { 
+                        UnstableMutation.UnstableClaws, 
+                        UnstableMutation.LethargicNap, 
+                        UnstableMutation.CursedFur 
+                    };
+                    string mutation = possibleMutations[UnityEngine.Random.Range(0, possibleMutations.Length)];
+                    
+                    cat.AddMutation(mutation);
+                    cat.AddMemoir(MemoirType.Mutation, UnstableMutation.GetDisplayName(mutation), "Cường hành nạp linh bùng phát dị biến");
+                    runState.AddCorruption(15);
+
+                    string resText = $"<b>{cat.Name}</b> đã cắn răng tiếp thụ luồng linh lực cuồng bạo!\n\n" +
+                                    $"Hậu quả dị biến: <b><color=red>{UnstableMutation.GetDisplayName(mutation)}</color></b>\n" +
+                                    $"<i>{UnstableMutation.GetDescription(mutation)}</i>";
+
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue("Dị Biến Kết Thúc", resText, new List<string> { "Tiếp tục" }, (idx) =>
+                    {
+                        onComplete?.Invoke();
+                    });
+                });
+            }
+        }
+    }
+
+    public class GatheringRoomHelper : MonoBehaviour
+    {
+        public Action OnFinished;
+
+        private void OnGUI()
+        {
+            // Use curated dark aesthetics for the button
+            GUI.backgroundColor = new Color(0.12f, 0.12f, 0.16f, 0.95f);
+            GUI.contentColor = new Color(0.1f, 0.8f, 0.3f, 1f); // Vibrant green
+
+            Rect buttonRect = new Rect((Screen.width - 280f) / 2f, Screen.height - 90f, 280f, 50f);
+            
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 15,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter
+            };
+
+            if (GUI.Button(buttonRect, "⚔️ HOÀN THÀNH THU THẬP", buttonStyle))
+            {
+                // Freeze the board again
+                Time.timeScale = 0f;
+                
+                OnFinished?.Invoke();
+                
+                Destroy(gameObject);
+            }
         }
     }
 }

@@ -38,6 +38,12 @@ public class CatCorpseData : CardData
     [ExtraData("original_max_health")]
     public int OriginalMaxHealth = 0;
 
+    [ExtraData("original_lineage_generation")]
+    public int OriginalLineageGeneration = 1;
+
+    [ExtraData("original_character_memoirs")]
+    public string OriginalCharacterMemoirs = "";
+
     public override void UpdateCard()
     {
         base.UpdateCard();
@@ -87,6 +93,11 @@ public class CatCorpseData : CardData
             {
                 catData.BaseCombatStats.MaxHealth = OriginalMaxHealth;
             }
+
+            // Restore and advance Lineage/Memoirs
+            catData.LineageGeneration = OriginalLineageGeneration + 1;
+            catData.CharacterMemoirsString = OriginalCharacterMemoirs;
+            catData.AddMemoir(Mewtations.Expedition.MemoirType.Resurrection, catData.LineageGeneration.ToString());
 
             catData.HealthPoints = catData.ProcessedCombatStats.MaxHealth / 2; // Resurrect with 50% HP
             catData.CurrentRage = 0;

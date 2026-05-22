@@ -31,7 +31,14 @@ namespace Mewtations.Expedition
 
             IsExpeditionActive = true;
             State = ExpeditionState.MapNavigation;
+            
+            // Preserve base sacrifice appeasement points from world state before clearing the run
+            int savedGreedAppeasement = RunState.BaseAppeasementGreed;
+            int savedCorrAppeasement = RunState.BaseAppeasementCorruption;
             RunState.Clear();
+            RunState.BaseAppeasementGreed = savedGreedAppeasement;
+            RunState.BaseAppeasementCorruption = savedCorrAppeasement;
+
             PortalCardSource = portalCard;
             ActiveCats = cats;
             BackpackCardSource = backpackCard;
@@ -44,6 +51,9 @@ namespace Mewtations.Expedition
             int seed = UnityEngine.Random.Range(0, 100000);
             MapNodes = ExpeditionMapGenerator.GenerateMap(seed, maxLayers: 6, maxNodesPerLayer: 3);
             ActiveNode = null;
+
+            // Initialize risk stats using non-static base appeasement
+            ExpeditionRiskSystem.InitializeRunStats(RunState);
 
             // Freeze main board by setting TimeScale to 0
             Time.timeScale = 0f; 
@@ -70,13 +80,25 @@ namespace Mewtations.Expedition
             State = ExpeditionState.InEncounter;
             RunState.CurrentLayer = node.Layer;
 
+            // Route Themes initial impacts
+            if (node.Theme == RouteTheme.TaDao)
+            {
+                RunState.AddCorruption(10);
+                Debug.Log("[Expedition] Tà Đạo áp lực! Tăng +10 Corruption khi bước vào khu vực tà khí.");
+            }
+            else if (node.Theme == RouteTheme.ThamLam)
+            {
+                RunState.AddGreed(10);
+                Debug.Log("[Expedition] Tham Lam ý niệm! Tăng +10 Greed khi bước vào khu vực trù phú.");
+            }
+
             // Hide Map UI while resolving node activities
             if (ExpeditionMapUI.Instance != null)
             {
                 ExpeditionMapUI.Instance.HideWindow();
             }
 
-            Debug.Log($"[Expedition] Tiến vào node {node.Id} ({node.Type}) ở Tầng {node.Layer}.");
+            Debug.Log($"[Expedition] Tiến vào node {node.Id} ({node.Type}) ở Tầng {node.Layer}. Lộ trình: {node.Theme}.");
 
             IExpeditionEncounter encounter = null;
             switch (node.Type)
@@ -413,12 +435,11 @@ namespace Mewtations.Expedition
 
                 if (!isDefeat)
                 {
-                    // Spawn Backpack loot items around the portal
-                    foreach (string lootId in CurrentBackpack.ContainedCardIds)
-                    {
-                        Vector3 jitterPos = spawnPos + new Vector3(UnityEngine.Random.Range(-0.5f, 0.5f), 0, UnityEngine.Random.Range(-0.5f, 0.5f));
-                        WorldManager.instance.CreateCard(jitterPos, lootId, true, true, true);
-                    }
+                    // Dung hợp thiên phú vĩnh viễn (Song Trọng Dị Biến: tối đa 2 đột biến vĩnh viễn)
+                    MutationPersistenceSystem.ProcessRunVictoryTraits(ActiveCats);
+
+                    // Spawn Backpack loot items around the portal safely
+                    ExpeditionRewardSystem.SpawnBackpackLoot(CurrentBackpack, spawnPos);
 
                     // Special Boss Victory Reward: A new Heavenly Talent cat!
                     if (ActiveNode != null && ActiveNode.Type == NodeType.Boss)
@@ -430,7 +451,14 @@ namespace Mewtations.Expedition
                 }
                 else
                 {
-                    Debug.Log("[Expedition] Viễn chinh thất bại hoặc rút lui! Mất toàn bộ chiến lợi phẩm trong Balo.");
+                    // Calculate and apply scaled drop penalty on force abandon/retreat/defeat
+                    if (CurrentBackpack != null)
+                    {
+                        float rate = ExpeditionExtractionSystem.CalculateLootRetentionRate(RunState, CurrentBackpack);
+                        ExpeditionExtractionSystem.ApplyAbandonPenalty(CurrentBackpack, rate);
+                        ExpeditionRewardSystem.SpawnBackpackLoot(CurrentBackpack, spawnPos);
+                    }
+                    Debug.Log("[Expedition] Viễn chinh thất bại hoặc rút lui! Áp dụng hình phạt hao hụt balo.");
                 }
 
                 // Restore Backpack Card if present

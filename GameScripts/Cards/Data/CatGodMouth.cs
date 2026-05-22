@@ -49,6 +49,23 @@ public class CatGodMouth : CardData
         if (val <= 0) val = 1; // Minimum 1 progress
 
         OfferingProgress += val;
+
+        // Accumulate Base Sacrifice points if within Expedition
+        if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
+        {
+            string lowerId = offeringData.Id.ToLower();
+            int points = Mathf.Max(1, val / 2);
+            if (lowerId.Contains("gold") || lowerId.Contains("ore") || lowerId.Contains("stone") || lowerId.Contains("wood"))
+            {
+                Mewtations.Expedition.ExpeditionManager.Instance.RunState.BaseAppeasementGreed += points;
+                Debug.Log($"[CatGodMouth] Hiến tế khoáng sản/kim loại: Tích lũy {points} điểm Xoa Dịu Tham Lam (Base Greed Appeasement).");
+            }
+            else if (offeringData.MyCardType == CardType.Food || lowerId.Contains("food") || lowerId.Contains("potion") || lowerId.Contains("pill"))
+            {
+                Mewtations.Expedition.ExpeditionManager.Instance.RunState.BaseAppeasementCorruption += points;
+                Debug.Log($"[CatGodMouth] Hiến tế lương thực/linh dược: Tích lũy {points} điểm Xoa Dịu Ô Nhiễm (Base Corruption Appeasement).");
+            }
+        }
         
         // Destroy the consumed card
         offeringCard.DestroyCard(true, true);

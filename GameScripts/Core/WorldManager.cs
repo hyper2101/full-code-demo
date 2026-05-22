@@ -3137,6 +3137,19 @@ public class WorldManager : MonoBehaviour
 			}
 		}
 		GameCamera.instance.TargetPositionOverride = null;
+		
+		// Add daily corpse corruption to next run
+		if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
+		{
+			int catCorpseCount = this.GetCardCount<CatCorpseData>();
+			if (catCorpseCount > 0)
+			{
+				int penalty = Mewtations.Expedition.ExpeditionRiskSystem.CalculateDailyCorpseCorruptionMultiplier(catCorpseCount);
+				Mewtations.Expedition.ExpeditionManager.Instance.RunState.BaseAppeasementCorruption -= penalty;
+				Debug.Log($"[WorldManager] Phát hiện {catCorpseCount} xác Thần Miêu trên bàn cờ. Tăng nhiễm độc viễn chinh kế tiếp thêm +{penalty} Corruption (BaseAppeasementCorruption: {Mewtations.Expedition.ExpeditionManager.Instance.RunState.BaseAppeasementCorruption}).");
+			}
+		}
+
 		this.currentAnimationRoutine = null;
 		SaveManager.instance.Save(true);
 		if (DebugScreen.instance != null)
@@ -3520,7 +3533,42 @@ public class WorldManager : MonoBehaviour
 		}
 		else if (combatable.Id != "trained_monkey")
 		{
-			this.CreateCard(combatable.MyGameCard.transform.position, "corpse", true, false, true).SetExtraCardData(extraCardData);
+			if (combatable is CatCardData cat)
+			{
+				cat.AddMemoir("Tử trận tại Căn Cứ do thiếu thốn lương thực");
+				GameCard corpseCard = this.CreateCard(combatable.MyGameCard.transform.position, "cat_corpse", true, false, true);
+				if (corpseCard != null)
+				{
+					CatCorpseData corpseData = corpseCard.CardData as CatCorpseData;
+					if (corpseData != null)
+					{
+						corpseData.OriginalCatId = cat.Id;
+						corpseData.OriginalCatName = cat.Name;
+						corpseData.OriginalCatRole = cat.Role;
+						corpseData.OriginalCatElement = cat.Element;
+
+						// Save breakthrough and stats
+						corpseData.OriginalBreakthroughLevel = cat.BreakthroughLevel;
+						corpseData.OriginalHasPillSlot = cat.HasPillSlot;
+						corpseData.OriginalHasFoodSlot = cat.HasFoodSlot;
+						corpseData.OriginalHasPassive1Slot = cat.HasPassive1Slot;
+						corpseData.OriginalHasPassive2Slot = cat.HasPassive2Slot;
+						corpseData.OriginalSpeed = cat.Speed;
+						if (cat.BaseCombatStats != null)
+						{
+							corpseData.OriginalMaxHealth = cat.BaseCombatStats.MaxHealth;
+						}
+						corpseData.OriginalLineageGeneration = cat.LineageGeneration;
+						corpseData.OriginalCharacterMemoirs = cat.CharacterMemoirsString;
+					}
+					corpseCard.CardData.SetExtraCardData(extraCardData);
+				}
+			}
+			else
+			{
+				this.CreateCard(combatable.MyGameCard.transform.position, "corpse", true, false, true).SetExtraCardData(extraCardData);
+			}
+
 			if (onCreateCorpse != null)
 			{
 				onCreateCorpse();

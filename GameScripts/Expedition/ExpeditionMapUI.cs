@@ -247,6 +247,9 @@ namespace Mewtations.Expedition
                 
                 GUILayout.Label($"<b>{cat.Name}</b> {roleText} {elementText}— HP: {cat.HealthPoints}/{cat.ProcessedCombatStats.MaxHealth} | {speedText}", _labelStyle);
                 
+                // Lineage Generation
+                GUILayout.Label($"   🧬 <color=#88ff88>Thế hệ Đời thứ: {cat.LineageGeneration}</color>", _labelStyle);
+
                 // Draw Permanent Talents
                 var talents = cat.PermanentTraits;
                 if (talents.Count > 0)
@@ -270,6 +273,19 @@ namespace Mewtations.Expedition
                         GUILayout.Label($"   ☣️ <color=#e066ff><b>Đột Biến: {mutName}</b></color>\n   <color=#aaaaaa><i>({mutDesc})</i></color>", _labelStyle);
                     }
                 }
+
+                // Character Memoirs Timeline
+                var memoirs = cat.CharacterMemoirs;
+                if (memoirs.Count > 0)
+                {
+                    GUILayout.Label("   📖 <b>Hồi Ký Thần Tích:</b>", _labelStyle);
+                    int countToShow = Mathf.Min(3, memoirs.Count);
+                    for (int i = memoirs.Count - countToShow; i < memoirs.Count; i++)
+                    {
+                        GUILayout.Label($"     • <color=#cccccc><i>{memoirs[i].ToLocalizedText()}</i></color>", _labelStyle);
+                    }
+                }
+                
                 GUILayout.Space(8);
             }
             GUILayout.EndVertical();
@@ -362,7 +378,29 @@ namespace Mewtations.Expedition
                 case NodeType.Boss:
                     prefix = "💀 BOSS TIẾN TRÌNH";
                     break;
+                case NodeType.Altar:
+                    prefix = "🔮 Tế Đàn";
+                    break;
             }
+
+            string themeLabel = "";
+            switch (node.Theme)
+            {
+                case RouteTheme.TaDao:
+                    themeLabel = " <color=#ff33cc>[Tà Đạo]</color>";
+                    break;
+                case RouteTheme.ThienLoi:
+                    themeLabel = " <color=#33ccff>[Thiên Lôi]</color>";
+                    break;
+                case RouteTheme.ThamLam:
+                    themeLabel = " <color=#ffaa00>[Tham Lam]</color>";
+                    break;
+                case RouteTheme.ThuTrieu:
+                    themeLabel = " <color=#ff3333>[Thú Triều]</color>";
+                    break;
+            }
+
+            prefix += themeLabel;
 
             if (node.State == NodeState.Visited) return $"{prefix}\n[Đã Qua]";
             if (node.State == NodeState.Available) return $"{prefix}\n<color=#fff>[Vào Khám Phá]</color>";
