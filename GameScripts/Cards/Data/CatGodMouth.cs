@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CatGodMouth : CardData
@@ -7,6 +8,9 @@ public class CatGodMouth : CardData
     [Header("Cat God Mouth Settings")]
     [ExtraData("offering_progress")]
     public int OfferingProgress = 0;
+
+    [ExtraData("consecutive_trash")]
+    public int ConsecutiveTrash = 0;
 
     public override bool DetermineCanHaveCardsWhenIsRoot
     {
@@ -16,8 +20,32 @@ public class CatGodMouth : CardData
         }
     }
 
+    public int GetAppeasementGreed()
+    {
+        if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
+        {
+            return Mewtations.Expedition.ExpeditionManager.Instance.RunState.BaseAppeasementGreed;
+        }
+        return 0;
+    }
+
+    public int GetAppeasementCorruption()
+    {
+        if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
+        {
+            return Mewtations.Expedition.ExpeditionManager.Instance.RunState.BaseAppeasementCorruption;
+        }
+        return 0;
+    }
+
     public override void UpdateCard()
     {
+        this.descriptionOverride = "Kéo thẻ bài vào Miệng Thần Mèo để hiến tế vật phẩm, xoa dịu thiên địa hoặc đổi lấy thiên cơ báu vật ngẫu nhiên.\n\n" +
+                                   $"<b>Linh lực tích lũy:</b> <color=#ffdd22>{OfferingProgress}</color>\n" +
+                                   $"<b>Mức độ Xoa Dịu hiện tại:</b>\n" +
+                                   $"• Xoa dịu Tham Lam: {GetAppeasementGreed()} điểm\n" +
+                                   $"• Xoa dịu Ô Nhiễm: {GetAppeasementCorruption()} điểm";
+
         base.UpdateCard();
 
         // If a card is stacked on top and timer is not running, start consuming the offering
@@ -49,6 +77,35 @@ public class CatGodMouth : CardData
         if (val <= 0) val = 1; // Minimum 1 progress
 
         OfferingProgress += val;
+
+        // Dynamic Greed shift for rare items
+        if (offeringData.Value >= 15 || offeringData.Id.Contains("pill") || offeringData.Id.Contains("relic"))
+        {
+            ConsecutiveTrash = 0;
+            if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
+            {
+                Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel = Mathf.Max(0, Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel - 15);
+                Debug.Log($"[CatGodMouth] Hiến tế bảo vật hiếm: Giảm -15 Greed khí vận toàn cục.");
+            }
+        }
+        else if (offeringData.Value <= 2)
+        {
+            ConsecutiveTrash++;
+            if (ConsecutiveTrash >= 3)
+            {
+                ConsecutiveTrash = 0;
+                if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
+                {
+                    Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel = Mathf.Min(100, Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel + 20);
+                    Debug.Log($"[CatGodMouth] Liên tục dâng rác thải! Tăng +20 Greed ma khí toàn cục.");
+                }
+                TriggerCosmicTemptation();
+            }
+        }
+        else
+        {
+            ConsecutiveTrash = 0;
+        }
 
         // Accumulate Base Sacrifice points if within Expedition
         if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
@@ -85,9 +142,54 @@ public class CatGodMouth : CardData
         // Check milestones
         if (OfferingProgress >= 700)
         {
-            rewardId = "cat_basic"; // Rare Heavenly Talent Cat
-            rewardName = "Một Thần Miêu Mới (Được gia trì Thiên Kiêu)";
             OfferingProgress = 0; // Reset progress
+
+            // 15% chance to award a unique Heavenly Talent
+            float roll = UnityEngine.Random.value;
+            if (roll <= 0.15f)
+            {
+                var cats = new List<CatCardData>();
+                foreach (var gc in WorldManager.instance.AllCards)
+                {
+                    if (gc != null && gc.CardData is CatCardData c) cats.Add(c);
+                }
+
+                if (cats.Count > 0)
+                {
+                    var cat = cats[UnityEngine.Random.Range(0, cats.Count)];
+                    string[] talents = new string[] {
+                        Mewtations.Expedition.HeavenlyTalent.HeavenlyPoisonBody,
+                        Mewtations.Expedition.HeavenlyTalent.DivineShieldProtection,
+                        Mewtations.Expedition.HeavenlyTalent.RageOvercharger,
+                        Mewtations.Expedition.HeavenlyTalent.MartialArtsCleave
+                    };
+                    string chosenTalent = talents[UnityEngine.Random.Range(0, talents.Length)];
+                    cat.AddTrait(chosenTalent);
+
+                    string title = "THIÊN PHÚ THỨC TỈNH!";
+                    string text = $"Sự thành tâm vô bờ bến đã cảm động Thần Mèo!\n\n" +
+                                  $"Thần Mèo phóng xuất linh quang, tẩy tủy và khai thông kinh mạch cho <b>{cat.Name}</b>!\n" +
+                                  $"🌟 <b>{cat.Name}</b> đã thức tỉnh Thiên Phú Thiên Kiêu: <b><color=#ffcc00>{chosenTalent}</color></b>!";
+
+                    if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+                    {
+                        Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "Đại cát đại lợi!" }, (choiceIdx) => { });
+                    }
+                    return;
+                }
+            }
+
+            // 1% chance for highly-sought relic item
+            if (roll <= 0.16f && roll > 0.15f)
+            {
+                rewardId = "item_heavenly_relic";
+                rewardName = "Chí Tôn Cổ Khí (1% Cực Hiếm)";
+            }
+            else
+            {
+                rewardId = "cat_basic"; // Rare Heavenly Talent Cat
+                rewardName = "Một Thần Miêu Mới (Được gia trì Thiên Kiêu)";
+            }
         }
         else if (OfferingProgress >= 350)
         {
@@ -128,7 +230,7 @@ public class CatGodMouth : CardData
             }
 
             // Deduct threshold (except 700 which resets)
-            if (rewardId != "cat_basic")
+            if (rewardId != "cat_basic" && rewardId != "item_heavenly_relic")
             {
                 if (rewardId == "item_breakthrough_pill") OfferingProgress -= 350;
                 else if (rewardId == "item_revive_pill") OfferingProgress -= 150;
@@ -146,6 +248,96 @@ public class CatGodMouth : CardData
             {
                 Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "Tạ ơn Thần Mèo!" }, (choiceIdx) => { });
             }
+        }
+    }
+
+    private void TriggerCosmicTemptation()
+    {
+        string title = "⚠️ CÁM DỖ TÂM MA / TÀ THẦN PHẪN NỘ";
+        string text = "Một khe nứt hư không đen tối mở ra từ Miệng Thần Mèo! Tà linh cổ xưa thì thầm đầy phẫn nộ vì những cống phẩm rác rưởi mà ngươi dâng hiến:\n\n" +
+                      "<i>\"Phàm nhân ngu muội! Ngươi dám sỉ nhục tôn nghiêm của thần linh bằng đống phế phẩm này sao? Hãy hiến tế sinh cơ hoặc gánh chịu nghiệp chướng trừng phạt!\"</i>";
+
+        // Check if player has 10 gold on board
+        var goldCards = new List<GameCard>();
+        foreach (var gc in WorldManager.instance.AllCards)
+        {
+            if (gc != null && gc.CardData.Id == "resource_gold")
+            {
+                goldCards.Add(gc);
+            }
+        }
+        bool hasEnoughGold = goldCards.Count >= 10;
+
+        var choices = new List<Mewtations.Dialogue.DialogueChoice>();
+
+        choices.Add(new Mewtations.Dialogue.DialogueChoice(
+            "Dâng hiến 10 Vàng để xoa dịu.",
+            () => {
+                // Destroy 10 gold coins
+                int destroyed = 0;
+                for (int i = goldCards.Count - 1; i >= 0 && destroyed < 10; i--)
+                {
+                    if (goldCards[i] != null)
+                    {
+                        goldCards[i].DestroyCard(true, true);
+                        destroyed++;
+                    }
+                }
+                
+                string subTitle = "THẦN DUNG THỨ";
+                string subText = "Thần Mèo nuốt chửng số vàng cúng tế và dần yên vị trở lại. Bầu không khí tà ác tan biến, nhưng ma khí vẫn để lại dư âm âm ỉ...";
+                if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+                {
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(subTitle, subText, new List<string> { "Hú vía!" }, (cIdx) => {});
+                }
+            },
+            () => hasEnoughGold,
+            "Cần 10 Vàng cúng tế"
+        ));
+
+        choices.Add(new Mewtations.Dialogue.DialogueChoice(
+            "Từ chối! Ta tự gánh nghiệp chướng.",
+            () => {
+                // Increases global Greed and inflicts unstable mutation
+                if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
+                {
+                    Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel = Mathf.Min(100, Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel + 25);
+                }
+
+                // Add random unstable mutation to a random cat
+                var cats = new List<CatCardData>();
+                foreach (var gc in WorldManager.instance.AllCards)
+                {
+                    if (gc != null && gc.CardData is CatCardData c) cats.Add(c);
+                }
+
+                string affectedCatName = "phàm nhân";
+                if (cats.Count > 0)
+                {
+                    var cat = cats[UnityEngine.Random.Range(0, cats.Count)];
+                    string[] mutations = new string[] {
+                        Mewtations.Expedition.UnstableMutation.UnstableClaws,
+                        Mewtations.Expedition.UnstableMutation.LethargicNap,
+                        Mewtations.Expedition.UnstableMutation.CursedFur
+                    };
+                    string chosenMut = mutations[UnityEngine.Random.Range(0, mutations.Length)];
+                    cat.AddMutation(chosenMut);
+                    affectedCatName = cat.Name;
+                }
+
+                string subTitle = "NGHIỆP CHƯỚNG QUẤN THÂN";
+                string subText = $"Tà thần gầm thét! Hư không bạo phát tà khí dày đặc làm tăng phế ma khí (+25 Greed toàn cục)!\n\n" +
+                                 $"<b>{affectedCatName}</b> đã gánh chịu hình phạt Dị Biến ma hóa linh căn!";
+                if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+                {
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(subTitle, subText, new List<string> { "Đương đầu ma kiếp!" }, (cIdx) => {});
+                }
+            }
+        ));
+
+        if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+        {
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices);
         }
     }
 

@@ -364,6 +364,64 @@ public class GameCard : Draggable, IGameCardOrCardData
 		base.OnDestroy();
 	}
 
+	private void OnGUI()
+	{
+		if (this.CardData is CatGodMouth mouth)
+		{
+			// Render a beautiful floating glassmorphic progress bar or text overlay when hovered or selected
+			if (this.BeingHovered || WorldManager.instance.HoveredCard == this)
+			{
+				if (Camera.main != null)
+				{
+					Vector3 screenPos = Camera.main.WorldToScreenPoint(this.transform.position + new Vector3(0, 0.2f, -0.6f));
+					if (screenPos.z > 0)
+					{
+						float x = screenPos.x - 75f;
+						float y = Screen.height - screenPos.y - 45f; // Unity GUI coordinates are flipped
+
+						// Draw a premium glassmorphic background box
+						GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
+						boxStyle.normal.background = Texture2D.whiteTexture;
+						boxStyle.normal.textColor = Color.white;
+						boxStyle.fontSize = 11;
+						boxStyle.fontStyle = FontStyle.Bold;
+						boxStyle.alignment = TextAnchor.MiddleCenter;
+
+						Color oldColor = GUI.color;
+						GUI.color = new Color(0.10f, 0.10f, 0.14f, 0.90f);
+						GUI.Box(new Rect(x, y, 150f, 40f), "", boxStyle);
+
+						GUI.color = new Color(1.0f, 0.85f, 0.1f, 1f); // Gold top border line
+						GUI.Box(new Rect(x, y, 150f, 2f), ""); 
+
+						// Progress percentage calculation
+						float maxProg = 350f;
+						if (mouth.OfferingProgress >= 350) maxProg = 700f;
+						float pct = Mathf.Clamp01((float)mouth.OfferingProgress / maxProg);
+						
+						// Bar BG
+						GUI.color = new Color(0.2f, 0.2f, 0.2f, 1f);
+						GUI.Box(new Rect(x + 10f, y + 25f, 130f, 8f), ""); 
+
+						// Bar Fill
+						GUI.color = new Color(1.0f, 0.75f, 0.1f, 1f);
+						GUI.Box(new Rect(x + 10f, y + 25f, 130f * pct, 8f), ""); 
+
+						// Text
+						GUIStyle textStyle = new GUIStyle();
+						textStyle.normal.textColor = new Color(1.0f, 0.9f, 0.7f, 1f);
+						textStyle.fontSize = 10;
+						textStyle.fontStyle = FontStyle.Bold;
+						textStyle.alignment = TextAnchor.MiddleCenter;
+						GUI.Label(new Rect(x, y + 4f, 150f, 20f), $"Linh Lực: {mouth.OfferingProgress} / {maxProg}", textStyle);
+
+						GUI.color = oldColor;
+					}
+				}
+			}
+		}
+	}
+
 	private void OnDrawGizmos()
 	{
 		Gizmos.color = Color.red;
@@ -608,6 +666,12 @@ public class GameCard : Draggable, IGameCardOrCardData
 			{
 				return false;
 			}
+		}
+		// Phase 6 Breakthrough 1: Pill lock on stack (cannot be dragged out of stack once equipped on cat)
+		if (this.Parent != null && this.Parent.CardData is CatCardData && 
+			(this.CardData.Id == "item_pill" || (this.CardData.Id.Contains("pill") && this.CardData.Id != "item_breakthrough_pill")))
+		{
+			return false;
 		}
 		return !this.BeingDragged && this.CardData.CanBeDragged && this.FaceUp;
 	}

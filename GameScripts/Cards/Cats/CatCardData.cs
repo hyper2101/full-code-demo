@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum CatRole { DPS, Tank, ShieldSupport, RageSupport, Debuff, Disruption, Attrition }
@@ -248,7 +249,7 @@ public class CatCardData : Combatable
     protected override bool CanHaveCard(CardData otherCard)
     {
         // 1. Validate food slot (BT level 2)
-        if (otherCard.MyCardType == CardType.Food) 
+        if (otherCard.MyCardType == CardType.Food || (otherCard is Equipable eqFood && eqFood.EquipableType == EquipableType.Food)) 
         {
             return HasFoodSlot;
         }
@@ -264,7 +265,18 @@ public class CatCardData : Combatable
             return HasPillSlot;
         }
 
-        // 3. Equipment slots (Weapon & Talismans) are allowed by default
+        // 3. Validate Passive Slots (BT level 3 & 4: Max 1 for level 3, Max 2 for level 4)
+        if (otherCard.Id.StartsWith("item_passive_") || otherCard.Id.Contains("passive") || (otherCard is Equipable eqTal && eqTal.EquipableType == EquipableType.Talisman))
+        {
+            int maxPassives = 0;
+            if (BreakthroughLevel >= 4) maxPassives = 2;
+            else if (BreakthroughLevel == 3) maxPassives = 1;
+
+            int currentPassives = ChildrenMatchingPredicateCount(c => c.Id.StartsWith("item_passive_") || c.Id.Contains("passive") || (c is Equipable eq && eq.EquipableType == EquipableType.Talisman));
+            return currentPassives < maxPassives;
+        }
+
+        // 4. Equipment slots (Weapon & Talismans) are allowed by default
         if (otherCard.MyCardType == CardType.Equipment)
         {
             return true;

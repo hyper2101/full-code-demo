@@ -4,6 +4,22 @@ using UnityEngine;
 
 namespace Mewtations.Dialogue
 {
+    public class DialogueChoice
+    {
+        public string Text;
+        public string RequirementText;
+        public Func<bool> IsAvailable;
+        public Action OnSelected;
+
+        public DialogueChoice(string text, Action onSelected, Func<bool> isAvailable = null, string requirementText = "")
+        {
+            Text = text;
+            OnSelected = onSelected;
+            IsAvailable = isAvailable;
+            RequirementText = requirementText;
+        }
+    }
+
     public class DialogueSystem : MonoBehaviour
     {
         public static DialogueSystem Instance { get; private set; }
@@ -13,6 +29,8 @@ namespace Mewtations.Dialogue
         private string _text = "";
         private List<string> _choices = new List<string>();
         private Action<int> _onChoiceSelected;
+
+        private List<DialogueChoice> _branchingChoices = null;
 
         // Visual Styling
         private GUIStyle _panelStyle;
@@ -31,6 +49,19 @@ namespace Mewtations.Dialogue
             _text = text;
             _choices = choices;
             _onChoiceSelected = onChoiceSelected;
+            _branchingChoices = null;
+            _isVisible = true;
+
+            // Make sure the base game time scale remains frozen
+            Time.timeScale = 0f;
+        }
+
+        public void StartDialogue(string title, string text, List<DialogueChoice> branchingChoices)
+        {
+            _title = title;
+            _text = text;
+            _branchingChoices = branchingChoices;
+            _choices = new List<string>();
             _isVisible = true;
 
             // Make sure the base game time scale remains frozen
@@ -92,7 +123,7 @@ namespace Mewtations.Dialogue
             float screenWidth = Screen.width;
             float screenHeight = Screen.height;
 
-            // Center dialog window: 600px width, 400px height
+            // Center dialog window: 600px width, 450px height
             float winWidth = Mathf.Min(600, screenWidth * 0.8f);
             float winHeight = Mathf.Min(450, screenHeight * 0.7f);
             float posX = (screenWidth - winWidth) / 2;
@@ -116,30 +147,81 @@ namespace Mewtations.Dialogue
             // 3. Choices
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            for (int i = 0; i < _choices.Count; i++)
+
+            if (_branchingChoices != null && _branchingChoices.Count > 0)
             {
-                if (GUILayout.Button(_choices[i], _buttonStyle, GUILayout.Width((winWidth - 80) / _choices.Count), GUILayout.Height(45)))
+                for (int i = 0; i < _branchingChoices.Count; i++)
                 {
-                    _isVisible = false;
-                    
-                    bool shouldKeepFrozen = (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.IsExpeditionActive) ||
-                                           (Mewtations.Combat.TurnBasedCombatManager.Instance != null && Mewtations.Combat.TurnBasedCombatManager.Instance.IsCombatActive);
-                    if (shouldKeepFrozen)
+                    var choice = _branchingChoices[i];
+                    bool available = choice.IsAvailable == null || choice.IsAvailable();
+                    string buttonText = choice.Text;
+                    if (!available && !string.IsNullOrEmpty(choice.RequirementText))
                     {
-                        Time.timeScale = 0f;
+                        buttonText += $"\n<size=11>({choice.RequirementText})</size>";
                     }
-                    else
+
+                    Color oldColor = GUI.color;
+                    if (!available)
                     {
-                        Time.timeScale = 1f;
+                        GUI.color = new Color(0.5f, 0.5f, 0.5f, 0.6f); // Locked/disabled look
                     }
-                    
-                    _onChoiceSelected?.Invoke(i);
-                }
-                if (i < _choices.Count - 1)
-                {
-                    GUILayout.Space(15);
+
+                    if (GUILayout.Button(buttonText, _buttonStyle, GUILayout.Width((winWidth - 80) / _branchingChoices.Count), GUILayout.Height(45)))
+                    {
+                        if (available)
+                        {
+                            _isVisible = false;
+                            
+                            bool shouldKeepFrozen = (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.IsExpeditionActive) ||
+                                                   (Mewtations.Combat.TurnBasedCombatManager.Instance != null && Mewtations.Combat.TurnBasedCombatManager.Instance.IsCombatActive);
+                            if (shouldKeepFrozen)
+                            {
+                                Time.timeScale = 0f;
+                            }
+                            else
+                            {
+                                Time.timeScale = 1f;
+                            }
+                            
+                            choice.OnSelected?.Invoke();
+                        }
+                    }
+                    GUI.color = oldColor;
+
+                    if (i < _branchingChoices.Count - 1)
+                    {
+                        GUILayout.Space(15);
+                    }
                 }
             }
+            else
+            {
+                for (int i = 0; i < _choices.Count; i++)
+                {
+                    if (GUILayout.Button(_choices[i], _buttonStyle, GUILayout.Width((winWidth - 80) / _choices.Count), GUILayout.Height(45)))
+                    {
+                        _isVisible = false;
+                        
+                        bool shouldKeepFrozen = (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.IsExpeditionActive) ||
+                                               (Mewtations.Combat.TurnBasedCombatManager.Instance != null && Mewtations.Combat.TurnBasedCombatManager.Instance.IsCombatActive);
+                        if (shouldKeepFrozen)
+                        {
+                            Time.timeScale = 0f;
+                        }
+                        else
+                        {
+                            Time.timeScale = 1f;
+                        }
+                        
+                        _onChoiceSelected?.Invoke(i);
+                    }
+                    if (i < _choices.Count - 1)
+                    {
+                        GUILayout.Space(15);
+                    }
+                }
+            }
+
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
