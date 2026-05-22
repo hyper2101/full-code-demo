@@ -38,24 +38,50 @@ public class CatGodMouth : CardData
         return 0;
     }
 
+    private int _lastOfferingProgress = -1;
+    private int _lastAppeasementGreed = -1;
+    private int _lastAppeasementCorruption = -1;
+
     public override void UpdateCard()
     {
-        this.descriptionOverride = "Kéo thẻ bài vào Miệng Thần Mèo để hiến tế vật phẩm, xoa dịu thiên địa hoặc đổi lấy thiên cơ báu vật ngẫu nhiên.\n\n" +
-                                   $"<b>Linh lực tích lũy:</b> <color=#ffdd22>{OfferingProgress}</color>\n" +
-                                   $"<b>Mức độ Xoa Dịu hiện tại:</b>\n" +
-                                   $"• Xoa dịu Tham Lam: {GetAppeasementGreed()} điểm\n" +
-                                   $"• Xoa dịu Ô Nhiễm: {GetAppeasementCorruption()} điểm";
+        int currentGreed = GetAppeasementGreed();
+        int currentCorruption = GetAppeasementCorruption();
+
+        if (OfferingProgress != _lastOfferingProgress ||
+            currentGreed != _lastAppeasementGreed ||
+            currentCorruption != _lastAppeasementCorruption)
+        {
+            _lastOfferingProgress = OfferingProgress;
+            _lastAppeasementGreed = currentGreed;
+            _lastAppeasementCorruption = currentCorruption;
+
+            this.descriptionOverride = "Kéo thẻ bài vào Miệng Thần Mèo để hiến tế vật phẩm, xoa dịu thiên địa hoặc đổi lấy thiên cơ báu vật ngẫu nhiên.\n\n" +
+                                       $"<b>Linh lực tích lũy:</b> <color=#ffdd22>{OfferingProgress}</color>\n" +
+                                       $"<b>Mức độ Xoa Dịu hiện tại:</b>\n" +
+                                       $"• Xoa dịu Tham Lam: {currentGreed} điểm\n" +
+                                       $"• Xoa dịu Ô Nhiễm: {currentCorruption} điểm";
+        }
 
         base.UpdateCard();
 
         // If a card is stacked on top and timer is not running, start consuming the offering
-        if (this.MyGameCard != null && !this.MyGameCard.TimerRunning && this.MyGameCard.HasChild)
+        if (this.MyGameCard != null)
         {
-            CardData childData = this.MyGameCard.Child.CardData;
-            // Do not consume other players/cats! Only consume item, food, resource cards
-            if (childData.MyCardType != CardType.Humans && !(childData is CatCardData))
+            if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "offering")
             {
-                this.MyGameCard.StartTimer(2.0f, new TimerAction(this.ConsumeOffering), "Tiếp nhận Lễ Vật...", "offering");
+                if (!this.MyGameCard.HasChild || this.MyGameCard.Child.CardData.MyCardType == CardType.Humans || this.MyGameCard.Child.CardData is CatCardData)
+                {
+                    this.MyGameCard.CancelTimer("offering");
+                }
+            }
+            else if (!this.MyGameCard.TimerRunning && this.MyGameCard.HasChild)
+            {
+                CardData childData = this.MyGameCard.Child.CardData;
+                // Do not consume other players/cats! Only consume item, food, resource cards
+                if (childData.MyCardType != CardType.Humans && !(childData is CatCardData))
+                {
+                    this.MyGameCard.StartTimer(2.0f, new TimerAction(this.ConsumeOffering), "Tiếp nhận Lễ Vật...", "offering");
+                }
             }
         }
     }
@@ -142,7 +168,7 @@ public class CatGodMouth : CardData
         // Check milestones
         if (OfferingProgress >= 700)
         {
-            OfferingProgress = 0; // Reset progress
+            OfferingProgress -= 700; // Deduct the threshold cleanly instead of setting to 0!
 
             // 15% chance to award a unique Heavenly Talent
             float roll = UnityEngine.Random.value;
@@ -277,7 +303,7 @@ public class CatGodMouth : CardData
                 int destroyed = 0;
                 for (int i = goldCards.Count - 1; i >= 0 && destroyed < 10; i--)
                 {
-                    if (goldCards[i] != null)
+                    if (goldCards[i] != null && !goldCards[i].Destroyed)
                     {
                         goldCards[i].DestroyCard(true, true);
                         destroyed++;

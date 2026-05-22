@@ -339,6 +339,26 @@ public class Combatable : CardData
 							}
 						}
 					}
+					else
+					{
+						// Separate player cats and enemies so they don't immediately re-trigger combat
+						foreach (var cat in playerCats)
+						{
+							if (cat != null && cat.MyGameCard != null)
+							{
+								cat.MyGameCard.RemoveFromStack();
+								cat.MyGameCard.TargetPosition = cat.MyGameCard.transform.position + new Vector3(UnityEngine.Random.Range(-2.5f, -1.5f), 0f, UnityEngine.Random.Range(-2.5f, -1.5f));
+							}
+						}
+						foreach (var enemy in enemies)
+						{
+							if (enemy != null && enemy.MyGameCard != null)
+							{
+								enemy.MyGameCard.RemoveFromStack();
+								enemy.MyGameCard.TargetPosition = enemy.MyGameCard.transform.position + new Vector3(UnityEngine.Random.Range(1.5f, 2.5f), 0f, UnityEngine.Random.Range(1.5f, 2.5f));
+							}
+						}
+					}
 				});
 				return;
 			}

@@ -32,7 +32,7 @@ public class SaveSystem
         _world.CurrentBoard = _world.GetBoardWithId(saveRound.CurrentBoardId);
         _world.CurrentRunOptions = saveRound.RunOptions;
         _world.CurrentRunVariables = saveRound.RunVariables;
-        _world.RoundExtraKeyValues = saveRound.ExtraKeyValues;
+        _world.RoundExtraKeyValues = saveRound.ExtraKeyValues ?? new List<SerializedKeyValuePair>();
         if (CitiesManager.instance == null)
         {
             new Exception("CitiesManager should be active before loading the saveRound");
@@ -222,6 +222,10 @@ public class SaveSystem
         {
             PerformSaveRoundMigration(saveRound.SaveVersion, 3);
         }
+        if (Mewtations.Expedition.ExpeditionManager.Instance != null)
+        {
+            Mewtations.Expedition.ExpeditionManager.Instance.LoadFromExtraKeyValues(_world.RoundExtraKeyValues);
+        }
         IsLoadingSaveRound = false;
     }
 
@@ -291,7 +295,15 @@ public class SaveSystem
         saveRound.RunOptions = _world.CurrentRunOptions;
         saveRound.BoughtBoosterIds = _world.BoughtBoosterIds;
         saveRound.CurrentBoardId = _world.CurrentBoard.Id;
+        if (_world.RoundExtraKeyValues == null)
+        {
+            _world.RoundExtraKeyValues = new List<SerializedKeyValuePair>();
+        }
         saveRound.ExtraKeyValues = _world.RoundExtraKeyValues;
+        if (Mewtations.Expedition.ExpeditionManager.Instance != null)
+        {
+            Mewtations.Expedition.ExpeditionManager.Instance.SaveToExtraKeyValues(_world.RoundExtraKeyValues);
+        }
         foreach (GameCard gameCard in _world.AllCards)
         {
             saveRound.SavedCards.Add(gameCard.ToSavedCard());

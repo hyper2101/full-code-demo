@@ -19,6 +19,7 @@ namespace Mewtations.Expedition
         public CardData BackpackCardSource = null;
         public Backpack CurrentBackpack = null;
         public GameCard PortalCardSource = null;
+        public int CurrentMapSeed = 0;
 
         private void Awake()
         {
@@ -49,6 +50,7 @@ namespace Mewtations.Expedition
 
             // Generate procedural node map
             int seed = UnityEngine.Random.Range(0, 100000);
+            CurrentMapSeed = seed;
             MapNodes = ExpeditionMapGenerator.GenerateMap(seed, maxLayers: 6, maxNodesPerLayer: 3);
             ActiveNode = null;
 
@@ -257,42 +259,227 @@ namespace Mewtations.Expedition
 
             if (type == NodeType.Event)
             {
-                title = "Kỳ Duyên Kỳ Ngộ";
-                text = "Trước mặt bạn xuất hiện một thạch thất nhỏ tỏa ra linh khí mờ ảo. Có vẻ như có di tích của tiền bối để lại.\nBạn muốn làm gì?";
-                choices = new List<string> { "Phá cửa tiến vào (Kiểm tra Speed)", "Thành tâm bái lạy", "Bỏ qua tránh bẫy" };
-                onChoice = (idx) =>
+                int eventRoll = UnityEngine.Random.Range(0, 4);
+                if (eventRoll == 0)
                 {
-                    if (idx == 0)
+                    // Lôi kiếp thử thách
+                    title = "⚡ KIẾP LÔI THỬ THÁCH";
+                    text = "Đội ngũ mèo đi tới một đỉnh núi hoang vắng, mây đen cuộn trào nghẹt thở. Từng tia lôi điện khổng lồ giáng xuống như Lôi Kiếp độ kiếp!\n\nLôi linh lực cuồng bạo này ẩn chứa cơ duyên lớn nhưng cực kỳ nguy hiểm. Bạn muốn làm gì?";
+                    choices = new List<string> {
+                        "Hấp thụ Lôi Kiếp (Yêu cầu mèo hệ Sét hoặc Tốc độ cao)",
+                        "Đỡ đòn hộ đồng đội (Yêu cầu Tank bảo vệ)",
+                        "Trận pháp phòng thủ (Lách qua an toàn)"
+                    };
+                    onChoice = (idx) =>
                     {
-                        // Speed check
-                        int avgSpeed = (int)ActiveCats.Average(c => c.Speed);
-                        if (avgSpeed > 100)
+                        if (idx == 0)
                         {
-                            CurrentBackpack.AddItem("item_healing_potion");
-                            CurrentBackpack.AddItem("resource_gold");
-                            DialogueResult("Phá cửa thành công!", "Nhờ phản ứng nhanh nhẹn, đội của bạn đã phá cửa thạch thất thành công và tìm thấy Thần dược cùng một ít Vàng!");
+                            bool hasLightning = ActiveCats.Any(c => c.Element == CatElement.Lightning);
+                            int avgSpeed = (int)ActiveCats.Average(c => c.Speed);
+                            if (hasLightning || avgSpeed > 120)
+                            {
+                                var luckyCat = hasLightning ? ActiveCats.First(c => c.Element == CatElement.Lightning) : ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
+                                luckyCat.Speed += 25;
+                                luckyCat.AddMemoir(MemoirType.Breakthrough, "Lôi Kiếp Tẩy Tủy", "Hấp thụ lôi điện đột phá võ đạo (+25 Speed)");
+                                DialogueResult("Lôi quang rực rỡ!", $"Tuyệt đỉnh! Nhờ sự nhạy bén cực độ (hoặc linh căn hệ Sét), chú mèo <b>{luckyCat.Name}</b> đã hấp thụ trọn vẹn Lôi Điện Phạt, vĩnh viễn gia tăng <b>+25 Thần Tốc</b>!");
+                            }
+                            else
+                            {
+                                var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
+                                victim.IsUltimateLocked = true;
+                                victim.AddMemoir(MemoirType.Mutation, "Tẩu Hỏa Nhập Ma", "Trúng lôi điện bạo phát bế tắc linh mạch, khóa kỹ năng Nộ");
+                                foreach (var cat in ActiveCats)
+                                {
+                                    cat.HealthPoints = Mathf.Max(1, cat.HealthPoints - 10);
+                                }
+                                DialogueResult("Lôi Phạt Oanh Tạc!", $"Tốc độ quá chậm! Lôi điện cuồng bạo thâm nhập tàn phá kinh mạch. Chú mèo <b>{victim.Name}</b> bị <b><color=red>TẨU HỎA NHẬP MA (KHÓA KỸ NĂNG NỘ)</color></b> vĩnh viễn, toàn đội thương nặng (-10 HP)!");
+                            }
+                        }
+                        else if (idx == 1)
+                        {
+                            var tank = ActiveCats.Find(c => c.Role == CatRole.Tank);
+                            if (tank != null)
+                            {
+                                tank.BaseCombatStats.MaxHealth += 10;
+                                tank.HealthPoints = tank.ProcessedCombatStats.MaxHealth;
+                                tank.IsPassiveSlotsLocked = true;
+                                tank.AddMemoir(MemoirType.Breakthrough, "Hộ Thể Lôi Kiếp", "Đỡ lôi kiếp cho đồng đội, khóa ô Thiên Phú");
+                                DialogueResult("Hộ Thể Tuyệt Vời!", $"Anh hùng! Chú Tank <b>{tank.Name}</b> đứng ra đỡ lôi phạt cho toàn đội. Thần thể được cường hóa (+10 Max HP) nhưng bùa chú bị phá hủy hoàn toàn, <b><color=red>ô Thiên Phú (Passive Slots) vĩnh viễn bị KHÓA</color></b>!");
+                            }
+                            else
+                            {
+                                foreach (var cat in ActiveCats)
+                                {
+                                    cat.HealthPoints = Mathf.Max(1, cat.HealthPoints - 15);
+                                }
+                                DialogueResult("Hộ Vệ Thất Bại!", "Đội hình không có hộ vệ Tank chuyên nghiệp! Buộc phải dùng thân xác trần tục chống đỡ, toàn đội bị thương tổn cực nặng (-15 HP)!");
+                            }
                         }
                         else
                         {
-                            // Debuff all cats a bit
+                            DialogueResult("Lách Qua An Toàn", "Toàn đội thiết lập kết giới phòng thủ thô sơ, cẩn thận đi vòng qua ngọn núi lôi kiếp an toàn.");
+                        }
+                    };
+                }
+                else if (eventRoll == 1)
+                {
+                    // Trạm tuần tra
+                    title = "🐕 TRẠM TUẦN TRA CỦA CHÚNG CHÓ";
+                    text = "Phía trước xuất hiện chốt gác kiên cố của loài Chó kiểm soát trật tự xã hội. Lính tuần tra chó bọc giáp sắt đang canh phòng nghiêm ngặt.\n\nĐội mèo của bạn mang theo balo đầy ắp tài nguyên khả nghi. Bạn muốn ứng phó thế nào?";
+                    choices = new List<string> {
+                        "Đút lót hối lộ (Tiêu hao 1 Vàng trong Balo - Giảm 20 Greed)",
+                        "Quyết chiến đột phá (Thắng lợi đẫm máu - Tăng 25 Corruption)",
+                        "Lén lút lẻn qua (Yêu cầu Tốc độ trung bình > 115)"
+                    };
+                    onChoice = (idx) =>
+                    {
+                        if (idx == 0)
+                        {
+                            int goldIdx = CurrentBackpack.ContainedCardIds.IndexOf("resource_gold");
+                            if (goldIdx >= 0)
+                            {
+                                CurrentBackpack.RemoveItemAt(goldIdx);
+                                RunState.GreedLevel = Mathf.Max(0, RunState.GreedLevel - 20);
+                                DialogueResult("Hối Lộ Thành Công!", "Lính tuần tra Chó nhận lấy Vàng, cười nham nhở mở cổng cho đi qua. Sức ép luật pháp xoa dịu (-20 Greed)!");
+                            }
+                            else
+                            {
+                                var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
+                                victim.IsEquipmentSlotsLocked = true;
+                                victim.AddMemoir(MemoirType.Mutation, "Tịch Thu Trang Bị", "Không có tiền đút lót, bị lính tuần tra khóa ô trang bị");
+                                DialogueResult("Không Có Tiền Đút Lót!", $"Balo không có Vàng để hối lộ! Lính tuần tra nổi giận khám xét toàn đội. Chú mèo <b>{victim.Name}</b> bị tịch thu sạch vũ khí bùa chú và vĩnh viễn <b><color=red>KHÓA ô Trang Bị (Equipment Slots)</color></b>!");
+                            }
+                        }
+                        else if (idx == 1)
+                        {
                             foreach (var cat in ActiveCats)
                             {
-                                cat.HealthPoints = Mathf.Max(1, cat.HealthPoints - 2);
+                                cat.HealthPoints = Mathf.Max(1, cat.HealthPoints - 8);
                             }
-                            DialogueResult("Bẫy kích hoạt!", "Tốc độ quá chậm! Cửa thạch thất sập xuống kích hoạt trận pháp lôi điện, khiến toàn đội bị thương nhẹ.");
+                            CurrentBackpack.AddItem("resource_gold");
+                            CurrentBackpack.AddItem("item_iron_ore");
+                            RunState.AddCorruption(25);
+                            DialogueResult("Huyết Chiến Đột Phá!", "Toàn đội tuốt kiếm liều chết xông vào! Tiêu diệt toàn bộ lính canh, cướp lấy Vàng và Quặng sắt trong rương chốt tuần tra, toàn đội bị thương nhẹ (-8 HP) và tăng mạnh sát nghiệp (+25 Corruption)!");
                         }
-                    }
-                    else if (idx == 1)
+                        else
+                        {
+                            int avgSpeed = (int)ActiveCats.Average(c => c.Speed);
+                            if (avgSpeed > 115)
+                            {
+                                DialogueResult("Lẻn Qua Thành Công!", "Bóng ma bóng tối! Bằng bước di chuyển thần tốc, không tiếng động, toàn đội mèo đã lướt qua trạm canh gác trót lọt mà lính chó không hề hay biết!");
+                            }
+                            else
+                            {
+                                var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
+                                victim.IsEquipmentSlotsLocked = true;
+                                victim.AddMemoir(MemoirType.Mutation, "Bắt Giữ Phong Ấn", "Lén lẻn thất bại, bị khóa ô trang bị hình phạt");
+                                DialogueResult("Bị Bắt Quả Tang!", $"Tốc độ trung bình ({avgSpeed} Speed) quá chậm! Lính chó phát hiện bắt giữ toàn đội tra khảo. Chú mèo <b>{victim.Name}</b> bị tịch thu khí giới, <b><color=red>ô Trang bị vĩnh viễn bị KHÓA</color></b> làm hình phạt!");
+                            }
+                        }
+                    };
+                }
+                else if (eventRoll == 2)
+                {
+                    // Lò đan cổ
+                    title = "⚗️ LÒ LUYỆN ĐAN CỔ KÍNH";
+                    text = "Đan điện phế tích u ám hiện ra trước mắt. Ở trung tâm sảnh lớn là một lò luyện cổ vẫn cháy âm ỉ lửa tím nhạt rò rỉ khí độc. Bên trong có thể ẩn chứa nghịch thiên linh đan hoặc kịch độc phế linh mạch.\n\nAi sẽ đứng ra xử lý chiếc lò đan này?";
+                    choices = new List<string> {
+                        "Dùng linh độc hóa giải (Cần mèo hệ Độc)",
+                        "Lực lượng cưỡng chế mở lò (Rủi ro 50/50)",
+                        "Đập phá lò thu phế liệu (An toàn)"
+                    };
+                    onChoice = (idx) =>
                     {
-                        // Worship
-                        CurrentBackpack.AddItem("resource_gold");
-                        DialogueResult("Tấm lòng thành kính", "Thành tâm bái lạy giúp linh hồn tiền bối an nghỉ. Một túi Vàng nhẹ nhàng rơi xuống trước mặt toàn đội.");
-                    }
-                    else
+                        if (idx == 0)
+                        {
+                            var poisonCat = ActiveCats.Find(c => c.Element == CatElement.Poison);
+                            if (poisonCat != null)
+                            {
+                                CurrentBackpack.AddItem("item_breakthrough_pill");
+                                DialogueResult("Khống Chế Kịch Độc!", $"Tuyệt đỉnh! Nhờ linh căn kịch độc bẩm sinh của <b>{poisonCat.Name}</b>, chú đã trung hòa đan khí tím, mở lò lấy được viên <b>ĐỘT PHÁ LINH ĐAN</b> cực kỳ quý giá!");
+                            }
+                            else
+                            {
+                                var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
+                                victim.IsPillSlotLocked = true;
+                                victim.AddMemoir(MemoirType.Mutation, "Linh Mạch Độc Ứ", "Khí độc tàn phá kinh mạch đan dược, khóa ô Linh Đan");
+                                DialogueResult("Không Có Mèo Hệ Độc!", $"Độc khí tím bùng phát cuồn cuộn do không có mèo hệ Độc khống chế! Chú mèo <b>{victim.Name}</b> hít phải độc sương tàn phá phế linh mạch, <b><color=red>ô Linh Đan (Pill Slot) vĩnh viễn bị KHÓA</color></b>!");
+                            }
+                        }
+                        else if (idx == 1)
+                        {
+                            if (UnityEngine.Random.value < 0.5f)
+                            {
+                                CurrentBackpack.AddItem("item_breakthrough_pill");
+                                DialogueResult("Vận May Nghịch Thiên!", "Vận may mỉm cười! Dù khí độc bốc lên ngùn ngụt nhưng toàn đội đã nhanh tay cướp lấy viên <b>ĐỘT PHÁ LINH ĐAN</b> thành công trước khi độc chấn nổ ra!");
+                            }
+                            else
+                            {
+                                var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
+                                victim.IsPillSlotLocked = true;
+                                victim.AddMemoir(MemoirType.Mutation, "Lò Đan Nổ Tung", "Trúng khí độc lò đan nổ, khóa ô Linh Đan");
+                                DialogueResult("Lò Đan Nổ Tung!", $"Bùm! Lò luyện đan phát nổ lớn bắn ra tàn dư đan dược kịch độc. Chú mèo <b>{victim.Name}</b> trúng độc ngưng kết kinh mạch đan điền, <b><color=red>ô Linh Đan vĩnh viễn bị KHÓA</color></b>!");
+                            }
+                        }
+                        else
+                        {
+                            CurrentBackpack.AddItem("item_stone");
+                            CurrentBackpack.AddItem("item_iron_ore");
+                            DialogueResult("Thu Hoạch Phế Liệu", "Quyết định sáng suốt! Toàn đội đập vỡ lò đan an toàn, thu về Đá vụn và Sắt phế liệu bỏ vào Balo viễn chinh.");
+                        }
+                    };
+                }
+                else
+                {
+                    // Ma huyệt hiến tế
+                    title = "🔴 MA HUYỆT KHẤN NGUYỆN";
+                    text = "Một ma huyệt phát ra hồng quang rực máu ngăn giữa đường đi. Linh khí bên trong cuộn trào quyến rũ, như khơi dậy ý niệm Tham Lam tột cùng của loài mèo.\n\nThần linh đòi hỏi cúng nạp linh thực ăn uống hoặc cốt tủy kinh mạch để ban phát thiên phú đột phá vĩnh viễn.";
+                    choices = new List<string> {
+                        "Dâng hiến Linh Thực (Tiêu hao 1 Thức ăn trong Balo - Nhận Thiên Phú vĩnh viễn)",
+                        "Huyết Thệ Cốt Tủy (Đột phá Cảnh giới - Chấp nhận khóa ô Thức ăn)",
+                        "Từ bỏ tham niệm (Thanh tẩy linh hồn)"
+                    };
+                    onChoice = (idx) =>
                     {
-                        DialogueResult("Rút lui an toàn", "Toàn đội cẩn thận rút lui, không gặp phải bất kỳ tổn thất nào.");
-                    }
-                };
+                        if (idx == 0)
+                        {
+                            int foodIdx = CurrentBackpack.ContainedCardIds.FindIndex(id => id == "resource_food" || id.Contains("food"));
+                            if (foodIdx >= 0)
+                            {
+                                CurrentBackpack.RemoveItemAt(foodIdx);
+                                var lucky = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
+                                string talent = UnityEngine.Random.value < 0.5f ? HeavenlyTalent.RageOvercharger : HeavenlyTalent.DivineShieldProtection;
+                                lucky.AddTrait(talent);
+                                lucky.CustomName = $"{HeavenlyTalent.GetDisplayName(talent)} {lucky.Name}";
+                                lucky.AddMemoir(MemoirType.Breakthrough, HeavenlyTalent.GetDisplayName(talent), "Dâng hiến thức ăn ma huyệt nhận thiên phú");
+                                DialogueResult("Tế Phẩm Chấp Thuận!", $"Thần linh hoan hỷ! Nhận lấy Linh thực hiến tế, ma lực bùng phát tẩy tủy vĩnh viễn cho <b>{lucky.Name}</b>, thức tỉnh thiên phú vĩnh cửu: <b><color=#00ffcc>{HeavenlyTalent.GetDisplayName(talent)}</color></b>!");
+                            }
+                            else
+                            {
+                                var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
+                                victim.IsFoodSlotLocked = true;
+                                victim.AddMemoir(MemoirType.Mutation, "Nguyền Rủa Đói Khát", "Lừa dối ma huyệt bị phạt đói, khóa ô Thức ăn");
+                                DialogueResult("Thần Linh Phẫn Nộ!", $"Balo không có Thức ăn hiến tế! Thần linh nổi giận giáng nguyền rủa Đói Khát đói nghèo lên toàn đội. Chú mèo <b>{victim.Name}</b> bị <b><color=red>KHÓA ô Thức ăn (Food/Ultimate Slot)</color></b> vĩnh viễn!");
+                            }
+                        }
+                        else if (idx == 1)
+                        {
+                            var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
+                            victim.BreakthroughLevel++;
+                            victim.BaseCombatStats.MaxHealth += 10;
+                            victim.HealthPoints = victim.ProcessedCombatStats.MaxHealth;
+                            victim.Speed += 15;
+                            victim.IsFoodSlotLocked = true;
+                            victim.AddMemoir(MemoirType.Breakthrough, "Huyết Thệ Nghịch Thiên", "Đột phá cưỡng chế, vĩnh viễn khóa ô Thức ăn");
+                            DialogueResult("Huyết Thệ Thành Công!", $"Tế lễ đẫm máu nghịch thiên! Chú mèo <b>{victim.Name}</b> hiến tế kinh mạch tiêu hóa của bản thân. Đột phá cảnh giới vượt bậc vĩnh viễn (+10 Max HP, +15 Speed) nhưng <b><color=red>ô Thức ăn (Food/Ultimate Slot) vĩnh viễn bị KHÓA</color></b>!");
+                        }
+                        else
+                        {
+                            RunState.CorruptionLevel = Mathf.Max(0, RunState.CorruptionLevel - 25);
+                            DialogueResult("Tâm Hồn Thanh Tịnh", "Toàn đội từ bỏ ý chí tham lam, ma chướng linh mạch được tẩy rửa gột sạch (-25 Corruption)!");
+                        }
+                    };
+                }
             }
             else if (type == NodeType.Lore)
             {
@@ -476,6 +663,147 @@ namespace Mewtations.Expedition
             }
 
             Debug.Log("[Expedition] Kết thúc viễn chinh. Trở về base.");
+        }
+
+        public void SaveToExtraKeyValues(List<SerializedKeyValuePair> list)
+        {
+            if (list == null) return;
+            list.SetOrAdd("Expedition_IsActive", IsExpeditionActive.ToString());
+            if (!IsExpeditionActive) return;
+
+            list.SetOrAdd("Expedition_State", ((int)State).ToString());
+            list.SetOrAdd("Expedition_PortalCardUniqueId", PortalCardSource != null ? PortalCardSource.UniqueId : "");
+            list.SetOrAdd("Expedition_BackpackCardUniqueId", BackpackCardSource != null ? BackpackCardSource.UniqueId : "");
+            list.SetOrAdd("Expedition_ActiveCatsUniqueIds", string.Join(",", ActiveCats.Select(c => c.UniqueId)));
+            list.SetOrAdd("Expedition_BackpackMaxCapacity", CurrentBackpack != null ? CurrentBackpack.MaxCapacity.ToString() : "10");
+            list.SetOrAdd("Expedition_BackpackItems", CurrentBackpack != null ? string.Join(",", CurrentBackpack.ContainedCardIds) : "");
+            
+            list.SetOrAdd("Expedition_GreedLevel", RunState.GreedLevel.ToString());
+            list.SetOrAdd("Expedition_CorruptionLevel", RunState.CorruptionLevel.ToString());
+            list.SetOrAdd("Expedition_CurrentLayer", RunState.CurrentLayer.ToString());
+            list.SetOrAdd("Expedition_TotalGoldCollected", RunState.TotalGoldCollected.ToString());
+            list.SetOrAdd("Expedition_BaseAppeasementGreed", RunState.BaseAppeasementGreed.ToString());
+            list.SetOrAdd("Expedition_BaseAppeasementCorruption", RunState.BaseAppeasementCorruption.ToString());
+            list.SetOrAdd("Expedition_ActiveMutations", string.Join(",", RunState.RunActiveMutations));
+
+            list.SetOrAdd("Expedition_ActiveNodeId", ActiveNode != null ? ActiveNode.Id.ToString() : "-1");
+            list.SetOrAdd("Expedition_MapSeed", CurrentMapSeed.ToString());
+            list.SetOrAdd("Expedition_MapNodeStates", string.Join(",", MapNodes.Select(n => ((int)n.State).ToString())));
+        }
+
+        private string GetValueOrDefault(List<SerializedKeyValuePair> list, string key, string defaultValue)
+        {
+            var pair = list.GetWithKey(key);
+            return pair != null ? pair.Value : defaultValue;
+        }
+
+        public void LoadFromExtraKeyValues(List<SerializedKeyValuePair> list)
+        {
+            if (list == null)
+            {
+                IsExpeditionActive = false;
+                State = ExpeditionState.Idle;
+                return;
+            }
+
+            var activePair = list.GetWithKey("Expedition_IsActive");
+            if (activePair == null || activePair.Value != "True")
+            {
+                IsExpeditionActive = false;
+                State = ExpeditionState.Idle;
+                return;
+            }
+
+            IsExpeditionActive = true;
+            State = (ExpeditionState)int.Parse(GetValueOrDefault(list, "Expedition_State", "0"));
+
+            string portalUid = GetValueOrDefault(list, "Expedition_PortalCardUniqueId", "");
+            if (!string.IsNullOrEmpty(portalUid) && WorldManager.instance.UniqueIdToCard.TryGetValue(portalUid, out var portalGameCard))
+            {
+                PortalCardSource = portalGameCard;
+            }
+
+            string backpackUid = GetValueOrDefault(list, "Expedition_BackpackCardUniqueId", "");
+            if (!string.IsNullOrEmpty(backpackUid) && WorldManager.instance.UniqueIdToCard.TryGetValue(backpackUid, out var backpackGameCard))
+            {
+                BackpackCardSource = backpackGameCard.CardData;
+            }
+
+            string activeCatsUidsStr = GetValueOrDefault(list, "Expedition_ActiveCatsUniqueIds", "");
+            ActiveCats.Clear();
+            if (!string.IsNullOrEmpty(activeCatsUidsStr))
+            {
+                foreach (string uid in activeCatsUidsStr.Split(','))
+                {
+                    if (WorldManager.instance.UniqueIdToCard.TryGetValue(uid, out var catGameCard) && catGameCard.CardData is CatCardData catData)
+                    {
+                        ActiveCats.Add(catData);
+                    }
+                }
+            }
+
+            int backpackCap = int.Parse(GetValueOrDefault(list, "Expedition_BackpackMaxCapacity", "10"));
+            CurrentBackpack = new Backpack(backpackCap);
+            string backpackItemsStr = GetValueOrDefault(list, "Expedition_BackpackItems", "");
+            if (!string.IsNullOrEmpty(backpackItemsStr))
+            {
+                foreach (string item in backpackItemsStr.Split(','))
+                {
+                    CurrentBackpack.AddItem(item);
+                }
+            }
+
+            RunState.Clear();
+            RunState.GreedLevel = int.Parse(GetValueOrDefault(list, "Expedition_GreedLevel", "0"));
+            RunState.CorruptionLevel = int.Parse(GetValueOrDefault(list, "Expedition_CorruptionLevel", "0"));
+            RunState.CurrentLayer = int.Parse(GetValueOrDefault(list, "Expedition_CurrentLayer", "0"));
+            RunState.TotalGoldCollected = int.Parse(GetValueOrDefault(list, "Expedition_TotalGoldCollected", "0"));
+            RunState.BaseAppeasementGreed = int.Parse(GetValueOrDefault(list, "Expedition_BaseAppeasementGreed", "0"));
+            RunState.BaseAppeasementCorruption = int.Parse(GetValueOrDefault(list, "Expedition_BaseAppeasementCorruption", "0"));
+
+            string mutationsStr = GetValueOrDefault(list, "Expedition_ActiveMutations", "");
+            if (!string.IsNullOrEmpty(mutationsStr))
+            {
+                RunState.RunActiveMutations = mutationsStr.Split(',').ToList();
+            }
+
+            CurrentMapSeed = int.Parse(GetValueOrDefault(list, "Expedition_MapSeed", "0"));
+            MapNodes = ExpeditionMapGenerator.GenerateMap(CurrentMapSeed, maxLayers: 6, maxNodesPerLayer: 3);
+
+            string nodeStatesStr = GetValueOrDefault(list, "Expedition_MapNodeStates", "");
+            if (!string.IsNullOrEmpty(nodeStatesStr))
+            {
+                var states = nodeStatesStr.Split(',').Select(int.Parse).ToList();
+                for (int i = 0; i < MapNodes.Count && i < states.Count; i++)
+                {
+                    MapNodes[i].State = (NodeState)states[i];
+                }
+            }
+
+            int activeNodeId = int.Parse(GetValueOrDefault(list, "Expedition_ActiveNodeId", "-1"));
+            ActiveNode = activeNodeId >= 0 ? MapNodes.Find(n => n.Id == activeNodeId) : null;
+
+            // Re-freeze timescale if expedition is active
+            Time.timeScale = 0f;
+
+            // Hide the actual game cards of cats and backpack from board
+            foreach (var cat in ActiveCats)
+            {
+                if (cat != null && cat.MyGameCard != null)
+                {
+                    cat.MyGameCard.gameObject.SetActive(false);
+                }
+            }
+            if (BackpackCardSource != null && BackpackCardSource.MyGameCard != null)
+            {
+                BackpackCardSource.MyGameCard.gameObject.SetActive(false);
+            }
+
+            // Re-open UI overlay based on state
+            if (State == ExpeditionState.MapNavigation && ExpeditionMapUI.Instance != null)
+            {
+                ExpeditionMapUI.Instance.ShowWindow();
+            }
         }
     }
 }

@@ -25,6 +25,7 @@ namespace Mewtations.Dialogue
         public static DialogueSystem Instance { get; private set; }
 
         private bool _isVisible = false;
+        public bool IsVisible => _isVisible;
         private string _title = "";
         private string _text = "";
         private List<string> _choices = new List<string>();

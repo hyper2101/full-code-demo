@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Mewtations.Expedition;
 
 namespace Mewtations.Combat
 {
@@ -22,6 +23,7 @@ namespace Mewtations.Combat
         public List<string> CombatLog = new List<string>();
         public bool IsCombatActive = false;
         public CombatResult Result = CombatResult.Ongoing;
+        public int CurrentRound = 1;
 
         private Coroutine _combatCoroutine;
         private Action<CombatResult> _onCombatEnd;
@@ -78,7 +80,8 @@ namespace Mewtations.Combat
             int round = 1;
             while (Result == CombatResult.Ongoing)
             {
-                AddLog($"--- VÒNG LẦT {round} ---");
+                CurrentRound = round;
+                AddLog($"--- VÒNG LẦN {round} ---");
 
                 // Cat God's Punishment Curse (Linh Thần Trừng Phạt) for high Greed
                 if (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive && ExpeditionManager.Instance.RunState.GreedLevel >= 75)
@@ -184,7 +187,7 @@ namespace Mewtations.Combat
                         var target = MewtationsUltimateRegistry.GetPrimaryTarget(opponents);
                         if (target != null)
                         {
-                            MewtationsWeaponRegistry.ExecuteBasicAttack(unit, target, opponents, msg => AddLog(msg));
+                            MewtationsWeaponRegistry.ExecuteBasicAttack(unit, target, allies, opponents, msg => AddLog(msg));
                         }
                     }
 
@@ -249,6 +252,18 @@ namespace Mewtations.Combat
                     unit.CurrentHP = 1;
                     unit.Source.HealthPoints = 1;
                     AddLog($"🛡 Bảo Hiểm Tu Tiên kích hoạt! {unit.Name} hồi sinh với 1 HP và trốn thoát về base.");
+                    // Remove from active expedition list if in an expedition
+                    if (unit.Source is CatCardData catData)
+                    {
+                        if (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive)
+                        {
+                            ExpeditionManager.Instance.ActiveCats.Remove(catData);
+                            if (catData.MyGameCard != null)
+                            {
+                                catData.MyGameCard.gameObject.SetActive(true);
+                            }
+                        }
+                    }
                     // Remove from active list
                     Formation.PlayerUnits.Remove(unit);
                 }
@@ -293,6 +308,13 @@ namespace Mewtations.Combat
                     if (unit.Source.MyGameCard != null)
                     {
                         unit.Source.MyGameCard.DestroyCard(true, true);
+                    }
+                    if (unit.Source is CatCardData catData)
+                    {
+                        if (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive)
+                        {
+                            ExpeditionManager.Instance.ActiveCats.Remove(catData);
+                        }
                     }
                     Formation.PlayerUnits.Remove(unit);
                 }

@@ -49,12 +49,22 @@ public class CatCorpseData : CardData
         base.UpdateCard();
 
         // If item_revive_pill is stacked on top of the corpse, start the resurrection timer
-        if (this.MyGameCard != null && !this.MyGameCard.TimerRunning && this.MyGameCard.HasChild)
+        if (this.MyGameCard != null)
         {
-            CardData childData = this.MyGameCard.Child.CardData;
-            if (childData.Id == "item_revive_pill")
+            if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "resurrect")
             {
-                this.MyGameCard.StartTimer(5.0f, new TimerAction(this.PerformResurrection), "Hồi sinh Thần Miêu...", "resurrect");
+                if (!this.MyGameCard.HasChild || this.MyGameCard.Child.CardData.Id != "item_revive_pill")
+                {
+                    this.MyGameCard.CancelTimer("resurrect");
+                }
+            }
+            else if (!this.MyGameCard.TimerRunning && this.MyGameCard.HasChild)
+            {
+                CardData childData = this.MyGameCard.Child.CardData;
+                if (childData.Id == "item_revive_pill")
+                {
+                    this.MyGameCard.StartTimer(5.0f, new TimerAction(this.PerformResurrection), "Hồi sinh Thần Miêu...", "resurrect");
+                }
             }
         }
     }

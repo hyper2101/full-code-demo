@@ -108,7 +108,10 @@ public class WorldManager : MonoBehaviour
 	{
 		get
 		{
-			return this.IsPlaying && ((this.currentAnimationRoutine == null && this.currentAnimation == null) || this.RemovingCards) && !GameScreen.instance.ControllerIsInUI && !GameCanvas.instance.ModalIsOpen;
+			bool inExpedition = Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.IsExpeditionActive;
+			bool inCombat = Mewtations.Combat.TurnBasedCombatManager.Instance != null && Mewtations.Combat.TurnBasedCombatManager.Instance.IsCombatActive;
+			bool dialogueOpen = Mewtations.Dialogue.DialogueSystem.Instance != null && Mewtations.Dialogue.DialogueSystem.Instance.IsVisible;
+			return this.IsPlaying && ((this.currentAnimationRoutine == null && this.currentAnimation == null) || this.RemovingCards) && !GameScreen.instance.ControllerIsInUI && !GameCanvas.instance.ModalIsOpen && !inExpedition && !inCombat && !dialogueOpen;
 		}
 	}
 

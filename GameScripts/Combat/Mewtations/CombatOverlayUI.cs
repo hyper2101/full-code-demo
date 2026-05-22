@@ -213,7 +213,29 @@ namespace Mewtations.Combat
                 // Drawing unit info
                 GUILayout.Label($"<b>{unit.Name}</b>", _logStyle);
                 
-                string roleText = unit.IsPlayer ? $"<color=#ff8>Role: {unit.Source.MyCardType}</color>" : "<color=#faa>Enemy</color>";
+                string roleVi = unit.Role switch
+                {
+                    CatRole.DPS => "DPS 主力",
+                    CatRole.Tank => "Đỡ Đòn (Tank)",
+                    CatRole.ShieldSupport => "Hỗ Trợ Khiên",
+                    CatRole.RageSupport => "Hỗ Trợ Nộ",
+                    CatRole.Debuff => "Áp Chế",
+                    CatRole.Disruption => "Quấy Nhiễu",
+                    CatRole.Attrition => "Hậu Kỳ",
+                    _ => unit.Role.ToString()
+                };
+
+                string elementVi = unit.Element switch
+                {
+                    CatElement.None => "Vô Hệ",
+                    CatElement.Fire => "Hỏa 🔥",
+                    CatElement.Poison => "Độc ☠️",
+                    CatElement.Ice => "Băng ❄️",
+                    CatElement.Lightning => "Lôi ⚡",
+                    _ => unit.Element.ToString()
+                };
+
+                string roleText = unit.IsPlayer ? $"<color=#ff8>{roleVi} | {elementVi}</color>" : $"<color=#faa>Địch ({roleVi})</color>";
                 GUILayout.Label(roleText, _logStyle);
 
                 // Speed display

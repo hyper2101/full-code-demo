@@ -61,6 +61,11 @@ namespace Mewtations.Combat
         public List<CombatStatusEffect> ActiveDebuffs = new List<CombatStatusEffect>();
         public int Shield = 0;
 
+        public CatRole Role = CatRole.DPS;
+        public CatElement Element = CatElement.None;
+        public bool HasRegenTalisman = false;
+        public bool HasIronWill = false;
+
         public bool HasTrait(string id)
         {
             if (Source is CatCardData cat)
@@ -97,6 +102,8 @@ namespace Mewtations.Combat
             {
                 Speed = cat.Speed;
                 CurrentRage = cat.CurrentRage;
+                Role = cat.Role;
+                Element = cat.Element;
 
                 // Apply permanent Heavenly Talents
                 if (cat.HasTrait(Mewtations.Expedition.HeavenlyTalent.DivineShieldProtection))
@@ -109,12 +116,39 @@ namespace Mewtations.Combat
                 {
                     Speed = Mathf.Max(10, Speed - 15);
                 }
+
+                // Apply Talisman Active Combat Passives
+                var allEquipables = cat.GetAllEquipables();
+                foreach (var eq in allEquipables)
+                {
+                    if (eq != null && eq.EquipableType == EquipableType.Talisman)
+                    {
+                        if (eq.Id == "talisman_heavy_armor" || eq.Id.Contains("heavy_armor"))
+                        {
+                            Shield += 10;
+                        }
+                        else if (eq.Id == "talisman_rage_core" || eq.Id.Contains("rage_core"))
+                        {
+                            CurrentRage += 30;
+                        }
+                        else if (eq.Id == "talisman_health_regen" || eq.Id.Contains("health_regen"))
+                        {
+                            HasRegenTalisman = true;
+                        }
+                        else if (eq.Id == "talisman_iron_will" || eq.Id.Contains("iron_will"))
+                        {
+                            HasIronWill = true;
+                        }
+                    }
+                }
             }
             else
             {
                 // Default stats for enemies
                 Speed = 100;
                 CurrentRage = 0;
+                Role = CatRole.DPS;
+                Element = CatElement.None;
             }
         }
 
@@ -157,6 +191,11 @@ namespace Mewtations.Combat
 
         public void AddDebuff(MewtationsDebuff debuff, int duration)
         {
+            if (debuff == MewtationsDebuff.Frozen && HasIronWill)
+            {
+                return; // Immune to freeze!
+            }
+
             var existing = ActiveDebuffs.Find(d => d.Type == debuff);
             if (existing != null)
             {
@@ -206,6 +245,13 @@ namespace Mewtations.Combat
                 }
             }
 
+            // Apply health regen talisman
+            if (HasRegenTalisman && IsAlive)
+            {
+                Heal(3);
+                logCallback?.Invoke($"💚 [BÙA HỒI PHỤC] Bùa hộ thân giúp {Name} tự động hồi phục 3 HP dưỡng thương.");
+            }
+
             // Apply Lethargic Nap end-of-round healing
             if (HasMutation(Mewtations.Expedition.UnstableMutation.LethargicNap) && IsAlive)
             {
@@ -230,8 +276,24 @@ namespace Mewtations.Combat
             return WeaponAttackPattern.Single;
         }
 
-        public static void ExecuteBasicAttack(CombatUnit attacker, CombatUnit target, List<CombatUnit> allTargets, Action<string> logCallback)
+        public static void ExecuteBasicAttack(CombatUnit attacker, CombatUnit target, List<CombatUnit> allies, List<CombatUnit> opponents, Action<string> logCallback)
         {
+            // Tank redirection check! If target is back row (indices 3-5), check for alive front-row Tanks
+            if (target.SlotIndex >= 3 && opponents != null)
+            {
+                var defenderTanks = opponents.FindAll(u => u.IsAlive && u.Role == CatRole.Tank && u.SlotIndex < 3);
+                if (defenderTanks.Count > 0)
+                {
+                    if (UnityEngine.Random.value <= 0.30f)
+                    {
+                        var tank = defenderTanks[UnityEngine.Random.Range(0, defenderTanks.Count)];
+                        logCallback?.Invoke($"🛡️ [ĐỠ ĐÒN] Tank {tank.Name} dũng cảm lao ra đỡ đòn thay cho đồng đội {target.Name}! (Nhận +5 Khiên)");
+                        target = tank;
+                        target.AddShield(5);
+                    }
+                }
+            }
+
             var pattern = GetAttackPattern(attacker.Source.GetEquipableOfEquipableType(EquipableType.Weapon)?.Id);
             if (attacker.HasTrait(Mewtations.Expedition.HeavenlyTalent.MartialArtsCleave))
             {
@@ -239,6 +301,25 @@ namespace Mewtations.Combat
             }
 
             int baseDamage = attacker.Source.ProcessedCombatStats.AttackDamage;
+
+            // Apply Role damage multiplier
+            float roleDmgMultiplier = 1.0f;
+            if (attacker.Role == CatRole.DPS)
+            {
+                roleDmgMultiplier += 0.20f;
+                bool hasDebuff = target.ActiveDebuffs.Exists(d => d.Duration > 0);
+                if (hasDebuff)
+                {
+                    roleDmgMultiplier += 0.25f;
+                }
+            }
+            else if (attacker.Role == CatRole.Attrition)
+            {
+                int currentRound = (TurnBasedCombatManager.Instance != null) ? TurnBasedCombatManager.Instance.CurrentRound : 1;
+                roleDmgMultiplier += currentRound * 0.10f;
+            }
+
+            baseDamage = Mathf.RoundToInt(baseDamage * roleDmgMultiplier);
 
             // Check Spiritual Backlash (Tẩu Hỏa Nhập Ma) if attacker has >= 2 active mutations
             bool isSpiritualBacklash = false;
@@ -271,7 +352,7 @@ namespace Mewtations.Combat
                 case WeaponAttackPattern.ColumnAttack:
                     // Hits target and the unit behind/in front of it
                     int targetCol = target.SlotIndex % 3;
-                    foreach (var unit in allTargets)
+                    foreach (var unit in opponents)
                     {
                         if (unit.IsAlive && (unit.SlotIndex % 3 == targetCol))
                         {
@@ -286,7 +367,7 @@ namespace Mewtations.Combat
                     // Hits target and adjacent horizontal units
                     int rowStart = target.SlotIndex < 3 ? 0 : 3;
                     int col = target.SlotIndex % 3;
-                    foreach (var unit in allTargets)
+                    foreach (var unit in opponents)
                     {
                         if (unit.IsAlive && (unit.SlotIndex >= rowStart && unit.SlotIndex < rowStart + 3))
                         {
@@ -304,9 +385,18 @@ namespace Mewtations.Combat
 
                 case WeaponAttackPattern.RageDrain:
                     target.TakeDamage(baseDamage);
-                    int drained = Mathf.Min(target.CurrentRage, 30);
-                    target.CurrentRage -= drained;
-                    logCallback?.Invoke($"{attacker.Name} bắn cung hút nộ {target.Name} gây {baseDamage} sát thương và giảm {drained} Nộ.");
+                    int drained = 0;
+                    if (target.HasIronWill)
+                    {
+                        logCallback?.Invoke($"🛡️ {target.Name} sở hữu Ý Chí Sắt Đá, miễn nhiễm hút Nộ!");
+                    }
+                    else
+                    {
+                        drained = Mathf.Min(target.CurrentRage, 30);
+                        target.CurrentRage -= drained;
+                        attacker.CurrentRage = Mathf.Min(145, attacker.CurrentRage + drained);
+                    }
+                    logCallback?.Invoke($"{attacker.Name} bắn cung hút nộ {target.Name} gây {baseDamage} sát thương, giảm {drained} Nộ của mục tiêu và nhận {drained} Nộ.");
                     break;
 
                 case WeaponAttackPattern.RageGain:
@@ -319,7 +409,7 @@ namespace Mewtations.Combat
                 case WeaponAttackPattern.Row:
                     // Hits entire row (front or back)
                     int targetRowStart = target.SlotIndex < 3 ? 0 : 3;
-                    foreach (var unit in allTargets)
+                    foreach (var unit in opponents)
                     {
                         if (unit.IsAlive && (unit.SlotIndex >= targetRowStart && unit.SlotIndex < targetRowStart + 3))
                         {
@@ -329,6 +419,132 @@ namespace Mewtations.Combat
                         }
                     }
                     break;
+            }
+
+            // Apply Element Behavior Modifiers for Basic Attacks
+            if (attacker.Element == CatElement.Fire && target.IsAlive)
+            {
+                if (UnityEngine.Random.value <= 0.50f)
+                {
+                    target.AddDebuff(MewtationsDebuff.Burning, 2);
+                    logCallback?.Invoke($"🔥 [HỎA] Đòn đánh của {attacker.Name} gây Thiêu Đốt lên {target.Name}!");
+                }
+            }
+            else if (attacker.Element == CatElement.Poison && target.IsAlive)
+            {
+                target.AddDebuff(MewtationsDebuff.Poisoned, 3);
+                logCallback?.Invoke($"☠️ [ĐỘC] Đòn đánh của {attacker.Name} tích độc dược lên {target.Name}!");
+            }
+            else if (attacker.Element == CatElement.Ice && target.IsAlive)
+            {
+                if (UnityEngine.Random.value <= 0.25f)
+                {
+                    target.AddDebuff(MewtationsDebuff.Frozen, 1);
+                    logCallback?.Invoke($"❄️ [BĂNG] Đòn đánh buốt lạnh của {attacker.Name} Đóng Băng {target.Name}!");
+                }
+            }
+            else if (attacker.Element == CatElement.Lightning && target.IsAlive)
+            {
+                if (target.HasDebuff(MewtationsDebuff.Shocked))
+                {
+                    attacker.CurrentRage = Mathf.Min(145, attacker.CurrentRage + 10);
+                    logCallback?.Invoke($"⚡ [LÔI CHẤN] {attacker.Name} đánh trúng mục tiêu Điện Giật, hấp thụ hạt sét phục hồi +10 Nộ khí!");
+                }
+                if (UnityEngine.Random.value <= 0.30f)
+                {
+                    target.AddDebuff(MewtationsDebuff.Shocked, 2);
+                    logCallback?.Invoke($"⚡ [LÔI] Sét đánh cực nhanh từ {attacker.Name} gây Điện Giật lên {target.Name} (+30% sát thương nhận vào)!");
+                }
+            }
+
+            // Apply Role Specializations (ShieldSupport, RageSupport, Debuff, Disruption)
+            if (attacker.Role == CatRole.ShieldSupport && allies != null)
+            {
+                CombatUnit lowestHPAlly = null;
+                int minHP = int.MaxValue;
+                foreach (var ally in allies)
+                {
+                    if (ally.IsAlive && ally.CurrentHP < minHP)
+                    {
+                        minHP = ally.CurrentHP;
+                        lowestHPAlly = ally;
+                    }
+                }
+                if (lowestHPAlly != null)
+                {
+                    lowestHPAlly.AddShield(5);
+                    logCallback?.Invoke($"🛡️ [HỘ THỂ] Hỗ trợ {attacker.Name} ban tặng +5 Khiên bảo vệ cho {lowestHPAlly.Name}!");
+                }
+            }
+            else if (attacker.Role == CatRole.RageSupport && allies != null)
+            {
+                foreach (var ally in allies)
+                {
+                    if (ally.IsAlive && ally != attacker)
+                    {
+                        ally.CurrentRage = Mathf.Min(145, ally.CurrentRage + 10);
+                        logCallback?.Invoke($"⚡ [CỔ VŨ] {attacker.Name} truyền năng lượng, giúp đồng đội {ally.Name} nhận +10 Nộ!");
+                    }
+                }
+            }
+            else if (attacker.Role == CatRole.Debuff && target.IsAlive)
+            {
+                if (UnityEngine.Random.value <= 0.40f)
+                {
+                    MewtationsDebuff debuffToApply = MewtationsDebuff.None;
+                    int duration = 2;
+                    switch (attacker.Element)
+                    {
+                        case CatElement.Fire:
+                            debuffToApply = MewtationsDebuff.Burning;
+                            break;
+                        case CatElement.Poison:
+                            debuffToApply = MewtationsDebuff.Poisoned;
+                            duration = 3;
+                            break;
+                        case CatElement.Ice:
+                            debuffToApply = MewtationsDebuff.Frozen;
+                            duration = 1;
+                            break;
+                        case CatElement.Lightning:
+                            debuffToApply = MewtationsDebuff.Shocked;
+                            break;
+                        default:
+                            MewtationsDebuff[] possible = { MewtationsDebuff.Burning, MewtationsDebuff.Poisoned, MewtationsDebuff.Frozen, MewtationsDebuff.Shocked };
+                            debuffToApply = possible[UnityEngine.Random.Range(0, possible.Length)];
+                            if (debuffToApply == MewtationsDebuff.Frozen) duration = 1;
+                            else if (debuffToApply == MewtationsDebuff.Poisoned) duration = 3;
+                            break;
+                    }
+
+                    if (debuffToApply != MewtationsDebuff.None)
+                    {
+                        target.AddDebuff(debuffToApply, duration);
+                        string viName = "";
+                        switch(debuffToApply)
+                        {
+                            case MewtationsDebuff.Burning: viName = "Thiêu Đốt"; break;
+                            case MewtationsDebuff.Poisoned: viName = "Kịch Độc"; break;
+                            case MewtationsDebuff.Frozen: viName = "Đóng Băng"; break;
+                            case MewtationsDebuff.Shocked: viName = "Điện Giật"; break;
+                        }
+                        logCallback?.Invoke($"☠️ [SUY YẾU] Kẻ suy yếu {attacker.Name} kích hoạt hiệu ứng xấu ngẫu nhiên: gây {viName} lên {target.Name}!");
+                    }
+                }
+            }
+            else if (attacker.Role == CatRole.Disruption && target.IsAlive)
+            {
+                if (target.HasIronWill)
+                {
+                    logCallback?.Invoke($"🛡️ {target.Name} sở hữu Ý Chí Sắt Đá, miễn nhiễm mọi hiệu ứng Quấy Nhiễu!");
+                }
+                else
+                {
+                    int drained = Mathf.Min(target.CurrentRage, 15);
+                    target.CurrentRage -= drained;
+                    target.Speed = Mathf.Max(10, target.Speed - 10);
+                    logCallback?.Invoke($"💢 [QUẤY NHIỄU] {attacker.Name} quấy rối làm {target.Name} tiêu hao {drained} Nộ và giảm 10 Tốc Độ!");
+                }
             }
 
             // Apply HeavenlyPoisonBody to target
@@ -382,14 +598,60 @@ namespace Mewtations.Combat
 
         public static void ExecuteUltimate(CombatUnit attacker, List<CombatUnit> allies, List<CombatUnit> enemies, Action<string> logCallback)
         {
+            var cat = attacker.Source as CatCardData;
+            if (cat != null && cat.IsUltimateLocked)
+            {
+                logCallback?.Invoke($"[KHÓA KỸ NĂNG] Kỹ năng Nộ của {attacker.Name} đã bị khóa do bị nguyền rủa! Thi triển Ultimate thất bại!");
+                attacker.CurrentRage = 0; // Consume the Rage as backfire/dissipated energy
+                var target = GetPrimaryTarget(enemies);
+                if (target != null)
+                {
+                    MewtationsWeaponRegistry.ExecuteBasicAttack(attacker, target, allies, enemies, logCallback);
+                }
+                return;
+            }
+
             float rageMultiplier = attacker.CurrentRage / 100f; // Scale damage by Rage overflow (e.g. 1.45x)
             attacker.CurrentRage = 0; // Consume all Rage
 
-            var cat = attacker.Source as CatCardData;
             var type = GetUltimateType(cat);
 
             int baseAttack = attacker.Source.ProcessedCombatStats.AttackDamage;
-            int ultDamage = Mathf.RoundToInt(baseAttack * 2.0f * rageMultiplier);
+
+            // Apply Role damage multiplier to Ultimate damage as well!
+            float roleDmgMultiplier = 1.0f;
+            if (attacker.Role == CatRole.DPS)
+            {
+                roleDmgMultiplier += 0.20f;
+                var target = GetPrimaryTarget(enemies);
+                if (target != null && target.ActiveDebuffs.Exists(d => d.Duration > 0))
+                {
+                    roleDmgMultiplier += 0.25f;
+                }
+            }
+            else if (attacker.Role == CatRole.Attrition)
+            {
+                int currentRound = (TurnBasedCombatManager.Instance != null) ? TurnBasedCombatManager.Instance.CurrentRound : 1;
+                roleDmgMultiplier += currentRound * 0.10f;
+            }
+
+            // Calculate mutations damage multiplier
+            float mutDmgMultiplier = 1.0f;
+            bool isSpiritualBacklash = false;
+            if (attacker.Source is CatCardData catData && catData.ActiveMutations.Count >= 2)
+            {
+                isSpiritualBacklash = true;
+                mutDmgMultiplier *= 1.5f;
+            }
+            if (attacker.HasMutation(Mewtations.Expedition.UnstableMutation.UnstableClaws))
+            {
+                mutDmgMultiplier *= 1.3f;
+            }
+
+            int ultDamage = Mathf.RoundToInt(baseAttack * 2.0f * rageMultiplier * roleDmgMultiplier * mutDmgMultiplier);
+
+            // Collect hit enemies for elemental modifiers application
+            List<CombatUnit> hitEnemies = new List<CombatUnit>();
 
             switch (type)
             {
@@ -401,6 +663,7 @@ namespace Mewtations.Combat
                         target.TakeDamage(ultDamage);
                         logCallback?.Invoke($"★ {attacker.Name} kích hoạt Bí Kỹ mặc định: gây {ultDamage} sát thương cực mạnh lên {target.Name}!");
                         target.CurrentRage = Mathf.Min(145, target.CurrentRage + 15);
+                        hitEnemies.Add(target);
                     }
                     break;
 
@@ -427,7 +690,7 @@ namespace Mewtations.Combat
                 case UltimateType.AoeFireBurn:
                     // Attack all enemies + burn
                     logCallback?.Invoke($"★ {attacker.Name} ăn Linh Nhục kích hoạt Bí Kỹ Hỏa Diệm: Triệu hồi hỏa triều quét toàn bộ quân địch!");
-                    int aoeDmg = Mathf.RoundToInt(baseAttack * 1.2f * rageMultiplier);
+                    int aoeDmg = Mathf.RoundToInt(baseAttack * 1.2f * rageMultiplier * roleDmgMultiplier * mutDmgMultiplier);
                     foreach (var enemy in enemies)
                     {
                         if (enemy.IsAlive)
@@ -435,6 +698,7 @@ namespace Mewtations.Combat
                             enemy.TakeDamage(aoeDmg);
                             enemy.AddDebuff(MewtationsDebuff.Burning, 2);
                             logCallback?.Invoke($" -> Gây {aoeDmg} sát thương và Thiêu Đốt lên {enemy.Name}.");
+                            hitEnemies.Add(enemy);
                         }
                     }
                     break;
@@ -460,8 +724,121 @@ namespace Mewtations.Combat
                         priTarget.TakeDamage(ultDamage);
                         priTarget.AddDebuff(MewtationsDebuff.Frozen, 1);
                         logCallback?.Invoke($"★ {attacker.Name} kích hoạt Bí Kỹ Băng Trảm: gây {ultDamage} sát thương và đóng băng {priTarget.Name}!");
+                        hitEnemies.Add(priTarget);
                     }
                     break;
+            }
+
+            // Apply Element Behavior Modifiers for Ultimate Skills on hit enemies
+            if (hitEnemies.Count > 0)
+            {
+                foreach (var enemy in hitEnemies)
+                {
+                    if (!enemy.IsAlive) continue;
+
+                    if (attacker.Element == CatElement.Fire)
+                    {
+                        enemy.AddDebuff(MewtationsDebuff.Burning, 3);
+                        logCallback?.Invoke($"🔥 [HỎA BỘI] Bí Kỹ của {attacker.Name} gây Thiêu Đốt mạnh (3 lượt) lên {enemy.Name}!");
+                    }
+                    else if (attacker.Element == CatElement.Poison)
+                    {
+                        var poisonDebuff = enemy.ActiveDebuffs.Find(d => d.Type == MewtationsDebuff.Poisoned);
+                        if (poisonDebuff != null)
+                        {
+                            poisonDebuff.Stacks *= 2;
+                            poisonDebuff.Duration = Mathf.Max(poisonDebuff.Duration, 3);
+                            logCallback?.Invoke($"☠️ [KỊCH ĐỘC] Bí Kỹ Độc tính phát tác! Nhân đôi số tầng độc và làm mới thời gian tác dụng (3 lượt) trên {enemy.Name} (Hiện tại: {poisonDebuff.Stacks} tầng)!");
+                        }
+                        else
+                        {
+                            enemy.AddDebuff(MewtationsDebuff.Poisoned, 3);
+                            enemy.AddDebuff(MewtationsDebuff.Poisoned, 3);
+                            logCallback?.Invoke($"☠️ [KỊCH ĐỘC] Bí Kỹ tiêm 2 tầng kịch độc cực mạnh vào {enemy.Name}!");
+                        }
+                    }
+                    else if (attacker.Element == CatElement.Ice)
+                    {
+                        enemy.AddDebuff(MewtationsDebuff.Frozen, 1);
+                        logCallback?.Invoke($"❄️ [BĂNG PHONG] Bí Kỹ Tuyết vực đóng băng hoàn toàn {enemy.Name}!");
+                    }
+                    else if (attacker.Element == CatElement.Lightning)
+                    {
+                        bool wasShocked = enemy.HasDebuff(MewtationsDebuff.Shocked);
+                        enemy.AddDebuff(MewtationsDebuff.Shocked, 2);
+                        logCallback?.Invoke($"⚡ [LÔI HOÀNH] Bí Kỹ Lôi Điện làm tê liệt hoàn toàn {enemy.Name} (+30% sát thương nhận vào)!");
+                        if (wasShocked)
+                        {
+                            attacker.CurrentRage = Mathf.Min(145, attacker.CurrentRage + 10);
+                            logCallback?.Invoke($"⚡ [LÔI CHẤN] {attacker.Name} kích hoạt Lôi Chấn trên mục tiêu bị Điện Giật, hấp thụ hạt sét phục hồi +10 Nộ khí!");
+                        }
+                    }
+                }
+            }
+
+            // Apply HeavenlyPoisonBody to hit enemies from Ultimate
+            if (attacker.HasTrait(Mewtations.Expedition.HeavenlyTalent.HeavenlyPoisonBody) && hitEnemies.Count > 0)
+            {
+                foreach (var enemy in hitEnemies)
+                {
+                    if (enemy.IsAlive)
+                    {
+                        enemy.AddDebuff(MewtationsDebuff.Poisoned, 3);
+                        logCallback?.Invoke($"☠️ Bí Kỹ của {attacker.Name} tẩm độc linh lực, gây trúng độc lên {enemy.Name}!");
+                    }
+                }
+            }
+
+            // Apply RageOvercharger for Ultimate
+            if (attacker.HasTrait(Mewtations.Expedition.HeavenlyTalent.RageOvercharger) && attacker.IsAlive)
+            {
+                attacker.CurrentRage = Mathf.Min(145, attacker.CurrentRage + 10);
+                logCallback?.Invoke($"⚡ {attacker.Name} kích hoạt Nộ Khí Cuồng Triều từ Bí Kỹ, nhận thêm 10 Nộ khí!");
+            }
+
+            // Apply UnstableClaws self-damage for Ultimate
+            if (attacker.HasMutation(Mewtations.Expedition.UnstableMutation.UnstableClaws) && attacker.IsAlive)
+            {
+                attacker.TakeDamage(2);
+                logCallback?.Invoke($"☣️ {attacker.Name} bị đột biến tự phế kinh mạch sau Bí Kỹ, hao tổn 2 HP!");
+            }
+
+            // Apply Spiritual Backlash (Tẩu Hỏa Nhập Ma) self-damage for Ultimate
+            if (isSpiritualBacklash && attacker.IsAlive)
+            {
+                attacker.TakeDamage(4);
+                logCallback?.Invoke($"☣️ [TẨU HỎA NHẬP MA] Sức mạnh biến dị quá tải bùng nổ sau Bí Kỹ! {attacker.Name} gánh chịu 4 sát thương linh lực phản phệ!");
+            }
+
+            // Apply Role Specializations (ShieldSupport, RageSupport) for Ultimate Skills
+            if (attacker.Role == CatRole.ShieldSupport && allies != null)
+            {
+                CombatUnit lowestHPAlly = null;
+                int minHP = int.MaxValue;
+                foreach (var ally in allies)
+                {
+                    if (ally.IsAlive && ally.CurrentHP < minHP)
+                    {
+                        minHP = ally.CurrentHP;
+                        lowestHPAlly = ally;
+                    }
+                }
+                if (lowestHPAlly != null)
+                {
+                    lowestHPAlly.AddShield(5);
+                    logCallback?.Invoke($"🛡️ [HỘ THỂ] Hỗ trợ {attacker.Name} ban tặng +5 Khiên bảo vệ cho {lowestHPAlly.Name}!");
+                }
+            }
+            else if (attacker.Role == CatRole.RageSupport && allies != null)
+            {
+                foreach (var ally in allies)
+                {
+                    if (ally.IsAlive && ally != attacker)
+                    {
+                        ally.CurrentRage = Mathf.Min(145, ally.CurrentRage + 10);
+                        logCallback?.Invoke($"⚡ [CỔ VŨ] {attacker.Name} truyền năng lượng, giúp đồng đội {ally.Name} nhận +10 Nộ!");
+                    }
+                }
             }
         }
 

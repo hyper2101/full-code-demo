@@ -839,13 +839,42 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 
 	public void EquipItem(Equipable equipable)
 	{
-		Equipable equipableOfEquipableType = this.GetEquipableOfEquipableType(equipable.EquipableType);
-		if (equipableOfEquipableType != null)
+		if (equipable.EquipableType == EquipableType.Talisman)
 		{
-			this.MyGameCard.Unequip(equipableOfEquipableType);
-			equipableOfEquipableType.MyGameCard.SendIt();
+			int maxTalismans = 2;
+			if (this is CatCardData cat)
+			{
+				if (cat.BreakthroughLevel >= 4) maxTalismans = 2;
+				else if (cat.BreakthroughLevel == 3) maxTalismans = 1;
+				else maxTalismans = 0;
+			}
+
+			List<Equipable> existingTalismans = this.GetAllEquipables().FindAll(x => x != null && x.EquipableType == EquipableType.Talisman);
+			if (maxTalismans <= 0)
+			{
+				equipable.MyGameCard.SendIt();
+				return;
+			}
+
+			if (existingTalismans.Count >= maxTalismans)
+			{
+				Equipable oldest = existingTalismans[0];
+				this.MyGameCard.Unequip(oldest);
+				oldest.MyGameCard.SendIt();
+			}
+			this.MyGameCard.Equip(equipable);
 		}
-		this.MyGameCard.Equip(equipable);
+		else
+		{
+			Equipable equipableOfEquipableType = this.GetEquipableOfEquipableType(equipable.EquipableType);
+			if (equipableOfEquipableType != null)
+			{
+				this.MyGameCard.Unequip(equipableOfEquipableType);
+				equipableOfEquipableType.MyGameCard.SendIt();
+			}
+			this.MyGameCard.Equip(equipable);
+		}
+
 		if (!(this is Mob))
 		{
 			QuestManager.instance.ActionComplete(this.MyGameCard.CardData, "equip_item", null);
@@ -921,7 +950,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 				}
 				else if (fieldInfo.FieldType.IsEnum)
 				{
-					list.Add(new ExtraCardData(extraDataAttribute.Identifier, (int)fieldInfo.GetValue(o)));
+					list.Add(new ExtraCardData(extraDataAttribute.Identifier, Convert.ToInt32(fieldInfo.GetValue(o))));
 				}
 				else if (fieldInfo.FieldType == typeof(float))
 				{

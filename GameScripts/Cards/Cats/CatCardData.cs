@@ -42,6 +42,22 @@ public class CatCardData : Combatable
     [ExtraData("lineage_generation")]
     public int LineageGeneration = 1;
 
+    [Header("GDD Punishment States")]
+    [ExtraData("is_food_slot_locked")]
+    public bool IsFoodSlotLocked = false;
+
+    [ExtraData("is_pill_slot_locked")]
+    public bool IsPillSlotLocked = false;
+
+    [ExtraData("is_passive_slots_locked")]
+    public bool IsPassiveSlotsLocked = false;
+
+    [ExtraData("is_equipment_slots_locked")]
+    public bool IsEquipmentSlotsLocked = false;
+
+    [ExtraData("is_ultimate_locked")]
+    public bool IsUltimateLocked = false;
+
     [ExtraData("character_memoirs")]
     public string CharacterMemoirsString = "";
 
@@ -179,13 +195,23 @@ public class CatCardData : Combatable
         base.UpdateCard();
 
         // Intercept stack to start a Breakthrough Timer when a breakthrough pill is stacked on the cat
-        if (this.MyGameCard != null && !this.MyGameCard.TimerRunning && this.MyGameCard.HasChild)
+        if (this.MyGameCard != null)
         {
-            CardData childData = this.MyGameCard.Child.CardData;
-            if (childData.Id == "item_breakthrough_pill")
+            if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "breakthrough")
             {
-                float time = Mathf.Max(3f, 10f - (Speed * 0.02f)); // Speed influences breakthrough speed
-                this.MyGameCard.StartTimer(time, new TimerAction(this.PerformBreakthrough), "Đột phá Cảnh giới...", "breakthrough");
+                if (!this.MyGameCard.HasChild || this.MyGameCard.Child.CardData.Id != "item_breakthrough_pill")
+                {
+                    this.MyGameCard.CancelTimer("breakthrough");
+                }
+            }
+            else if (!this.MyGameCard.TimerRunning && this.MyGameCard.HasChild)
+            {
+                CardData childData = this.MyGameCard.Child.CardData;
+                if (childData.Id == "item_breakthrough_pill")
+                {
+                    float time = Mathf.Max(3f, 10f - (Speed * 0.02f)); // Speed influences breakthrough speed
+                    this.MyGameCard.StartTimer(time, new TimerAction(this.PerformBreakthrough), "Đột phá Cảnh giới...", "breakthrough");
+                }
             }
         }
     }
@@ -248,13 +274,20 @@ public class CatCardData : Combatable
 
     protected override bool CanHaveCard(CardData otherCard)
     {
-        // 1. Validate food slot (BT level 2)
+        // 1. Check Equipment locks (Weapon / Talismans / Food are equipment types)
+        if (IsEquipmentSlotsLocked && otherCard.MyCardType == CardType.Equipment)
+        {
+            return false;
+        }
+
+        // 2. Validate food slot (BT level 2)
         if (otherCard.MyCardType == CardType.Food || (otherCard is Equipable eqFood && eqFood.EquipableType == EquipableType.Food)) 
         {
+            if (IsFoodSlotLocked) return false;
             return HasFoodSlot;
         }
 
-        // 2. Validate Pill slot (BT level 1)
+        // 3. Validate Pill slot (BT level 1)
         if (otherCard.Id == "item_pill" || otherCard.Id.Contains("pill"))
         {
             // breakthrough pill can be stacked on anyone to trigger breakthrough
@@ -262,21 +295,25 @@ public class CatCardData : Combatable
             {
                 return true;
             }
+            if (IsPillSlotLocked) return false;
             return HasPillSlot;
         }
 
-        // 3. Validate Passive Slots (BT level 3 & 4: Max 1 for level 3, Max 2 for level 4)
+        // 4. Validate Passive Slots (BT level 3 & 4: Max 1 for level 3, Max 2 for level 4)
         if (otherCard.Id.StartsWith("item_passive_") || otherCard.Id.Contains("passive") || (otherCard is Equipable eqTal && eqTal.EquipableType == EquipableType.Talisman))
         {
+            if (IsPassiveSlotsLocked) return false;
+
             int maxPassives = 0;
             if (BreakthroughLevel >= 4) maxPassives = 2;
             else if (BreakthroughLevel == 3) maxPassives = 1;
 
-            int currentPassives = ChildrenMatchingPredicateCount(c => c.Id.StartsWith("item_passive_") || c.Id.Contains("passive") || (c is Equipable eq && eq.EquipableType == EquipableType.Talisman));
-            return currentPassives < maxPassives;
+            int currentPassives = ChildrenMatchingPredicateCount(c => c.Id.StartsWith("item_passive_") || c.Id.Contains("passive"));
+            int equippedTalismans = GetAllEquipables().Count(eq => eq.EquipableType == EquipableType.Talisman);
+            return (currentPassives + equippedTalismans) < maxPassives;
         }
 
-        // 4. Equipment slots (Weapon & Talismans) are allowed by default
+        // 5. Equipment slots (Weapon & Talismans) are allowed by default
         if (otherCard.MyCardType == CardType.Equipment)
         {
             return true;
@@ -284,5 +321,64 @@ public class CatCardData : Combatable
 
         // Default parent validation
         return base.CanHaveCard(otherCard);
+    }
+
+    public string GetCảnhGiớiName()
+    {
+        switch (BreakthroughLevel)
+        {
+            case 0: return "Phàm Nhân Mèo";
+            case 1: return "Luyện Khí Cảnh";
+            case 2: return "Trúc Cơ Cảnh";
+            case 3: return "Kim Đan Cảnh";
+            case 4: return "Nguyên Anh Cảnh";
+            default: return $"Hóa Thần Cảnh Tầng {BreakthroughLevel - 4}";
+        }
+    }
+
+    public override void UpdateCardText()
+    {
+        string desc = $"<b>CẢNH GIỚI:</b> <color=#ffcc00>{GetCảnhGiớiName()}</color>\n";
+        desc += $"<b>VAI TRÒ:</b> <color=#5dade2>{Role}</color> | <b>LINH CĂN:</b> <color=#ff33cc>{Element}</color>\n";
+        desc += $"<b>SINH MỆNH:</b> {HealthPoints}/{ProcessedCombatStats.MaxHealth} HP\n";
+        desc += $"<b>THẦN TỐC:</b> {Speed} Speed\n\n";
+
+        var traits = PermanentTraits;
+        if (traits.Count > 0)
+        {
+            desc += "<b>★ THIÊN PHÚ VĨNH CỬU:</b>\n";
+            foreach (var t in traits)
+            {
+                desc += $"• <color=#00ffcc>{Mewtations.Expedition.HeavenlyTalent.GetDisplayName(t)}</color>: {Mewtations.Expedition.HeavenlyTalent.GetDescription(t)}\n";
+            }
+            desc += "\n";
+        }
+
+        var mutations = ActiveMutations;
+        if (mutations.Count > 0)
+        {
+            desc += "<b>☣️ DỊ BIẾN TẠM THỜI:</b>\n";
+            foreach (var m in mutations)
+            {
+                desc += $"• <color=#ff3333>{Mewtations.Expedition.UnstableMutation.GetDisplayName(m)}</color>: {Mewtations.Expedition.UnstableMutation.GetDescription(m)}\n";
+            }
+            desc += "\n";
+        }
+
+        bool hasPunishment = IsFoodSlotLocked || IsPillSlotLocked || IsPassiveSlotsLocked || IsEquipmentSlotsLocked || IsUltimateLocked;
+        if (hasPunishment)
+        {
+            desc += "<b>☠️ HÌNH PHẠT NGÔN NGỮ / KHÓA:</b>\n";
+            if (IsUltimateLocked) desc += "• <color=red>[KHÓA KỸ NĂNG NỘ]</color>: Không thể thi triển Ultimate Skill.\n";
+            if (IsFoodSlotLocked) desc += "• <color=red>[KHÓA Ô THỨC ĂN]</color>: Slot Ultimate Skill bị phong ấn.\n";
+            if (IsPillSlotLocked) desc += "• <color=red>[KHÓA Ô LINH ĐAN]</color>: Slot Linh Đan bị phong ấn.\n";
+            if (IsPassiveSlotsLocked) desc += "• <color=red>[KHÓA Ô THIÊN PHÚ]</color>: Slot Thiên Phú bị phong ấn.\n";
+            if (IsEquipmentSlotsLocked) desc += "• <color=red>[KHÓA Ô TRANG BỊ]</color>: Không thể trang bị vũ khí/bùa.\n";
+            desc += "\n";
+        }
+
+        desc += "<i>" + SokLoc.Translate(this.DescriptionTerm) + "</i>";
+        this.descriptionOverride = desc;
+        base.UpdateCardText();
     }
 }
