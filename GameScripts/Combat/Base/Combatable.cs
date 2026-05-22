@@ -1,0 +1,1217 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+public class Combatable : CardData
+{
+	public List<Equipable> PossibleEquipables
+	{
+		get
+		{
+			if (!Application.isPlaying)
+			{
+				return (from id in this.PossibleEquipableIds
+					select (Equipable)new GameDataLoader(true, true).GetCardFromId(id, true) into e
+					where e != null
+					select e).ToList<Equipable>();
+			}
+			return (from id in this.PossibleEquipableIds
+				select (Equipable)WorldManager.instance.GameDataLoader.GetCardFromId(id, true) into e
+				where e != null
+				select e).ToList<Equipable>();
+		}
+	}
+
+	public AttackType ProcessedAttackType
+	{
+		get
+		{
+			Equipable equipableOfEquipableType = base.GetEquipableOfEquipableType(EquipableType.Weapon);
+			if (equipableOfEquipableType != null)
+			{
+				return equipableOfEquipableType.AttackType;
+			}
+			AttackType attackType = this.BaseAttackType;
+			if (this.InheritCombatStatsFromOtherCard)
+			{
+				Combatable combatable = WorldManager.instance.GameDataLoader.GetCardFromId(this.InheritCombatStatsFrom, true) as Combatable;
+				if (combatable.InheritCombatStatsFromOtherCard)
+				{
+					Debug.LogError("The InheritCombatStatsFromOtherCard referenced by " + this.Id + " also inherits from another card");
+				}
+				attackType = combatable.BaseAttackType;
+			}
+			return attackType;
+		}
+	}
+
+	public override bool HasInventory
+	{
+		get
+		{
+			return this.CanHaveInventory;
+		}
+	}
+
+	public CombatStats RealBaseCombatStats
+	{
+		get
+		{
+			CombatStats combatStats = new CombatStats();
+			if (!this.InheritCombatStatsFromOtherCard)
+			{
+				combatStats.InitStats(this.BaseCombatStats);
+			}
+			else
+			{
+				Combatable combatable = WorldManager.instance.GameDataLoader.GetCardFromId(this.InheritCombatStatsFrom, true) as Combatable;
+				if (!combatable)
+				{
+					Debug.LogError("The InheritCombatStatsFromOtherCard referenced by " + this.Id + " is not set or incorrect");
+				}
+				else if (combatable.InheritCombatStatsFromOtherCard)
+				{
+					Debug.LogError("The InheritCombatStatsFromOtherCard referenced by " + this.Id + " also inherits from another card");
+				}
+				else
+				{
+					combatStats.InitStats(combatable.BaseCombatStats);
+				}
+			}
+			return combatStats;
+		}
+	}
+
+	public CombatStats ProcessedCombatStats
+	{
+		get
+		{
+			CombatStats realBaseCombatStats = this.RealBaseCombatStats;
+			foreach (Equipable equipable in base.GetAllEquipables())
+			{
+				realBaseCombatStats.AddStats(equipable.MyStats);
+			}
+			realBaseCombatStats.MaxHealth = ((realBaseCombatStats.MaxHealth >= 1) ? realBaseCombatStats.MaxHealth : 1);
+			return realBaseCombatStats;
+		}
+	}
+
+	[HideInInspector]
+	public bool InConflict
+	{
+		get
+		{
+			return this.MyConflict != null;
+		}
+	}
+
+	public bool CanLeaveConflict
+	{
+		get
+		{
+			return this.MyConflict != null && this.MyConflict.CanLeaveConflict(this);
+		}
+	}
+
+	public float TimeToAttackNormalized
+	{
+		get
+		{
+			return this.AttackTimer / this.GetAttackTime();
+		}
+	}
+
+	public Team Team
+	{
+		get
+		{
+			if (this is BaseVillager || this is CitiesCombatable)
+			{
+				return Team.Player;
+			}
+			return Team.Enemy;
+		}
+	}
+
+	public AttackAnimation CurrentAttackAnimation
+	{
+		get
+		{
+			if (this.AttackAnimations.Count > 0)
+			{
+				return this.AttackAnimations[0];
+			}
+			return null;
+		}
+	}
+
+	public override void OnLanguageChange()
+	{
+		this._combatableDescription = null;
+		base.OnLanguageChange();
+	}
+
+	protected virtual float GetHitChance()
+	{
+		float num = this.ProcessedCombatStats.HitChance;
+		if (base.HasStatusEffectOfType<StatusEffect_Drunk>())
+		{
+			num *= 0.6f;
+		}
+		return num;
+	}
+
+	protected virtual float GetAttackTime()
+	{
+		if (base.HasStatusEffectOfType<StatusEffect_Frenzy>())
+		{
+			return CombatStats.IncrementAttackSpeed(this.ProcessedCombatStats.AttackSpeed, 1);
+		}
+		return this.ProcessedCombatStats.AttackSpeed;
+	}
+
+	public float DamageMultiplier
+	{
+		get
+		{
+			if (base.HasStatusEffectOfType<StatusEffect_Drunk>())
+			{
+				return 2f;
+			}
+			return 1f;
+		}
+	}
+
+	public string GetCombatTypeTitle()
+	{
+		if (this.ProcessedAttackType == AttackType.Melee)
+		{
+			return SokLoc.Translate("label_melee_title");
+		}
+		if (this.ProcessedAttackType == AttackType.Ranged)
+		{
+			return SokLoc.Translate("label_ranged_title");
+		}
+		if (this.ProcessedAttackType == AttackType.Magic)
+		{
+			return SokLoc.Translate("label_magic_title");
+		}
+		if (this.ProcessedAttackType == AttackType.Air)
+		{
+			return SokLoc.Translate("label_air_title");
+		}
+		if (this.ProcessedAttackType == AttackType.Foot)
+		{
+			return SokLoc.Translate("label_foot_title");
+		}
+		if (this.ProcessedAttackType == AttackType.Armour)
+		{
+			return SokLoc.Translate("label_armour_title");
+		}
+		return "";
+	}
+
+	public string GetCombatTypeDescription()
+	{
+		if (this.ProcessedAttackType == AttackType.Melee)
+		{
+			return SokLoc.Translate("label_melee_description");
+		}
+		if (this.ProcessedAttackType == AttackType.Ranged)
+		{
+			return SokLoc.Translate("label_ranged_description");
+		}
+		if (this.ProcessedAttackType == AttackType.Magic)
+		{
+			return SokLoc.Translate("label_magic_description");
+		}
+		if (this.ProcessedAttackType == AttackType.Air)
+		{
+			return SokLoc.Translate("label_air_description");
+		}
+		if (this.ProcessedAttackType == AttackType.Foot)
+		{
+			return SokLoc.Translate("label_foot_description");
+		}
+		if (this.ProcessedAttackType == AttackType.Armour)
+		{
+			return SokLoc.Translate("label_armour_description");
+		}
+		return "";
+	}
+
+	public string GetCombatTypeLore()
+	{
+		if (this.ProcessedAttackType == AttackType.Melee)
+		{
+			return SokLoc.Translate("label_melee_lore");
+		}
+		if (this.ProcessedAttackType == AttackType.Ranged)
+		{
+			return SokLoc.Translate("label_ranged_lore");
+		}
+		if (this.ProcessedAttackType == AttackType.Magic)
+		{
+			return SokLoc.Translate("label_magic_lore");
+		}
+		if (this.ProcessedAttackType == AttackType.Air)
+		{
+			return SokLoc.Translate("label_air_lore");
+		}
+		if (this.ProcessedAttackType == AttackType.Foot)
+		{
+			return SokLoc.Translate("label_foot_lore");
+		}
+		if (this.ProcessedAttackType == AttackType.Armour)
+		{
+			return SokLoc.Translate("label_armour_lore");
+		}
+		return "";
+	}
+
+	public override void OnEquipItem(Equipable equipable)
+	{
+		this._combatableDescription = null;
+		if (this.HealthPoints > this.ProcessedCombatStats.MaxHealth)
+		{
+			this.HealthPoints = this.ProcessedCombatStats.MaxHealth;
+		}
+	}
+
+	public override void OnUnequipItem(Equipable equipable)
+	{
+		this._combatableDescription = null;
+	}
+
+	private void StartOrJoinConflictInStack()
+	{
+		if (this.MyGameCard.HasTransportCard())
+		{
+			return;
+		}
+		Conflict conflictInStack = this.GetConflictInStack();
+		if (conflictInStack != null)
+		{
+			conflictInStack.JoinConflict(this);
+			return;
+		}
+		List<CardData> list = base.CardsInStackMatchingPredicate((CardData x) => x is Combatable && x != this);
+
+		// MEWTATIONS INTERCEPT: Check if a Cat is involved in the combat stack
+		bool containsCat = this is CatCardData || list.Exists(x => x is CatCardData);
+		if (containsCat)
+		{
+			List<Combatable> playerCats = new List<Combatable>();
+			if (this is CatCardData && this.HealthPoints > 0) playerCats.Add(this);
+			foreach (var card in list)
+			{
+				if (card is CatCardData cat && cat.HealthPoints > 0)
+				{
+					playerCats.Add(cat);
+				}
+			}
+
+			List<Combatable> enemies = new List<Combatable>();
+			if (!(this is CatCardData) && this.HealthPoints > 0)
+			{
+				enemies.Add(this);
+			}
+			foreach (var card in list)
+			{
+				if (card is Combatable comb && !(comb is CatCardData) && comb.HealthPoints > 0)
+				{
+					enemies.Add(comb);
+				}
+			}
+
+			if (playerCats.Count > 0 && enemies.Count > 0)
+			{
+				Mewtations.Combat.TurnBasedCombatManager.Instance.StartCombat(playerCats, enemies, (result) =>
+				{
+					if (result == Mewtations.Combat.CombatResult.Victory)
+					{
+						foreach (var enemy in enemies)
+						{
+							if (enemy != null && enemy.MyGameCard != null)
+							{
+								enemy.MyGameCard.DestroyCard(true, true);
+							}
+						}
+					}
+				});
+				return;
+			}
+		}
+
+		Conflict conflict = Conflict.StartConflict(this);
+		foreach (CardData cardData in list)
+		{
+			conflict.JoinConflict(cardData as Combatable);
+		}
+	}
+
+	public void OnHealthChange()
+	{
+		this._combatableDescription = null;
+	}
+
+	private Conflict GetConflictInStack()
+	{
+		foreach (GameCard gameCard in this.MyGameCard.GetAllCardsInStack())
+		{
+			Combatable combatable = gameCard.CardData as Combatable;
+			if (combatable != null && combatable.MyConflict != null)
+			{
+				return combatable.MyConflict;
+			}
+		}
+		return null;
+	}
+
+	public override void UpdateCard()
+	{
+		if (this.previouseHealthPoints != this.HealthPoints)
+		{
+			this.OnHealthChange();
+		}
+		this.MyGameCard.SpecialIcon.sprite = SpriteManager.instance.HealthIcon;
+		if (this.MyGameCard != null && this.MyGameCard.IsDemoCard)
+		{
+			this.MyGameCard.SpecialValue = new int?(this.ProcessedCombatStats.MaxHealth);
+		}
+		else
+		{
+			this.MyGameCard.SpecialValue = new int?(this.HealthPoints);
+		}
+		this.UpdateCombatableTargets();
+		if ((this.combatableTargets.Count > 0 || this.GetConflictInStack() != null) && !this.InConflict)
+		{
+			this.StartOrJoinConflictInStack();
+		}
+		if (this.MyConflict != null && this.MyConflict.Initiator == this)
+		{
+			this.MyConflict.UpdateConflict();
+		}
+		if (this.InConflict)
+		{
+			bool flag = this.MyConflict.TimeSinceLastAttack <= 0.3f;
+			if (this.CanAttack && !this.InAttack && !flag && !this.MyGameCard.BeingDragged)
+			{
+				this.AttackTimer += Time.deltaTime * WorldManager.instance.TimeScale;
+			}
+			bool flag2 = base.HasStatusEffectOfType<StatusEffect_Stunned>();
+			if (!this.InAttack && this.StunTimer <= 0f && this.CanAttack && !flag2 && !flag && !this.BeingAttacked && this.AttackTimer >= this.GetAttackTime())
+			{
+				this.StartAttack();
+			}
+			if (this.InAttack)
+			{
+				this.UpdateAttackAnimations();
+			}
+		}
+		this.StunTimer -= Time.deltaTime * WorldManager.instance.TimeScale;
+		if (this.MyGameCard.BeingHovered && this.InConflict)
+		{
+			this.DrawConflictArrows(false);
+		}
+		this.previouseHealthPoints = this.HealthPoints;
+		base.UpdateCard();
+	}
+
+	public override void UpdateCardText()
+	{
+		this.descriptionOverride = SokLoc.Translate(this.DescriptionTerm);
+		this.descriptionOverride = this.descriptionOverride + "\n\n<i>" + this.GetCombatableDescription() + "</i>";
+		if (AdvancedSettingsScreen.AdvancedCombatStatsEnabled || GameCanvas.instance.CurrentScreen is CardopediaScreen)
+		{
+			this.descriptionOverride = this.descriptionOverride + "\n\n<i>" + this.GetCombatableDescriptionAdvanced() + "</i>";
+		}
+		base.UpdateCardText();
+	}
+
+	private void UpdateAttackAnimations()
+	{
+		for (int i = 0; i < this.AttackAnimations.Count; i++)
+		{
+			AttackAnimation attackAnimation = this.AttackAnimations[i];
+			if (!attackAnimation.HasStarted)
+			{
+				attackAnimation.Start();
+			}
+			attackAnimation.Update();
+			if (attackAnimation.IsDone)
+			{
+				this.AttackAnimations.RemoveAt(i);
+				i--;
+			}
+			else if (attackAnimation.IsBlocking)
+			{
+				break;
+			}
+		}
+		if (this.AttackAnimations.Count == 0)
+		{
+			this.CompleteAttack();
+		}
+	}
+
+	private void StartAttack()
+	{
+		if (this.InAttack)
+		{
+			Debug.LogError("Already in attack!");
+		}
+		this.MyConflict.TimeSinceLastAttack = 0f;
+		this.InAttack = true;
+		this.InAttackTimer = 0f;
+		this.Attacked = false;
+		this.AttackTimer = 0f;
+		Combatable target = this.MyConflict.GetTarget(this);
+		this.AttackIsHit = Random.value <= this.GetHitChance();
+		this.CurrentAttackType = this.ProcessedAttackType;
+		if (!this.AttackIsHit)
+		{
+			this.AttackSpecialHit = null;
+			this.AttackTargets = target.AsList<Combatable>();
+		}
+		else
+		{
+			this.AttackSpecialHit = this.DetermineSpecialHit();
+			if (this.AttackSpecialHit == null || this.AttackSpecialHit.HitType == SpecialHitType.None)
+			{
+				this.AttackTargets = target.AsList<Combatable>();
+			}
+			else
+			{
+				Debug.Log(string.Format("Special hit by {0}: {1}", base.Name, this.AttackSpecialHit.HitType));
+				this.AttackTargets = this.GetSpecialHitTargets(this.AttackSpecialHit, target);
+			}
+		}
+		foreach (Combatable combatable in this.AttackTargets)
+		{
+			combatable.BeingAttacked = true;
+		}
+		foreach (Combatable combatable2 in this.AttackTargets)
+		{
+			Vector3 vector;
+			if (this.AttackIsHit)
+			{
+				vector = combatable2.transform.position;
+			}
+			else
+			{
+				Vector2 vector2 = Random.insideUnitCircle.normalized * WorldManager.instance.CombatMissOffset;
+				vector = combatable2.transform.position + new Vector3(vector2.x, 0f, vector2.y);
+			}
+			AttackAnimation attackAnimation;
+			if (this.CurrentAttackType == AttackType.Ranged)
+			{
+				attackAnimation = new AttackAnimationRanged();
+			}
+			else if (this.CurrentAttackType == AttackType.Magic)
+			{
+				attackAnimation = new AttackAnimationMagic();
+			}
+			else if (this.CurrentAttackType == AttackType.Armour)
+			{
+				attackAnimation = new AttackAnimationBullet();
+			}
+			else if (this.CurrentAttackType == AttackType.Foot)
+			{
+				attackAnimation = new AttackAnimationBullet();
+			}
+			else if (this.CurrentAttackType == AttackType.Air)
+			{
+				attackAnimation = new AttackAnimationBullet();
+			}
+			else
+			{
+				attackAnimation = new AttackAnimationMelee();
+			}
+			attackAnimation.Origin = this;
+			attackAnimation.Target = combatable2;
+			attackAnimation.AttackStartPosition = this.MyGameCard.transform.position;
+			attackAnimation.AttackTargetPosition = vector;
+			this.AttackAnimations.Add(attackAnimation);
+		}
+	}
+
+	public virtual void NotifyParticipantUpdate(Combatable oldParticipant, Combatable newParticipant)
+	{
+		if (this.AttackTargets != null)
+		{
+			for (int i = 0; i < this.AttackTargets.Count; i++)
+			{
+				if (this.AttackTargets[i] == oldParticipant)
+				{
+					this.AttackTargets[i] = newParticipant;
+				}
+			}
+		}
+		if (this.AttackAnimations.Count > 0)
+		{
+			foreach (AttackAnimation attackAnimation in this.AttackAnimations)
+			{
+				if (attackAnimation.Target == oldParticipant)
+				{
+					attackAnimation.Target = newParticipant;
+				}
+			}
+		}
+	}
+
+	public Projectile CreateProjectile(Projectile projectilePrefab, Combatable target, AttackAnimation originAnimation)
+	{
+		Projectile projectile = Object.Instantiate<Projectile>(projectilePrefab);
+		projectile.ShotBy = this;
+		projectile.Target = target;
+		projectile.transform.position = (projectile.StartPosition = base.transform.position);
+		projectile.TargetPosition = originAnimation.AttackTargetPosition;
+		projectile.OriginAnimation = originAnimation;
+		return projectile;
+	}
+
+	public void CompleteAttack()
+	{
+		foreach (Combatable combatable in this.AttackTargets)
+		{
+			combatable.BeingAttacked = false;
+		}
+		this.AttackTargets = null;
+		this.InAttack = false;
+		this.Attacked = false;
+	}
+
+	public void DrawConflictArrows(bool onlyVeryEffective)
+	{
+		if (this.InAttack || this.Attacked)
+		{
+			return;
+		}
+		if (this.MyGameCard.BeingDragged)
+		{
+			return;
+		}
+		foreach (Combatable combatable in this.MyConflict.GetCombatableTargets(this))
+		{
+			if (!(combatable == null) && (!combatable.InAttack || combatable.CurrentAttackAnimation == null || !(combatable.CurrentAttackAnimation is AttackAnimationMelee)) && !combatable.MyGameCard.BeingDragged)
+			{
+				bool flag = this.IsVeryEffective(this.ProcessedAttackType, combatable.ProcessedAttackType);
+				if (!onlyVeryEffective || flag)
+				{
+					Vector3 vector = base.transform.position + Vector3.up * 0.1f;
+					Vector3 vector2 = combatable.transform.position + Vector3.up * 0.1f;
+					Vector3 normalized = (vector2 - vector).normalized;
+					float conflictArrowLengthDecrease = WorldManager.instance.ConflictArrowLengthDecrease;
+					Color color = (onlyVeryEffective ? ColorManager.instance.EffectiveCombatLineColor : ColorManager.instance.CombatLineColor);
+					ConflictArrow conflictArrow = new ConflictArrow
+					{
+						Start = vector + normalized * conflictArrowLengthDecrease,
+						End = vector2 - normalized * conflictArrowLengthDecrease,
+						Color = color,
+						VeryEffective = flag
+					};
+					DrawManager.instance.DrawShape(conflictArrow);
+				}
+			}
+		}
+	}
+
+	public override void StoppedDragging()
+	{
+		GameCard parent = this.MyGameCard.Parent;
+		Combatable combatable = ((parent != null) ? parent.Combatable : null);
+		if (this.InConflict)
+		{
+			if (combatable != null && combatable.InConflict)
+			{
+				if (combatable.MyConflict == this.MyConflict)
+				{
+					this.MyConflict.SetParticipantTeamIndex(this, this.MyConflict.GetIndexInTeam(combatable));
+				}
+				else
+				{
+					this.MyConflict.LeaveConflict(this);
+					this.StartOrJoinConflictInStack();
+				}
+				this.MyGameCard.RemoveFromStack();
+				return;
+			}
+			if (!this.CanLeaveConflict)
+			{
+				this.MyGameCard.RemoveFromStack();
+				return;
+			}
+			Conflict overlappingConflict = this.MyGameCard.GetOverlappingConflict();
+			if (overlappingConflict != null && overlappingConflict != this.MyConflict)
+			{
+				this.MyConflict.LeaveConflict(this);
+				overlappingConflict.JoinConflict(this);
+			}
+			if (overlappingConflict == null)
+			{
+				this.MyConflict.LeaveConflict(this);
+				return;
+			}
+		}
+		else
+		{
+			if (combatable != null && combatable.Team != this.Team)
+			{
+				this.MyGameCard.transform.position = combatable.transform.position;
+				this.StartOrJoinConflictInStack();
+			}
+			Conflict overlappingConflict2 = this.MyGameCard.GetOverlappingConflict();
+			if (overlappingConflict2 != null && !this.InConflict)
+			{
+				overlappingConflict2.JoinConflict(this);
+			}
+		}
+	}
+
+	public void CreateAndEquipCard(string cardId, bool markAsFound)
+	{
+		CardData cardPrefab = WorldManager.instance.GetCardPrefab(cardId, true);
+		if (!(cardPrefab is Equipable))
+		{
+			Debug.LogError(string.Concat(new string[] { "Can't give ", cardId, " to ", this.Id, " because it is not an Equipable" }));
+			return;
+		}
+		CardData cardData = WorldManager.instance.CreateCard(base.transform.position, cardPrefab, false, true, true, markAsFound);
+		cardData.MyGameCard.MyBoard = this.MyGameCard.MyBoard;
+		base.EquipItem(cardData as Equipable);
+		cardData.MyGameCard.Visuals.gameObject.SetActive(false);
+	}
+
+	public void ExitConflict()
+	{
+		this.AttackAnimations.Clear();
+		this.AttackTimer = 0f;
+		this.BeingAttacked = false;
+		this.InAttack = false;
+		this.Attacked = false;
+	}
+
+	public SpecialHit DetermineSpecialHit()
+	{
+		WeightedRandomBag<SpecialHit> weightedRandomBag = new WeightedRandomBag<SpecialHit>();
+		float num = 0f;
+		foreach (SpecialHit specialHit in this.ProcessedCombatStats.SpecialHits)
+		{
+			num += specialHit.Chance;
+			weightedRandomBag.AddEntry(specialHit, specialHit.Chance);
+		}
+		SpecialHit specialHit2 = new SpecialHit();
+		specialHit2.HitType = SpecialHitType.None;
+		specialHit2.Target = SpecialHitTarget.Target;
+		specialHit2.Chance = 100f - num;
+		weightedRandomBag.AddEntry(specialHit2, specialHit2.Chance);
+		return weightedRandomBag.Choose();
+	}
+
+	public int GetDamage(Combatable target)
+	{
+		if (target.HasStatusEffectOfType<StatusEffect_Invulnerable>())
+		{
+			return 0;
+		}
+		int attackDamage = this.ProcessedCombatStats.AttackDamage;
+		int num = CombatStats.IncrementAttackDefence(this.ProcessedCombatStats.AttackDamage, 1);
+		int num2 = ((Random.value < 0.5f) ? attackDamage : num);
+		int defence = target.ProcessedCombatStats.Defence;
+		int num3 = num2 - Mathf.CeilToInt((float)defence * 0.5f);
+		num3 = Mathf.RoundToInt((float)num3 * this.GetCombatRuleMultiplier(target, this) * this.DamageMultiplier);
+		if (num3 > 0)
+		{
+			return num3;
+		}
+		return Mathf.RoundToInt(Random.value);
+	}
+
+	public bool IsVeryEffective(AttackType self, AttackType target)
+	{
+		return (self == AttackType.Melee && target == AttackType.Magic) || (self == AttackType.Magic && target == AttackType.Ranged) || (self == AttackType.Ranged && target == AttackType.Melee);
+	}
+
+	public float GetCombatRuleMultiplier(Combatable target, Combatable self)
+	{
+		if (!this.IsVeryEffective(self.ProcessedAttackType, target.ProcessedAttackType))
+		{
+			return 1f;
+		}
+		return 1.4f;
+	}
+
+	private List<Combatable> GetSpecialHitTargets(SpecialHit specialHit, Combatable target)
+	{
+		if (specialHit.HitType == SpecialHitType.HealLowest)
+		{
+			List<Combatable> list = (from x in this.MyConflict.GetFriendlyParticipants(this)
+				orderby x.HealthPoints
+				select x).ToList<Combatable>();
+			if (list.Count > 0)
+			{
+				return list[0].AsList<Combatable>();
+			}
+		}
+		switch (specialHit.Target)
+		{
+		case SpecialHitTarget.Self:
+			return this.AsList<Combatable>();
+		case SpecialHitTarget.Target:
+			return target.AsList<Combatable>();
+		case SpecialHitTarget.RandomFriendly:
+			return this.MyConflict.GetFriendlyParticipants(this).Choose<Combatable>().AsList<Combatable>();
+		case SpecialHitTarget.RandomEnemy:
+			return this.MyConflict.GetEnemyParticipants(this).Choose<Combatable>().AsList<Combatable>();
+		case SpecialHitTarget.AllFriendly:
+			return this.MyConflict.GetFriendlyParticipants(this);
+		case SpecialHitTarget.AllEnemy:
+			return this.MyConflict.GetEnemyParticipants(this);
+		default:
+			return target.AsList<Combatable>();
+		}
+	}
+
+	public virtual void PerformAttack(Combatable target, Vector3 attackPos)
+	{
+		if (target == null)
+		{
+			return;
+		}
+		target.StunTimer = 0.05f;
+		if (!this.AttackIsHit)
+		{
+			this.ShowHitText(this, target, attackPos, this.AttackIsHit, -1, null);
+			return;
+		}
+		int num = Mathf.Clamp(this.GetDamage(target), 0, 100);
+		if (this.AttackSpecialHit != null && this.AttackSpecialHit.HitType != SpecialHitType.None)
+		{
+			if (!target.HasStatusEffectOfType<StatusEffect_Invulnerable>())
+			{
+				this.PerformSpecialHit(this.AttackSpecialHit, target, num);
+			}
+			else
+			{
+				target.Damage(num);
+			}
+			this.ShowHitText(this, target, attackPos, this.AttackIsHit, num, new SpecialHitType?(this.AttackSpecialHit.HitType));
+			return;
+		}
+		target.Damage(num);
+		this.ShowHitText(this, target, attackPos, this.AttackIsHit, num, null);
+	}
+
+	private void PerformSpecialHit(SpecialHit specialHit, Combatable target, int dmg)
+	{
+		Debug.Log(string.Format("Special hit by {0}: {1}", base.Name, specialHit.HitType));
+		if (specialHit.HitType == SpecialHitType.Poison)
+		{
+			if (!target.HasStatusEffectOfType<StatusEffect_Poison>())
+			{
+				target.AddStatusEffect(new StatusEffect_Poison());
+			}
+		}
+		else if (specialHit.HitType == SpecialHitType.Crit)
+		{
+			dmg *= 2;
+		}
+		else if (specialHit.HitType == SpecialHitType.Stun)
+		{
+			target.RemoveStatusEffect<StatusEffect_Stunned>();
+			target.AddStatusEffect(new StatusEffect_Stunned());
+		}
+		else if (specialHit.HitType == SpecialHitType.Bleeding)
+		{
+			if (!target.HasStatusEffectOfType<StatusEffect_Bleeding>())
+			{
+				target.AddStatusEffect(new StatusEffect_Bleeding());
+			}
+		}
+		else if (specialHit.HitType == SpecialHitType.Frenzy)
+		{
+			target.RemoveStatusEffect<StatusEffect_Frenzy>();
+			target.AddStatusEffect(new StatusEffect_Frenzy());
+		}
+		else if (specialHit.HitType == SpecialHitType.Sick)
+		{
+			if (!target.HasEquipableWithId("plague_mask"))
+			{
+				target.RemoveStatusEffect<StatusEffect_Sick>();
+				target.AddStatusEffect(new StatusEffect_Sick());
+				AudioManager.me.PlaySound2D(AudioManager.me.GetSick, 1f, 0.5f);
+			}
+		}
+		else if (specialHit.HitType == SpecialHitType.HealLowest)
+		{
+			target.HealthPoints = Mathf.Clamp(target.HealthPoints + 2, 0, target.ProcessedCombatStats.MaxHealth);
+		}
+		else if (specialHit.HitType == SpecialHitType.Heal)
+		{
+			target.HealthPoints = Mathf.Clamp(target.HealthPoints + 2, 0, target.ProcessedCombatStats.MaxHealth);
+		}
+		else if (specialHit.HitType == SpecialHitType.LifeSteal)
+		{
+			this.HealthPoints = Mathf.Clamp(this.HealthPoints + dmg, 0, this.ProcessedCombatStats.MaxHealth);
+		}
+		else if (specialHit.HitType == SpecialHitType.Invulnerable)
+		{
+			if (!target.HasStatusEffectOfType<StatusEffect_Invulnerable>())
+			{
+				target.AddStatusEffect(new StatusEffect_Invulnerable());
+			}
+		}
+		else if (specialHit.HitType == SpecialHitType.Anxious && !target.HasStatusEffectOfType<StatusEffect_Anxious>())
+		{
+			target.AddStatusEffect(new StatusEffect_Anxious());
+		}
+		bool flag = specialHit.Target == SpecialHitTarget.Target || specialHit.Target == SpecialHitTarget.RandomEnemy || specialHit.Target == SpecialHitTarget.AllEnemy;
+		if (specialHit.Target == SpecialHitTarget.Self && (specialHit.HitType == SpecialHitType.Crit || specialHit.HitType == SpecialHitType.Stun || specialHit.HitType == SpecialHitType.Bleeding))
+		{
+			flag = true;
+		}
+		if (specialHit.HitType == SpecialHitType.HealLowest)
+		{
+			flag = false;
+		}
+		if (flag)
+		{
+			target.Damage(dmg);
+		}
+	}
+
+	private void ShowHitText(Combatable origin, Combatable effectTarget, Vector3 targetPosition, bool isHit, int damage, SpecialHitType? type = null)
+	{
+		bool flag = this.IsVeryEffective(origin.ProcessedAttackType, effectTarget.ProcessedAttackType);
+		if (type != null)
+		{
+			if (type != null)
+			{
+				switch (type.GetValueOrDefault())
+				{
+				case SpecialHitType.Poison:
+				case SpecialHitType.Bleeding:
+				case SpecialHitType.Sick:
+				case SpecialHitType.Anxious:
+					effectTarget.CreateHitText(string.Format("{0}", damage), PrefabManager.instance.HitTextPrefab).SetVeryEffective(flag);
+					AudioManager.me.PlaySound2D(this.GetAttackTypeHitSound(), Random.Range(0.8f, 1.2f), 0.2f);
+					return;
+				case SpecialHitType.Stun:
+					AudioManager.me.PlaySound2D(this.GetAttackTypeHitSound(), Random.Range(0.8f, 1.2f), 0.2f);
+					effectTarget.CreateHitText("stun", PrefabManager.instance.CritHitText).SetVeryEffective(flag);
+					return;
+				case SpecialHitType.Heal:
+					AudioManager.me.PlaySound2D(AudioManager.me.Buff, Random.Range(0.8f, 1.2f), 0.2f);
+					effectTarget.CreateHitText("2", PrefabManager.instance.HealHitText);
+					return;
+				case SpecialHitType.HealLowest:
+					AudioManager.me.PlaySound2D(AudioManager.me.Buff, Random.Range(0.8f, 1.2f), 0.2f);
+					effectTarget.CreateHitText("2", PrefabManager.instance.HealHitText);
+					return;
+				case SpecialHitType.LifeSteal:
+					AudioManager.me.PlaySound2D(this.GetAttackTypeHitSound(), Random.Range(0.8f, 1.2f), 0.2f);
+					AudioManager.me.PlaySound2D(AudioManager.me.Buff, Random.Range(0.8f, 1.2f), 0.2f);
+					effectTarget.CreateHitText(string.Format("{0}", damage), PrefabManager.instance.BleedHitText).SetVeryEffective(flag);
+					origin.CreateHitText(string.Format("{0}", damage), PrefabManager.instance.HealHitText);
+					return;
+				case SpecialHitType.Frenzy:
+				case SpecialHitType.Invulnerable:
+					effectTarget.CreateHitText("buff", PrefabManager.instance.HitTextPrefab);
+					AudioManager.me.PlaySound2D(AudioManager.me.Buff, Random.Range(0.8f, 1.2f), 0.2f);
+					return;
+				case SpecialHitType.Damage:
+					AudioManager.me.PlaySound2D(this.GetAttackTypeHitSound(), Random.Range(0.8f, 1.2f), 0.2f);
+					effectTarget.CreateHitText(string.Format("{0}", damage), null).SetVeryEffective(flag);
+					return;
+				case SpecialHitType.Crit:
+					AudioManager.me.PlaySound2D(AudioManager.me.Crit, Random.Range(0.8f, 1.2f), 0.2f);
+					effectTarget.CreateHitText(string.Format("{0}!", damage), PrefabManager.instance.CritHitText).SetVeryEffective(flag);
+					return;
+				}
+			}
+			effectTarget.CreateHitText("NYI", null);
+			AudioManager.me.PlaySound2D(this.GetAttackTypeHitSound(), Random.Range(0.8f, 1.2f), 0.2f);
+			return;
+		}
+		if (isHit)
+		{
+			if (damage == 0)
+			{
+				if (effectTarget.HasStatusEffectOfType<StatusEffect_Invulnerable>())
+				{
+					effectTarget.CreateHitText("block", PrefabManager.instance.BlockHitText);
+				}
+				else
+				{
+					effectTarget.CreateHitText("block", PrefabManager.instance.BlockHitText);
+				}
+				AudioManager.me.PlaySound2D(AudioManager.me.Block, Random.Range(0.8f, 1.2f), 0.2f);
+				return;
+			}
+			effectTarget.CreateHitText(string.Format("{0}", damage), null).SetVeryEffective(flag);
+			AudioManager.me.PlaySound2D(this.GetAttackTypeHitSound(), Random.Range(0.8f, 1.2f), 0.2f);
+			return;
+		}
+		else
+		{
+			effectTarget.CreateHitText("miss", PrefabManager.instance.MissHitText).transform.position = targetPosition;
+			if (WorldManager.instance.CurrentBoard.Id == "cities")
+			{
+				AudioManager.me.PlaySound2D(AudioManager.me.MissCities, Random.Range(0.8f, 1.2f), 0.5f);
+				return;
+			}
+			AudioManager.me.PlaySound2D(AudioManager.me.Miss, Random.Range(0.8f, 1.2f), 0.5f);
+			return;
+		}
+	}
+
+	public List<AudioClip> GetAttackTypeHitSound()
+	{
+		if (this.ProcessedAttackType == AttackType.Melee)
+		{
+			return AudioManager.me.HitMelee;
+		}
+		if (this.ProcessedAttackType == AttackType.Ranged)
+		{
+			return AudioManager.me.HitRanged;
+		}
+		if (this.ProcessedAttackType == AttackType.Magic)
+		{
+			return AudioManager.me.HitMagic;
+		}
+		if (this.ProcessedAttackType == AttackType.Foot)
+		{
+			return AudioManager.me.HitFoot;
+		}
+		if (this.ProcessedAttackType == AttackType.Armour)
+		{
+			return AudioManager.me.HitArmour;
+		}
+		if (this.ProcessedAttackType == AttackType.Air)
+		{
+			return AudioManager.me.HitAir;
+		}
+		return AudioManager.me.HitMelee;
+	}
+
+	public HitText CreateHitText(string txt, HitText prefab = null)
+	{
+		if (prefab == null)
+		{
+			prefab = PrefabManager.instance.NormalHitText;
+		}
+		HitText hitText = WorldManager.instance.CreateHitText(base.transform.position, txt, prefab);
+		hitText.TargetCombatable = this;
+		this.CurrentHitText = hitText;
+		return hitText;
+	}
+
+	public virtual void Damage(int damage)
+	{
+		this.HealthPoints -= damage;
+		this.HealthPoints = Mathf.Max(this.HealthPoints, 0);
+		this.StunTimer = 0.05f;
+		GameCamera.instance.Screenshake = 0.3f;
+		this.MyGameCard.SetHitEffect(delegate
+		{
+			this.CheckDeath();
+		});
+		this.MyGameCard.RotWobble(0.5f);
+		this.MyGameCard.transform.localScale *= 1.5f;
+	}
+
+	private void CheckDeath()
+	{
+		if (this.isDead)
+		{
+			return;
+		}
+		if (this.HealthPoints <= 0)
+		{
+			this.isDead = true;
+			this.InAttack = false;
+			QuestManager.instance.SpecialActionComplete(this.Id + "_killed", null);
+			this.Die();
+		}
+	}
+
+	public virtual void Die()
+	{
+		if (this.MyConflict != null)
+		{
+			this.MyConflict.LeaveConflict(this);
+		}
+		this.MyGameCard.GetAllCardsInStack().Remove(this.MyGameCard);
+		this.MyGameCard.DestroyCard(true, true);
+	}
+
+	public virtual void UpdateCombatableTargets()
+	{
+		this.combatableTargets.Clear();
+		GameCard gameCard = this.MyGameCard.GetRootCard();
+		while (gameCard != null)
+		{
+			Combatable combatable = gameCard.CardData as Combatable;
+			if (combatable != null && gameCard.CardData != this && combatable.Team != this.Team)
+			{
+				this.combatableTargets.Add(combatable);
+			}
+			gameCard = gameCard.Child;
+		}
+	}
+
+	public string GetCombatableDescription()
+	{
+		if (!string.IsNullOrEmpty(this._combatableDescription))
+		{
+			return this._combatableDescription;
+		}
+		string text = "";
+		if (this.MyGameCard != null && !this.MyGameCard.IsDemoCard)
+		{
+			text = text + SokLoc.Translate("label_health_info", new LocParam[]
+			{
+				LocParam.Create("health", this.HealthPoints.ToString()),
+				LocParam.Create("maxhealth", this.ProcessedCombatStats.MaxHealth.ToString())
+			}) + "\n";
+		}
+		int num = Mathf.RoundToInt(this.RealBaseCombatStats.CombatLevel);
+		int num2 = Mathf.RoundToInt(this.ProcessedCombatStats.CombatLevel);
+		if (num2 != num)
+		{
+			text = text + SokLoc.Translate("label_base_combatlevel", new LocParam[] { LocParam.Create("level", num.ToString()) }) + "\n";
+			text += SokLoc.Translate("label_total_combatlevel", new LocParam[] { LocParam.Create("level", num2.ToString()) });
+		}
+		else
+		{
+			text += SokLoc.Translate("label_combatlevel", new LocParam[] { LocParam.Create("level", num2.ToString()) });
+		}
+		string text2 = this.ProcessedCombatStats.SummarizeSpecialHits();
+		if (text2.Length > 0)
+		{
+			text = text + "\n\n" + text2;
+		}
+		this._combatableDescription = text;
+		return text;
+	}
+
+	public string GetCombatableDescriptionAdvanced()
+	{
+		string text = SokLoc.Translate("label_combat_speed");
+		string text2 = SokLoc.Translate("label_hit_chance");
+		string text3 = SokLoc.Translate("label_damage");
+		string text4 = SokLoc.Translate("label_defence");
+		CombatStats processedCombatStats = this.ProcessedCombatStats;
+		string attackSpeedTranslation = processedCombatStats.GetAttackSpeedTranslation();
+		string attackDamageTranslation = processedCombatStats.GetAttackDamageTranslation();
+		string hitChanceTranslation = processedCombatStats.GetHitChanceTranslation();
+		string defenceTranslation = processedCombatStats.GetDefenceTranslation();
+		string text5 = SokLoc.Translate("label_seconds_format", new LocParam[] { LocParam.Create("seconds", processedCombatStats.AttackSpeed.ToString()) });
+		return string.Format("<size=80%>{0} {1} ({2})\n{3} {4} ({5}%)\n{6} {7} ({8})\n{9}: {10} ({11})</size>", new object[]
+		{
+			text,
+			attackSpeedTranslation,
+			text5,
+			text2,
+			hitChanceTranslation,
+			processedCombatStats.HitChance * 100f,
+			text3,
+			attackDamageTranslation,
+			processedCombatStats.AttackDamage,
+			text4,
+			defenceTranslation,
+			processedCombatStats.Defence
+		});
+	}
+
+	private void OnDrawGizmos()
+	{
+		if (Application.isPlaying && this.InConflict)
+		{
+			foreach (Combatable combatable in this.MyConflict.GetCombatableTargets(this))
+			{
+				Gizmos.DrawLine(base.transform.position, combatable.transform.position);
+			}
+			Bounds bounds = this.MyConflict.GetBounds();
+			Gizmos.color = Color.red;
+			Gizmos.DrawWireCube(bounds.center, bounds.size);
+		}
+	}
+
+	public static bool SpecialHitTypeIsAttack(SpecialHitType hitType)
+	{
+		return hitType != SpecialHitType.Heal && hitType != SpecialHitType.HealLowest && hitType != SpecialHitType.Invulnerable;
+	}
+
+	public void LogBaseCombatLevel()
+	{
+		Debug.Log(string.Format("Base combat level: {0}", this.BaseCombatStats.CombatLevel));
+	}
+
+	[Header("Combat")]
+	public bool CanHaveInventory;
+
+	public bool CanAttack = true;
+
+	public List<string> PossibleEquipableIds = new List<string>();
+
+	public bool InheritCombatStatsFromOtherCard;
+
+	[Card]
+	public string InheritCombatStatsFrom;
+
+	public AttackType BaseAttackType;
+
+	public CombatStats BaseCombatStats;
+
+	private string _combatableDescription;
+
+	[ExtraData("health")]
+	public int HealthPoints = 3;
+
+	private int previouseHealthPoints;
+
+	[ExtraData("attack_timer")]
+	[HideInInspector]
+	public float AttackTimer;
+
+	[HideInInspector]
+	public bool BeingAttacked;
+
+	[HideInInspector]
+	public float StunTimer;
+
+	protected List<Combatable> combatableTargets = new List<Combatable>();
+
+	[HideInInspector]
+	public bool InAttack;
+
+	[HideInInspector]
+	public AttackType CurrentAttackType;
+
+	[HideInInspector]
+	public bool Attacked;
+
+	[HideInInspector]
+	public List<Combatable> AttackTargets;
+
+	[HideInInspector]
+	public float InAttackTimer;
+
+	[HideInInspector]
+	public bool AttackIsHit;
+
+	public Conflict MyConflict;
+
+	private SpecialHit AttackSpecialHit;
+
+	public List<AttackAnimation> AttackAnimations = new List<AttackAnimation>();
+
+	[HideInInspector]
+	public HitText CurrentHitText;
+
+	[HideInInspector]
+	private bool isDead;
+}
