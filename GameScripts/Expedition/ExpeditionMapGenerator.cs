@@ -123,9 +123,10 @@ namespace Mewtations.Expedition
             }
 
             if (r < 0.40f) return NodeType.Combat;     // 40% combat
-            if (r < 0.65f) return NodeType.Resource;   // 25% resource
-            if (r < 0.80f) return NodeType.Event;      // 15% event/choice dialogue
-            if (r < 0.90f) return NodeType.Ruins;      // 10% ruins
+            if (r < 0.60f) return NodeType.Resource;   // 20% resource
+            if (r < 0.70f) return NodeType.Event;      // 10% event/choice dialogue
+            if (r < 0.80f) return NodeType.Ruins;      // 10% ruins
+            if (r < 0.90f) return NodeType.Altar;      // 10% Cat God's Altar
             return NodeType.Lore;                      // 10% lore/story card
         }
     }

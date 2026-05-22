@@ -11,6 +11,8 @@ namespace Mewtations.Expedition
         public static ExpeditionManager Instance { get; private set; }
 
         public bool IsExpeditionActive = false;
+        public ExpeditionState State = ExpeditionState.Idle;
+        public ExpeditionRunState RunState = new ExpeditionRunState();
         public List<ExpeditionNode> MapNodes = new List<ExpeditionNode>();
         public ExpeditionNode ActiveNode = null;
         public List<CatCardData> ActiveCats = new List<CatCardData>();
@@ -28,6 +30,8 @@ namespace Mewtations.Expedition
             if (IsExpeditionActive) return;
 
             IsExpeditionActive = true;
+            State = ExpeditionState.MapNavigation;
+            RunState.Clear();
             PortalCardSource = portalCard;
             ActiveCats = cats;
             BackpackCardSource = backpackCard;
@@ -63,6 +67,8 @@ namespace Mewtations.Expedition
 
             ActiveNode = node;
             node.State = NodeState.Visited;
+            State = ExpeditionState.InEncounter;
+            RunState.CurrentLayer = node.Layer;
 
             // Hide Map UI while resolving node activities
             if (ExpeditionMapUI.Instance != null)
@@ -72,25 +78,41 @@ namespace Mewtations.Expedition
 
             Debug.Log($"[Expedition] Tiến vào node {node.Id} ({node.Type}) ở Tầng {node.Layer}.");
 
+            IExpeditionEncounter encounter = null;
             switch (node.Type)
             {
                 case NodeType.Combat:
-                    TriggerCombat(isBoss: false);
+                    encounter = new CombatEncounter(node.Layer, isBoss: false);
                     break;
 
                 case NodeType.Boss:
-                    TriggerCombat(isBoss: true);
+                    encounter = new CombatEncounter(node.Layer, isBoss: true);
                     break;
 
                 case NodeType.Resource:
-                    TriggerResourceNode();
+                    encounter = new ResourceGatherEncounter();
                     break;
 
-                case NodeType.Event:
-                case NodeType.Lore:
-                case NodeType.Ruins:
-                    TriggerTextEventNode(node.Type);
+                case NodeType.Altar:
+                    encounter = new CatGodAltarEncounter();
                     break;
+
+                case NodeType.Ruins:
+                    encounter = new MysteryMutationEncounter();
+                    break;
+            }
+
+            if (encounter != null)
+            {
+                encounter.Resolve(() =>
+                {
+                    CompleteNodeResolution();
+                });
+            }
+            else
+            {
+                // Fallback for Event or Lore node types
+                TriggerTextEventNode(node.Type);
             }
         }
 
@@ -303,6 +325,8 @@ namespace Mewtations.Expedition
 
         public void CompleteNodeResolution()
         {
+            State = ExpeditionState.MapNavigation;
+
             // Node is cleared. Check connections of visited nodes to unlock next layer nodes
             UpdateConnections();
 
@@ -358,6 +382,7 @@ namespace Mewtations.Expedition
         public void ReturnToBase(bool isDefeat)
         {
             IsExpeditionActive = false;
+            State = ExpeditionState.Idle;
 
             // Close UI overlays
             if (ExpeditionMapUI.Instance != null) ExpeditionMapUI.Instance.HideWindow();
@@ -371,14 +396,18 @@ namespace Mewtations.Expedition
             {
                 Vector3 spawnPos = PortalCardSource.transform.position + Vector3.back * 1.5f;
 
-                // Return cats to base board
+                // Return cats to base board and clear active temporary mutations
                 foreach (var cat in ActiveCats)
                 {
-                    if (cat != null && cat.MyGameCard != null)
+                    if (cat != null)
                     {
-                        // Clean combat overlay links and set position
-                        cat.MyGameCard.transform.position = spawnPos;
-                        cat.MyGameCard.gameObject.SetActive(true);
+                        cat.ClearMutations(); // Mutations cleared upon returning to base!
+                        if (cat.MyGameCard != null)
+                        {
+                            // Clean combat overlay links and set position
+                            cat.MyGameCard.transform.position = spawnPos;
+                            cat.MyGameCard.gameObject.SetActive(true);
+                        }
                     }
                 }
 

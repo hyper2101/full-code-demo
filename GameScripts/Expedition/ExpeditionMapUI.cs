@@ -25,6 +25,12 @@ namespace Mewtations.Expedition
         private GUIStyle _backpackPanelStyle;
         private GUIStyle _buttonStyle;
 
+        // Cached progress bar textures
+        private Texture2D _greedBgTex;
+        private Texture2D _greedFillTex;
+        private Texture2D _corruptBgTex;
+        private Texture2D _corruptFillTex;
+
         private void Awake()
         {
             Instance = this;
@@ -108,6 +114,12 @@ namespace Mewtations.Expedition
             _buttonStyle.fontSize = 14;
             _buttonStyle.fontStyle = FontStyle.Bold;
             _buttonStyle.alignment = TextAnchor.MiddleCenter;
+
+            // Initialize progress bar textures
+            _greedBgTex = CreateColorTexture(new Color(0.18f, 0.05f, 0.05f, 0.85f));
+            _greedFillTex = CreateColorTexture(new Color(0.85f, 0.15f, 0.15f, 0.95f));
+            _corruptBgTex = CreateColorTexture(new Color(0.05f, 0.08f, 0.08f, 0.85f));
+            _corruptFillTex = CreateColorTexture(new Color(0.60f, 0.15f, 0.75f, 0.95f));
         }
 
         private Texture2D CreateColorTexture(Color col)
@@ -116,6 +128,13 @@ namespace Mewtations.Expedition
             tex.SetPixel(0, 0, col);
             tex.Apply();
             return tex;
+        }
+
+        private void DrawProgressBar(Rect rect, float percent, Texture2D bgTex, Texture2D fillTex)
+        {
+            if (bgTex != null) GUI.DrawTexture(rect, bgTex);
+            Rect fillRect = new Rect(rect.x + 2, rect.y + 2, Mathf.Max(0, (rect.width - 4) * percent), rect.height - 4);
+            if (fillTex != null && percent > 0) GUI.DrawTexture(fillRect, fillTex);
         }
 
         private void OnGUI()
@@ -188,6 +207,32 @@ namespace Mewtations.Expedition
             // ================== RIGHT COLUMN: SQUAD STATUS & BACKPACK ==================
             GUILayout.BeginVertical(GUILayout.Width(screenWidth * 0.38f));
 
+            // THEMATIC METRICS PANEL
+            GUILayout.BeginVertical(_backpackPanelStyle);
+            GUILayout.Label("<color=#ff5555>🔱 PHÁP TẮC VIỄN CHINH (THEMATIC METRICS)</color>", _subHeaderStyle);
+            GUILayout.Space(10);
+
+            var runState = ExpeditionManager.Instance.RunState;
+            float greedPercent = runState.GreedLevel / 100f;
+            float corruptPercent = runState.CorruptionLevel / 100f;
+
+            // Greed Bar
+            GUILayout.Label($"<b>Tham Lam (Greed):</b> <color=#ff5555>{runState.GreedLevel}%</color> <i>(Tăng lực chiến quái vật: +{runState.GreedLevel * 2}% HP/ATK)</i>", _labelStyle);
+            GUILayout.Space(2);
+            Rect greedRect = GUILayoutUtility.GetRect(0, 18, GUILayout.ExpandWidth(true));
+            DrawProgressBar(greedRect, greedPercent, _greedBgTex, _greedFillTex);
+            GUILayout.Space(10);
+
+            // Corruption Bar
+            GUILayout.Label($"<b>Ô Nhiễm (Corruption):</b> <color=#e066ff>{runState.CorruptionLevel}%</color> <i>(Tăng tỷ lệ Đột Biến khi chiến đấu)</i>", _labelStyle);
+            GUILayout.Space(2);
+            Rect corruptRect = GUILayoutUtility.GetRect(0, 18, GUILayout.ExpandWidth(true));
+            DrawProgressBar(corruptRect, corruptPercent, _corruptBgTex, _corruptFillTex);
+            GUILayout.Space(5);
+            GUILayout.EndVertical();
+
+            GUILayout.Space(15);
+
             // SQUAD STATUS PANEL
             GUILayout.BeginVertical(_backpackPanelStyle);
             GUILayout.Label("<color=#7cc>ĐỘI NGŨ THẦN MIÊU VIỄN CHINH</color>", _subHeaderStyle);
@@ -201,7 +246,31 @@ namespace Mewtations.Expedition
                 string speedText = $"Speed: {cat.Speed}";
                 
                 GUILayout.Label($"<b>{cat.Name}</b> {roleText} {elementText}— HP: {cat.HealthPoints}/{cat.ProcessedCombatStats.MaxHealth} | {speedText}", _labelStyle);
-                GUILayout.Space(5);
+                
+                // Draw Permanent Talents
+                var talents = cat.PermanentTraits;
+                if (talents.Count > 0)
+                {
+                    foreach (var talent in talents)
+                    {
+                        string talentName = HeavenlyTalent.GetDisplayName(talent);
+                        string talentDesc = HeavenlyTalent.GetDescription(talent);
+                        GUILayout.Label($"   ✦ <color=#ffaa00><b>Thiên Phú: {talentName}</b></color>\n   <color=#aaaaaa><i>({talentDesc})</i></color>", _labelStyle);
+                    }
+                }
+
+                // Draw Active Mutations
+                var mutations = cat.ActiveMutations;
+                if (mutations.Count > 0)
+                {
+                    foreach (var mut in mutations)
+                    {
+                        string mutName = UnstableMutation.GetDisplayName(mut);
+                        string mutDesc = UnstableMutation.GetDescription(mut);
+                        GUILayout.Label($"   ☣️ <color=#e066ff><b>Đột Biến: {mutName}</b></color>\n   <color=#aaaaaa><i>({mutDesc})</i></color>", _labelStyle);
+                    }
+                }
+                GUILayout.Space(8);
             }
             GUILayout.EndVertical();
 

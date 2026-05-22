@@ -15,8 +15,8 @@ public class CatSummoningSystem
     /// </summary>
     public GameCard SummonCat(Vector3 position, int highestBreakthroughLevel)
     {
-        // Tính toán tỉ lệ Thiên Kiêu dựa trên Breakthrough level (Cấp càng cao, tỉ lệ càng tăng nhẹ)
-        float thienKieuChance = 0.05f + (highestBreakthroughLevel * 0.02f); // Base 5%, mỗi cấp +2%
+        // Tính toán tỉ lệ Thiên Kiêu dựa trên Breakthrough level (Cấp càng cao, tỉ lệ càng tăng)
+        float thienKieuChance = 0.20f + (highestBreakthroughLevel * 0.05f); // Base 20%, mỗi cấp +5%
         bool isThienKieu = Random.value <= thienKieuChance;
 
         string catId = "cat_basic"; // ID mặc định của mèo
@@ -35,10 +35,18 @@ public class CatSummoningSystem
 
             if (isThienKieu)
             {
-                // Thưởng chỉ số Thiên Kiêu
-                catData.CustomName = "Thiên Tài " + catData.Name;
-                catData.Speed += 30; // Nhanh hơn
-                // TODO: Áp dụng StatusEffect "Thiên Kiêu" đặc biệt định hình lối chơi
+                // Thưởng chỉ số Thiên Kiêu và Thiên Phú định hình lối chơi
+                string[] talents = { 
+                    Mewtations.Expedition.HeavenlyTalent.HeavenlyPoisonBody, 
+                    Mewtations.Expedition.HeavenlyTalent.DivineShieldProtection, 
+                    Mewtations.Expedition.HeavenlyTalent.RageOvercharger, 
+                    Mewtations.Expedition.HeavenlyTalent.MartialArtsCleave 
+                };
+                string rolledTalent = talents[Random.Range(0, talents.Length)];
+                catData.AddTrait(rolledTalent);
+                
+                catData.CustomName = $"{Mewtations.Expedition.HeavenlyTalent.GetDisplayName(rolledTalent)} {catData.Name}";
+                catData.Speed += 30; // Thần tốc tăng mạnh
             }
         }
 

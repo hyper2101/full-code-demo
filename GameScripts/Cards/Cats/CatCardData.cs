@@ -37,6 +37,86 @@ public class CatCardData : Combatable
     [ExtraData("speed_stat")]
     public int Speed = 100;
 
+    [Header("Traits and Mutations")]
+    [ExtraData("permanent_traits")]
+    public string PermanentTraitsString = "";
+
+    [ExtraData("active_mutations")]
+    public string ActiveMutationsString = "";
+
+    public List<string> PermanentTraits
+    {
+        get
+        {
+            return string.IsNullOrEmpty(PermanentTraitsString) 
+                ? new List<string>() 
+                : new List<string>(PermanentTraitsString.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries));
+        }
+    }
+
+    public List<string> ActiveMutations
+    {
+        get
+        {
+            return string.IsNullOrEmpty(ActiveMutationsString) 
+                ? new List<string>() 
+                : new List<string>(ActiveMutationsString.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries));
+        }
+    }
+
+    public void AddTrait(string traitId)
+    {
+        var list = PermanentTraits;
+        if (!list.Contains(traitId))
+        {
+            list.Add(traitId);
+            PermanentTraitsString = string.Join(",", list);
+        }
+    }
+
+    public void RemoveTrait(string traitId)
+    {
+        var list = PermanentTraits;
+        if (list.Remove(traitId))
+        {
+            PermanentTraitsString = string.Join(",", list);
+        }
+    }
+
+    public void AddMutation(string mutationId)
+    {
+        var list = ActiveMutations;
+        if (!list.Contains(mutationId))
+        {
+            list.Add(mutationId);
+            ActiveMutationsString = string.Join(",", list);
+        }
+    }
+
+    public void RemoveMutation(string mutationId)
+    {
+        var list = ActiveMutations;
+        if (list.Remove(mutationId))
+        {
+            ActiveMutationsString = string.Join(",", list);
+        }
+    }
+
+    public void ClearMutations()
+    {
+        ActiveMutationsString = "";
+    }
+
+    public bool HasTrait(string id)
+    {
+        return PermanentTraits.Contains(id);
+    }
+
+    public bool HasMutation(string id)
+    {
+        return ActiveMutations.Contains(id);
+    }
+
     public override void UpdateCard()
     {
         base.UpdateCard();

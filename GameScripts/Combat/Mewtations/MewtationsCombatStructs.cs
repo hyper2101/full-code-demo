@@ -61,6 +61,24 @@ namespace Mewtations.Combat
         public List<CombatStatusEffect> ActiveDebuffs = new List<CombatStatusEffect>();
         public int Shield = 0;
 
+        public bool HasTrait(string id)
+        {
+            if (Source is CatCardData cat)
+            {
+                return cat.HasTrait(id);
+            }
+            return false;
+        }
+
+        public bool HasMutation(string id)
+        {
+            if (Source is CatCardData cat)
+            {
+                return cat.HasMutation(id);
+            }
+            return false;
+        }
+
         public CombatUnit(Combatable source, bool isPlayer, int slotIndex)
         {
             Source = source;
@@ -79,6 +97,18 @@ namespace Mewtations.Combat
             {
                 Speed = cat.Speed;
                 CurrentRage = cat.CurrentRage;
+
+                // Apply permanent Heavenly Talents
+                if (cat.HasTrait(Mewtations.Expedition.HeavenlyTalent.DivineShieldProtection))
+                {
+                    Shield += 15;
+                }
+
+                // Apply temporary Unstable Mutations
+                if (cat.HasMutation(Mewtations.Expedition.UnstableMutation.LethargicNap))
+                {
+                    Speed = Mathf.Max(10, Speed - 15);
+                }
             }
             else
             {
@@ -118,6 +148,10 @@ namespace Mewtations.Combat
 
         public void AddShield(int shieldAmount)
         {
+            if (HasMutation(Mewtations.Expedition.UnstableMutation.CursedFur))
+            {
+                return; // Locks ability to gain shield!
+            }
             Shield += shieldAmount;
         }
 
@@ -171,6 +205,13 @@ namespace Mewtations.Combat
                     ActiveDebuffs.RemoveAt(i);
                 }
             }
+
+            // Apply Lethargic Nap end-of-round healing
+            if (HasMutation(Mewtations.Expedition.UnstableMutation.LethargicNap) && IsAlive)
+            {
+                Heal(5);
+                logCallback?.Invoke($"💤 {Name} đang ngái ngủ tự hồi phục 5 HP dưỡng thương.");
+            }
         }
     }
 
@@ -192,7 +233,18 @@ namespace Mewtations.Combat
         public static void ExecuteBasicAttack(CombatUnit attacker, CombatUnit target, List<CombatUnit> allTargets, Action<string> logCallback)
         {
             var pattern = GetAttackPattern(attacker.Source.GetEquipableOfEquipableType(EquipableType.Weapon)?.Id);
+            if (attacker.HasTrait(Mewtations.Expedition.HeavenlyTalent.MartialArtsCleave))
+            {
+                pattern = WeaponAttackPattern.Cleave;
+            }
+
             int baseDamage = attacker.Source.ProcessedCombatStats.AttackDamage;
+
+            // Apply UnstableClaws damage boost
+            if (attacker.HasMutation(Mewtations.Expedition.UnstableMutation.UnstableClaws))
+            {
+                baseDamage = Mathf.RoundToInt(baseDamage * 1.3f);
+            }
 
             // Apply Shocked extra damage
             if (target.HasDebuff(MewtationsDebuff.Shocked))
@@ -269,6 +321,27 @@ namespace Mewtations.Combat
                         }
                     }
                     break;
+            }
+
+            // Apply HeavenlyPoisonBody to target
+            if (attacker.HasTrait(Mewtations.Expedition.HeavenlyTalent.HeavenlyPoisonBody) && target.IsAlive)
+            {
+                target.AddDebuff(MewtationsDebuff.Poisoned, 3);
+                logCallback?.Invoke($"☠️ Đòn đánh của {attacker.Name} tẩm độc linh lực, gây trúng độc lên {target.Name}!");
+            }
+
+            // Apply RageOvercharger
+            if (attacker.HasTrait(Mewtations.Expedition.HeavenlyTalent.RageOvercharger) && attacker.IsAlive)
+            {
+                attacker.CurrentRage = Mathf.Min(145, attacker.CurrentRage + 10);
+                logCallback?.Invoke($"⚡ {attacker.Name} kích hoạt Nộ Khí Cuồng Triều, nhận thêm 10 Nộ khí!");
+            }
+
+            // Apply UnstableClaws self-damage
+            if (attacker.HasMutation(Mewtations.Expedition.UnstableMutation.UnstableClaws) && attacker.IsAlive)
+            {
+                attacker.TakeDamage(2);
+                logCallback?.Invoke($"☣️ {attacker.Name} bị đột biến tự phế kinh mạch, hao tổn 2 HP!");
             }
         }
     }
