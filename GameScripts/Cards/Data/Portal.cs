@@ -41,7 +41,7 @@ public class Portal : CardData
 
 	private bool CardIsAllowedInPortal(CardData otherCard)
 	{
-		return otherCard.MyCardType == CardType.Humans || otherCard is CatCardData || otherCard.BackpackCapacity > 0;
+		return otherCard.MyCardType == CardType.Humans || otherCard is CatCardData || otherCard.BackpackCapacity > 0 || otherCard.Id.StartsWith("item_ancient_relic_");
 	}
 
 	public override void UpdateCard()
@@ -130,6 +130,7 @@ public class Portal : CardData
 		if (catsInStack.Count > 0)
 		{
 			CardData backpackCard = this.MyGameCard.GetAllCardsInStack().Select(c => c.CardData).FirstOrDefault(d => d.BackpackCapacity > 0);
+			CardData relicCard = this.MyGameCard.GetAllCardsInStack().Select(c => c.CardData).FirstOrDefault(d => d.Id.StartsWith("item_ancient_relic_"));
 			
 			foreach (var cat in catsInStack)
 			{
@@ -144,8 +145,13 @@ public class Portal : CardData
 				backpackCard.MyGameCard.RemoveFromStack();
 				backpackCard.MyGameCard.gameObject.SetActive(false);
 			}
+			if (relicCard != null && relicCard.MyGameCard != null)
+			{
+				relicCard.MyGameCard.RemoveFromStack();
+				relicCard.MyGameCard.gameObject.SetActive(false);
+			}
 
-			Mewtations.Expedition.ExpeditionManager.Instance.StartExpedition(this.MyGameCard, catsInStack.Cast<CatCardData>().ToList(), backpackCard);
+			Mewtations.Expedition.ExpeditionManager.Instance.StartExpedition(this.MyGameCard, catsInStack.Cast<CatCardData>().ToList(), backpackCard, relicCard);
 			return;
 		}
 

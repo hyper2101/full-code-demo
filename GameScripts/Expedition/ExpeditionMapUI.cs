@@ -233,6 +233,36 @@ namespace Mewtations.Expedition
 
             GUILayout.Space(15);
 
+            // EQUIPPED RELIC PANEL
+            if (runState != null && !string.IsNullOrEmpty(runState.EquippedRelicId))
+            {
+                GUILayout.BeginVertical(_backpackPanelStyle);
+                string relicName = "";
+                string relicDesc = "";
+                switch (runState.EquippedRelicId)
+                {
+                    case "item_ancient_relic_smelt":
+                        relicName = "Linh Lò Tự Động (Auto-Smelt Relic)";
+                        relicDesc = "Tự động thúc tiến tất cả Lò Nung/Furnace ở căn cứ thêm <color=#88ff88>+15 giây</color> sau mỗi khu vực viễn chinh hoàn thành.";
+                        break;
+                    case "item_ancient_relic_wood":
+                        relicName = "Linh Mộc Tự Động (Auto-Sawmill Relic)";
+                        relicDesc = "Tự động thúc tiến tất cả Xưởng Xẻ Gỗ/Sawmill ở căn cứ thêm <color=#88ff88>+15 giây</color> sau mỗi khu vực viễn chinh hoàn thành.";
+                        break;
+                    case "item_ancient_relic_booster":
+                        relicName = "Linh Thần Thu Hoạch (Universal Booster Relic)";
+                        relicDesc = "Tự động thúc tiến <color=#88ff88>TẤT CẢ</color> các công trình đang chạy ở căn cứ thêm <color=#88ff88>+5 giây</color> sau mỗi khu vực.";
+                        break;
+                }
+                if (!string.IsNullOrEmpty(relicName))
+                {
+                    GUILayout.Label($"<color=#00ffcc>🔮 CỔ VẬT ĐANG TRANG BỊ:</color>\n<b>{relicName}</b>", _subHeaderStyle);
+                    GUILayout.Label($"<color=#cccccc><i>{relicDesc}</i></color>", _labelStyle);
+                }
+                GUILayout.EndVertical();
+                GUILayout.Space(15);
+            }
+
             // SQUAD STATUS PANEL
             GUILayout.BeginVertical(_backpackPanelStyle);
             GUILayout.Label("<color=#7cc>ĐỘI NGŨ THẦN MIÊU VIỄN CHINH</color>", _subHeaderStyle);
@@ -381,7 +411,34 @@ namespace Mewtations.Expedition
                 case NodeType.Altar:
                     prefix = "🔮 Tế Đàn";
                     break;
+                case NodeType.Elite:
+                    prefix = "🔥 CƯƠNG GIẢ (ELITE)";
+                    break;
+                case NodeType.Extraction:
+                    prefix = "🌀 CỔNG TRỤC XUẤT";
+                    break;
+                case NodeType.SafeRetreat:
+                    prefix = "⛺ ẨN TRÁNH CỔ LỘ";
+                    break;
             }
+
+            string biomeLabel = "";
+            switch (node.Biome)
+            {
+                case ExpeditionBiome.Forest:
+                    biomeLabel = " <color=#88ff88>[Rừng]</color>";
+                    break;
+                case ExpeditionBiome.Swamp:
+                    biomeLabel = " <color=#ff33cc>[Đầm Lầy]</color>";
+                    break;
+                case ExpeditionBiome.Peak:
+                    biomeLabel = " <color=#33ccff>[Đỉnh Lôi]</color>";
+                    break;
+                case ExpeditionBiome.Abyss:
+                    biomeLabel = " <color=#aa33ff>[Vô Tận]</color>";
+                    break;
+            }
+            prefix += biomeLabel;
 
             string themeLabel = "";
             switch (node.Theme)

@@ -102,6 +102,81 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 		}
 	}
 
+	// Khi true, các thẻ con sẽ được dàn theo hàng ngang thay vì xếp chồng dọc.
+	// Sử dụng bởi Đền Thờ (Shrine) và Đột Phá Trận (Breakthrough Array).
+	public virtual bool UsesHorizontalSlots
+	{
+		get
+		{
+			return false;
+		}
+	}
+
+	// Xác định thẻ này có phải là Cổ Vật cổ xưa hỗ trợ tự động hóa hay không.
+	public virtual bool IsAncientRelic
+	{
+		get
+		{
+			return this.Id != null && (this.Id.ToLower().Contains("relic") || this.Id.ToLower().StartsWith("item_ancient_relic"));
+		}
+	}
+
+	// Xác định thẻ này có phải là Cống Phẩm hiến tế cho Đền Thờ hay không.
+	public virtual bool IsShrineOffering
+	{
+		get
+		{
+			return this.Id != null && this.Id.ToLower() == "item_shrine_offering";
+		}
+	}
+
+	// Xác định thẻ này có thể dùng làm vật phẩm hỗ trợ trong Đột Phá Trận hay không.
+	public virtual bool IsBreakthroughSupport
+	{
+		get
+		{
+			if (this.Id == null) return false;
+			string lowerId = this.Id.ToLower();
+			return lowerId == "item_breakthrough_pill" || lowerId == "item_revive_pill" || 
+			       lowerId.Contains("talisman") || lowerId.Contains("potion") || lowerId.Contains("shield");
+		}
+	}
+
+	// Tỷ lệ giảm sát thương lôi kiếp mặc định khi làm vật phẩm hỗ trợ đột phá (0f - 1f).
+	public virtual float BreakthroughDmgReduction
+	{
+		get
+		{
+			if (this.Id == null) return 0f;
+			string lowerId = this.Id.ToLower();
+			if (lowerId == "item_breakthrough_pill") return 0.50f;
+			if (lowerId.Contains("talisman") || lowerId.Contains("shield")) return 0.30f;
+			return 0.05f; // Đồ vật linh tinh thường giảm nhẹ 5%
+		}
+	}
+
+	// Lượng sinh mệnh tăng thêm tạm thời mặc định khi làm vật phẩm hỗ trợ đột phá.
+	public virtual int BreakthroughHealthBonus
+	{
+		get
+		{
+			if (this.Id == null) return 0;
+			string lowerId = this.Id.ToLower();
+			if (lowerId == "item_breakthrough_pill") return 15;
+			if (lowerId.Contains("potion")) return 20;
+			return 0;
+		}
+	}
+
+	// Hiệu ứng bảo mệnh hồi sinh mặc định khi làm vật phẩm hỗ trợ đột phá.
+	public virtual bool BreakthroughReviveEffect
+	{
+		get
+		{
+			return this.Id != null && this.Id.ToLower() == "item_revive_pill";
+		}
+	}
+
 	public List<CardBag> GetCardBags()
 	{
 		Type type = base.GetType();

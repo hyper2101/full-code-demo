@@ -20,16 +20,35 @@ namespace Mewtations.Expedition
         public Backpack CurrentBackpack = null;
         public GameCard PortalCardSource = null;
         public int CurrentMapSeed = 0;
+        public CardData RelicCardSource = null; // Cổ vật đang mang theo
 
         private void Awake()
         {
             Instance = this;
         }
 
-        public void StartExpedition(GameCard portalCard, List<CatCardData> cats, CardData backpackCard)
+        public void StartExpedition(GameCard portalCard, List<CatCardData> cats, CardData backpackCard, CardData relicCard = null)
         {
             if (IsExpeditionActive) return;
 
+            int capacity = (backpackCard != null && backpackCard.BackpackCapacity > 0) ? backpackCard.BackpackCapacity : 10;
+            int seed = UnityEngine.Random.Range(0, 100000);
+
+            RelicCardSource = relicCard;
+            if (relicCard != null)
+            {
+                RunState.EquippedRelicId = relicCard.Id;
+            }
+            else
+            {
+                RunState.EquippedRelicId = "";
+            }
+
+            ExecuteStartExpedition(portalCard, cats, backpackCard, capacity, seed);
+        }
+
+        private void ExecuteStartExpedition(GameCard portalCard, List<CatCardData> cats, CardData backpackCard, int capacity, int seed)
+        {
             IsExpeditionActive = true;
             State = ExpeditionState.MapNavigation;
             
@@ -44,12 +63,8 @@ namespace Mewtations.Expedition
             ActiveCats = cats;
             BackpackCardSource = backpackCard;
 
-            // Set up Backpack based on the card capacity, default to 10 if none
-            int capacity = (backpackCard != null && backpackCard.BackpackCapacity > 0) ? backpackCard.BackpackCapacity : 10;
             CurrentBackpack = new Backpack(capacity);
 
-            // Generate procedural node map
-            int seed = UnityEngine.Random.Range(0, 100000);
             CurrentMapSeed = seed;
             MapNodes = ExpeditionMapGenerator.GenerateMap(seed, maxLayers: 6, maxNodesPerLayer: 3);
             ActiveNode = null;
@@ -82,11 +97,13 @@ namespace Mewtations.Expedition
             State = ExpeditionState.InEncounter;
             RunState.CurrentLayer = node.Layer;
 
+            // Travel food consumption has been disabled per user request
+
             // Route Themes initial impacts
             if (node.Theme == RouteTheme.TaDao)
             {
-                RunState.AddCorruption(10);
-                Debug.Log("[Expedition] Tà Đạo áp lực! Tăng +10 Corruption khi bước vào khu vực tà khí.");
+                RunState.AddCorruption(25);
+                Debug.Log("[Expedition] Tà Đạo áp lực! Tăng +25 Corruption khi bước vào khu vực tà khí.");
             }
             else if (node.Theme == RouteTheme.ThamLam)
             {
@@ -100,7 +117,7 @@ namespace Mewtations.Expedition
                 ExpeditionMapUI.Instance.HideWindow();
             }
 
-            Debug.Log($"[Expedition] Tiến vào node {node.Id} ({node.Type}) ở Tầng {node.Layer}. Lộ trình: {node.Theme}.");
+            Debug.Log($"[Expedition] Tiến vào node {node.Id} ({node.Type}) ở Tầng {node.Layer}. Lộ trình: {node.Theme}. Biome: {node.Biome}.");
 
             IExpeditionEncounter encounter = null;
             switch (node.Type)
@@ -123,6 +140,18 @@ namespace Mewtations.Expedition
 
                 case NodeType.Ruins:
                     encounter = new MysteryMutationEncounter();
+                    break;
+
+                case NodeType.Elite:
+                    encounter = new EliteEncounter(node.Layer);
+                    break;
+
+                case NodeType.Extraction:
+                    encounter = new ExtractionEncounter();
+                    break;
+
+                case NodeType.SafeRetreat:
+                    encounter = new SafeRetreatEncounter();
                     break;
             }
 
@@ -214,6 +243,16 @@ namespace Mewtations.Expedition
                 string loot = possibleLoot[UnityEngine.Random.Range(0, possibleLoot.Length)];
                 rolled.Add(loot);
                 CurrentBackpack.AddItem(loot);
+            }
+
+            // Nếu là Boss tiến độ, thưởng thêm Cổ Vật tự động hóa ngẫu nhiên vào balo
+            if (isBoss)
+            {
+                string[] relics = { "item_ancient_relic_auto_farm", "item_ancient_relic_auto_collect", "item_ancient_relic_auto_heal" };
+                string chosenRelic = relics[UnityEngine.Random.Range(0, relics.Length)];
+                rolled.Add(chosenRelic);
+                CurrentBackpack.AddItem(chosenRelic);
+                Debug.Log($"[Expedition] Boss chiến thắng! Nhận thêm Cổ Vật chí tôn: {chosenRelic}");
             }
 
             string lootMsg = string.Join(", ", rolled.Select(id => id.Replace("resource_", "").Replace("item_", "")));
@@ -329,7 +368,8 @@ namespace Mewtations.Expedition
                     choices = new List<string> {
                         "Đút lót hối lộ (Tiêu hao 1 Vàng trong Balo - Giảm 20 Greed)",
                         "Quyết chiến đột phá (Thắng lợi đẫm máu - Tăng 25 Corruption)",
-                        "Lén lút lẻn qua (Yêu cầu Tốc độ trung bình > 115)"
+                        "Lén lút lẻn qua (Yêu cầu Tốc độ trung bình > 115)",
+                        "Thuyết giảng tâm lý (Cần Thần Miêu Thiền Đạo giải thoát đạo tâm lính gác)"
                     };
                     onChoice = (idx) =>
                     {
@@ -361,7 +401,7 @@ namespace Mewtations.Expedition
                             RunState.AddCorruption(25);
                             DialogueResult("Huyết Chiến Đột Phá!", "Toàn đội tuốt kiếm liều chết xông vào! Tiêu diệt toàn bộ lính canh, cướp lấy Vàng và Quặng sắt trong rương chốt tuần tra, toàn đội bị thương nhẹ (-8 HP) và tăng mạnh sát nghiệp (+25 Corruption)!");
                         }
-                        else
+                        else if (idx == 2)
                         {
                             int avgSpeed = (int)ActiveCats.Average(c => c.Speed);
                             if (avgSpeed > 115)
@@ -374,6 +414,22 @@ namespace Mewtations.Expedition
                                 victim.IsEquipmentSlotsLocked = true;
                                 victim.AddMemoir(MemoirType.Mutation, "Bắt Giữ Phong Ấn", "Lén lẻn thất bại, bị khóa ô trang bị hình phạt");
                                 DialogueResult("Bị Bắt Quả Tang!", $"Tốc độ trung bình ({avgSpeed} Speed) quá chậm! Lính chó phát hiện bắt giữ toàn đội tra khảo. Chú mèo <b>{victim.Name}</b> bị tịch thu khí giới, <b><color=red>ô Trang bị vĩnh viễn bị KHÓA</color></b> làm hình phạt!");
+                            }
+                        }
+                        else if (idx == 3)
+                        {
+                            var zenCat = ActiveCats.Find(c => c.Specialization == Mewtations.Cards.Cats.DaoSpecialization.ZenDao);
+                            if (zenCat != null)
+                            {
+                                CurrentBackpack.AddItem("item_heavenly_relic");
+                                RunState.CorruptionLevel = Mathf.Max(0, RunState.CorruptionLevel - 20);
+                                DialogueResult("Giác Ngộ Đạo Tâm!", $"Giác ngộ thành công! Chú mèo Thiền Đạo <b>{zenCat.Name}</b> đã thuyết giảng Đạo lý Nhân sinh cực kỳ thâm sâu, khai mở đạo tâm cho lính tuần tra Chó thoát khỏi sự kiểm soát gò bó của hệ thống.\n\nChú Chó cảm kích rơi lệ, mở cổng tặng toàn đội viên <b>Chí Tôn Cổ Khí (Heavenly Relic)</b> cực hiếm và xoa dịu tà khí (-20 Corruption)!");
+                            }
+                            else
+                            {
+                                var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
+                                victim.HealthPoints = Mathf.Max(1, victim.HealthPoints - 10);
+                                DialogueResult("Giáo Hóa Thất Bại!", $"Đội hình không có Thần Miêu Thiền Đạo để giảng giải Đạo pháp thuyết phục! Lính tuần tra Chó cho rằng bạn đang sỉ nhục trí tuệ của họ, nổi giận dùng roi điện đánh thương <b>{victim.Name}</b> (-10 HP)!");
                             }
                         }
                     };
@@ -536,6 +592,9 @@ namespace Mewtations.Expedition
         {
             State = ExpeditionState.MapNavigation;
 
+            // Automation Relic Tick logic
+            ApplyRelicAutomationProgress();
+
             // Node is cleared. Check connections of visited nodes to unlock next layer nodes
             UpdateConnections();
 
@@ -551,6 +610,38 @@ namespace Mewtations.Expedition
                 if (ExpeditionMapUI.Instance != null)
                 {
                     ExpeditionMapUI.Instance.ShowWindow();
+                }
+            }
+        }
+
+        private void ApplyRelicAutomationProgress()
+        {
+            if (RunState == null || string.IsNullOrEmpty(RunState.EquippedRelicId)) return;
+
+            string relic = RunState.EquippedRelicId;
+            Debug.Log($"[Relic Automation] Kích hoạt Cổ Vật {relic} tự động hóa căn cứ từ xa!");
+
+            foreach (var gc in WorldManager.instance.AllCards)
+            {
+                if (gc != null && !gc.Destroyed && gc.CardData != null && gc.TimerRunning)
+                {
+                    string cid = gc.CardData.Id.ToLower();
+                    
+                    if (relic == "item_ancient_relic_smelt" && (cid.Contains("smelter") || cid.Contains("furnace")))
+                    {
+                        gc.CurrentTimerTime += 15f; // Smelting automation ticks by 15s!
+                        Debug.Log($"   • [Cổ Vật Tự Động Nung] Tự động thúc tiến +15s cho {gc.CardData.Name}!");
+                    }
+                    else if (relic == "item_ancient_relic_wood" && (cid.Contains("sawmill") || cid.Contains("mill")))
+                    {
+                        gc.CurrentTimerTime += 15f; // Wood processing automation ticks by 15s!
+                        Debug.Log($"   • [Cổ Vật Tự Động Xẻ] Tự động thúc tiến +15s cho {gc.CardData.Name}!");
+                    }
+                    else if (relic == "item_ancient_relic_booster")
+                    {
+                        gc.CurrentTimerTime += 5f; // Universal booster ticks all timers by 5s!
+                        Debug.Log($"   • [Linh Thần Thu Hoạch] Tự động thúc tiến +5s cho công trình {gc.CardData.Name}!");
+                    }
                 }
             }
         }
@@ -655,6 +746,15 @@ namespace Mewtations.Expedition
                     BackpackCardSource.MyGameCard.gameObject.SetActive(true);
                 }
 
+                // Restore Relic Card if present
+                if (RelicCardSource != null && RelicCardSource.MyGameCard != null)
+                {
+                    RelicCardSource.MyGameCard.transform.position = spawnPos + Vector3.left * 1.0f;
+                    RelicCardSource.MyGameCard.gameObject.SetActive(true);
+                }
+                RelicCardSource = null;
+                RunState.EquippedRelicId = "";
+
                 // If portal is strange/one-time, destroy it
                 if (PortalCardSource.CardData.Id == "strange_portal")
                 {
@@ -674,6 +774,8 @@ namespace Mewtations.Expedition
             list.SetOrAdd("Expedition_State", ((int)State).ToString());
             list.SetOrAdd("Expedition_PortalCardUniqueId", PortalCardSource != null ? PortalCardSource.UniqueId : "");
             list.SetOrAdd("Expedition_BackpackCardUniqueId", BackpackCardSource != null ? BackpackCardSource.UniqueId : "");
+            list.SetOrAdd("Expedition_RelicCardUniqueId", RelicCardSource != null ? RelicCardSource.UniqueId : "");
+            list.SetOrAdd("Expedition_EquippedRelicId", RunState.EquippedRelicId);
             list.SetOrAdd("Expedition_ActiveCatsUniqueIds", string.Join(",", ActiveCats.Select(c => c.UniqueId)));
             list.SetOrAdd("Expedition_BackpackMaxCapacity", CurrentBackpack != null ? CurrentBackpack.MaxCapacity.ToString() : "10");
             list.SetOrAdd("Expedition_BackpackItems", CurrentBackpack != null ? string.Join(",", CurrentBackpack.ContainedCardIds) : "");
@@ -728,6 +830,17 @@ namespace Mewtations.Expedition
             {
                 BackpackCardSource = backpackGameCard.CardData;
             }
+
+            string relicUid = GetValueOrDefault(list, "Expedition_RelicCardUniqueId", "");
+            if (!string.IsNullOrEmpty(relicUid) && WorldManager.instance.UniqueIdToCard.TryGetValue(relicUid, out var relicGameCard))
+            {
+                RelicCardSource = relicGameCard.CardData;
+            }
+            else
+            {
+                RelicCardSource = null;
+            }
+            RunState.EquippedRelicId = GetValueOrDefault(list, "Expedition_EquippedRelicId", "");
 
             string activeCatsUidsStr = GetValueOrDefault(list, "Expedition_ActiveCatsUniqueIds", "");
             ActiveCats.Clear();

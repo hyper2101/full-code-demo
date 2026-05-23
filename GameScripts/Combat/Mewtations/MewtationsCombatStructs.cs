@@ -29,7 +29,8 @@ namespace Mewtations.Combat
         Burning,
         Poisoned,
         Frozen,
-        Shocked
+        Shocked,
+        Bleeding
     }
 
     [Serializable]
@@ -105,42 +106,50 @@ namespace Mewtations.Combat
                 Role = cat.Role;
                 Element = cat.Element;
 
-                // Apply permanent Heavenly Talents
-                if (cat.HasTrait(Mewtations.Expedition.HeavenlyTalent.DivineShieldProtection))
+                // Load all dynamic components
+                var activeComps = new List<IMewtationsComponent>();
+
+                // Permanent Traits
+                foreach (var traitId in cat.PermanentTraits)
                 {
-                    Shield += 15;
+                    var comp = MewtationsComponentRegistry.Create(traitId);
+                    if (comp != null) activeComps.Add(comp);
                 }
 
-                // Apply temporary Unstable Mutations
-                if (cat.HasMutation(Mewtations.Expedition.UnstableMutation.LethargicNap))
+                // Temporary Mutations
+                foreach (var mutId in cat.ActiveMutations)
                 {
-                    Speed = Mathf.Max(10, Speed - 15);
+                    var comp = MewtationsComponentRegistry.Create(mutId);
+                    if (comp != null) activeComps.Add(comp);
                 }
 
-                // Apply Talisman Active Combat Passives
+                // Permanent Scars
+                foreach (var scarId in cat.PermanentScars)
+                {
+                    var comp = MewtationsComponentRegistry.Create(scarId);
+                    if (comp != null) activeComps.Add(comp);
+                }
+
+                // Dao Specializations
+                if (cat.Specialization != Cards.Cats.DaoSpecialization.None)
+                {
+                    var comp = Cards.Cats.CultivationSpecializationRegistry.CreateComponent(cat.Specialization);
+                    if (comp != null) activeComps.Add(comp);
+                }
+
+                // Equipped Talismans
                 var allEquipables = cat.GetAllEquipables();
                 foreach (var eq in allEquipables)
                 {
                     if (eq != null && eq.EquipableType == EquipableType.Talisman)
                     {
-                        if (eq.Id == "talisman_heavy_armor" || eq.Id.Contains("heavy_armor"))
-                        {
-                            Shield += 10;
-                        }
-                        else if (eq.Id == "talisman_rage_core" || eq.Id.Contains("rage_core"))
-                        {
-                            CurrentRage += 30;
-                        }
-                        else if (eq.Id == "talisman_health_regen" || eq.Id.Contains("health_regen"))
-                        {
-                            HasRegenTalisman = true;
-                        }
-                        else if (eq.Id == "talisman_iron_will" || eq.Id.Contains("iron_will"))
-                        {
-                            HasIronWill = true;
-                        }
+                        var comp = MewtationsComponentRegistry.Create(eq.Id);
+                        if (comp != null) activeComps.Add(comp);
                     }
                 }
+
+                // Register inside pipeline
+                MewtationsEventPipeline.RegisterUnitComponents(this, activeComps);
             }
             else
             {
@@ -149,6 +158,7 @@ namespace Mewtations.Combat
                 CurrentRage = 0;
                 Role = CatRole.DPS;
                 Element = CatElement.None;
+                MewtationsEventPipeline.RegisterUnitComponents(this, new List<IMewtationsComponent>());
             }
         }
 
@@ -235,6 +245,11 @@ namespace Mewtations.Combat
                         int poisonDamage = 2 * debuff.Stacks; // Scales strongly with stacks
                         TakeDamage(poisonDamage);
                         logCallback?.Invoke($"{Name} nhận {poisonDamage} sát thương Kịch Độc ({debuff.Stacks} tầng độc).");
+                        break;
+                    case MewtationsDebuff.Bleeding:
+                        int bleedDamage = 4 * debuff.Stacks;
+                        TakeDamage(bleedDamage);
+                        logCallback?.Invoke($"{Name} nhận {bleedDamage} sát thương Chảy Máu ({debuff.Duration} lượt còn lại).");
                         break;
                 }
 
@@ -335,11 +350,36 @@ namespace Mewtations.Combat
                 baseDamage = Mathf.RoundToInt(baseDamage * 1.3f);
             }
 
-            // Apply Shocked extra damage
-            if (target.HasDebuff(MewtationsDebuff.Shocked))
+            // --- EVENT PIPELINE HOOKS & CONSTITUTIONS ---
+
+            // 1. Trigger BeforeAttack Event hooks
+            MewtationsEventPipeline.TriggerBeforeAttack(attacker, target, ref baseDamage, logCallback);
+
+            // 2. High Corruption Scaling (Tà Ma Lão Tổ) constitution check
+            if (attacker.Source is CatCardData c && c.Constitution == CatConstitution.TaMaLaoTo && ExpeditionManager.Instance != null && ExpeditionManager.Instance.RunState != null && ExpeditionManager.Instance.RunState.CorruptionLevel >= 50)
             {
-                baseDamage = Mathf.RoundToInt(baseDamage * 1.3f);
+                baseDamage = Mathf.RoundToInt(baseDamage * 1.5f);
             }
+
+            // 3. Low Stability Genius (Hỗn Loạn Triều) constitution check
+            if (attacker.Source is CatCardData catHL && catHL.Constitution == CatConstitution.HonLoanTrieu)
+            {
+                if (UnityEngine.Random.value <= 0.10f)
+                {
+                    logCallback?.Invoke($"💢 [HỖN LOẠN TRIỀU] Chiêu thức hỗn loạn thất bại! {attacker.Name} tự gây phản phệ tổn thương chính mình (-3 HP)!");
+                    attacker.TakeDamage(3);
+                    return; // Action interrupted!
+                }
+            }
+
+            // 4. Cursed Survivor (Khổ Hạnh Tăng) constitution check
+            if (attacker.Source is CatCardData catK && catK.Constitution == CatConstitution.KhoHanhTang && attacker.CurrentHP <= (attacker.MaxHP * 0.30f))
+            {
+                baseDamage = Mathf.RoundToInt(baseDamage * 1.5f);
+            }
+
+            // 5. Trigger Target's BeforeDamage Event hooks
+            MewtationsEventPipeline.TriggerBeforeDamage(target, attacker, ref baseDamage, logCallback);
 
             switch (pattern)
             {
@@ -419,6 +459,17 @@ namespace Mewtations.Combat
                         }
                     }
                     break;
+            }
+
+            // Trigger AfterAttack & AfterDamage pipeline hooks
+            MewtationsEventPipeline.TriggerAfterAttack(attacker, target, baseDamage, logCallback);
+            MewtationsEventPipeline.TriggerAfterDamage(target, attacker, baseDamage, logCallback);
+
+            // Trigger OnKill & OnDeath hooks if target has fallen
+            if (!target.IsAlive)
+            {
+                MewtationsEventPipeline.TriggerOnKill(attacker, target, logCallback);
+                MewtationsEventPipeline.TriggerOnDeath(target, logCallback);
             }
 
             // Apply Element Behavior Modifiers for Basic Attacks
@@ -650,6 +701,34 @@ namespace Mewtations.Combat
 
             int ultDamage = Mathf.RoundToInt(baseAttack * 2.0f * rageMultiplier * roleDmgMultiplier * mutDmgMultiplier);
 
+            // --- EVENT PIPELINE HOOKS & CONSTITUTIONS FOR ULTIMATE ---
+
+            // 1. Trigger BeforeAttack Event hooks on Ultimate damage
+            MewtationsEventPipeline.TriggerBeforeAttack(attacker, null, ref ultDamage, logCallback);
+
+            // 2. High Corruption Scaling (Tà Ma Lão Tổ) constitution check
+            if (attacker.Source is CatCardData c && c.Constitution == CatConstitution.TaMaLaoTo && ExpeditionManager.Instance != null && ExpeditionManager.Instance.RunState != null && ExpeditionManager.Instance.RunState.CorruptionLevel >= 50)
+            {
+                ultDamage = Mathf.RoundToInt(ultDamage * 1.5f);
+            }
+
+            // 3. Low Stability Genius (Hỗn Loạn Triều) constitution check
+            if (attacker.Source is CatCardData catHL && catHL.Constitution == CatConstitution.HonLoanTrieu)
+            {
+                if (UnityEngine.Random.value <= 0.10f)
+                {
+                    logCallback?.Invoke($"💢 [HỖN LOẠN TRIỀU] Bí kỹ hỗn loạn thất bại! {attacker.Name} tự gây phản phệ tổn thương chính mình (-3 HP)!");
+                    attacker.TakeDamage(3);
+                    return; // Action interrupted!
+                }
+            }
+
+            // 4. Cursed Survivor (Khổ Hạnh Tăng) constitution check
+            if (attacker.Source is CatCardData catK && catK.Constitution == CatConstitution.KhoHanhTang && attacker.CurrentHP <= (attacker.MaxHP * 0.30f))
+            {
+                ultDamage = Mathf.RoundToInt(ultDamage * 1.5f);
+            }
+
             // Collect hit enemies for elemental modifiers application
             List<CombatUnit> hitEnemies = new List<CombatUnit>();
 
@@ -727,6 +806,22 @@ namespace Mewtations.Combat
                         hitEnemies.Add(priTarget);
                     }
                     break;
+            }
+
+            // Trigger AfterAttack & AfterDamage pipeline hooks for Ultimate on all hit enemies
+            foreach (var enemy in hitEnemies)
+            {
+                int tempDmg = ultDamage;
+                MewtationsEventPipeline.TriggerBeforeDamage(enemy, attacker, ref tempDmg, logCallback);
+                
+                MewtationsEventPipeline.TriggerAfterAttack(attacker, enemy, tempDmg, logCallback);
+                MewtationsEventPipeline.TriggerAfterDamage(enemy, attacker, tempDmg, logCallback);
+
+                if (!enemy.IsAlive)
+                {
+                    MewtationsEventPipeline.TriggerOnKill(attacker, enemy, logCallback);
+                    MewtationsEventPipeline.TriggerOnDeath(enemy, logCallback);
+                }
             }
 
             // Apply Element Behavior Modifiers for Ultimate Skills on hit enemies

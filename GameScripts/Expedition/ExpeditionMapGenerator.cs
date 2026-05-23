@@ -30,6 +30,7 @@ namespace Mewtations.Expedition
                     {
                         NodeType type = (UnityEngine.Random.value < 0.7f) ? NodeType.Combat : NodeType.Resource;
                         var node = new ExpeditionNode(nextId++, layerIndex, pos, type);
+                        node.Biome = GetBiomeForLayer(layerIndex);
                         node.Theme = RollRouteTheme(type);
                         node.State = NodeState.Available; // Start layer is immediately available
                         layers[layerIndex].Add(node);
@@ -40,6 +41,7 @@ namespace Mewtations.Expedition
                 {
                     // Boss Layer: exactly 1 Boss node
                     var node = new ExpeditionNode(nextId++, layerIndex, 0, NodeType.Boss);
+                    node.Biome = GetBiomeForLayer(layerIndex);
                     node.Theme = RouteTheme.Standard;
                     layers[layerIndex].Add(node);
                     map.Add(node);
@@ -52,6 +54,7 @@ namespace Mewtations.Expedition
                     {
                         NodeType type = RollNodeType(layerIndex, maxLayers);
                         var node = new ExpeditionNode(nextId++, layerIndex, pos, type);
+                        node.Biome = GetBiomeForLayer(layerIndex);
                         node.Theme = RollRouteTheme(type);
                         layers[layerIndex].Add(node);
                         map.Add(node);
@@ -112,6 +115,14 @@ namespace Mewtations.Expedition
             return map;
         }
 
+        private static ExpeditionBiome GetBiomeForLayer(int layerIndex)
+        {
+            if (layerIndex == 0 || layerIndex == 1) return ExpeditionBiome.Forest;
+            if (layerIndex == 2) return ExpeditionBiome.Swamp;
+            if (layerIndex == 3) return ExpeditionBiome.Peak;
+            return ExpeditionBiome.Abyss;
+        }
+
         private static NodeType RollNodeType(int layerIndex, int maxLayers)
         {
             // Distribution change as we go deeper: Combat increases, lore/event are scattered
@@ -119,18 +130,23 @@ namespace Mewtations.Expedition
 
             if (layerIndex == maxLayers - 2)
             {
-                // Floor before boss: Combat or Ruins preferred
-                if (r < 0.6f) return NodeType.Combat;
-                if (r < 0.8f) return NodeType.Ruins;
+                // Floor before boss: Combat, Elite, Ruins, or Extraction
+                if (r < 0.40f) return NodeType.Combat;
+                if (r < 0.60f) return NodeType.Elite;
+                if (r < 0.75f) return NodeType.Extraction;
+                if (r < 0.90f) return NodeType.Ruins;
                 return NodeType.Event;
             }
 
-            if (r < 0.40f) return NodeType.Combat;     // 40% combat
-            if (r < 0.60f) return NodeType.Resource;   // 20% resource
-            if (r < 0.70f) return NodeType.Event;      // 10% event/choice dialogue
-            if (r < 0.80f) return NodeType.Ruins;      // 10% ruins
-            if (r < 0.90f) return NodeType.Altar;      // 10% Cat God's Altar
-            return NodeType.Lore;                      // 10% lore/story card
+            if (r < 0.30f) return NodeType.Combat;     // 30% combat
+            if (r < 0.45f) return NodeType.Resource;   // 15% resource
+            if (r < 0.55f) return NodeType.Elite;      // 10% elite
+            if (r < 0.65f) return NodeType.Extraction; // 10% extraction portal
+            if (r < 0.75f) return NodeType.SafeRetreat;// 10% safe retreat
+            if (r < 0.85f) return NodeType.Event;      // 10% event/choice dialogue
+            if (r < 0.90f) return NodeType.Altar;      // 5% Cat God's Altar
+            if (r < 0.95f) return NodeType.Ruins;      // 5% ruins
+            return NodeType.Lore;                      // 5% lore/story card
         }
 
         private static RouteTheme RollRouteTheme(NodeType type)

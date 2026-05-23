@@ -39,6 +39,147 @@ public class WorldManager : MonoBehaviour
 		}
 	}
 
+	// Hệ thống quản lý Cổ Vật tập trung tại WorldManager (Centralized Relic Manager)
+	public bool IsRelicAutoFarmActive { get; set; } = false;
+	public bool IsRelicAutoHealActive { get; set; } = false;
+	public bool IsRelicAutoCollectActive { get; set; } = false;
+
+	private float _relicScanTimer = 0f;
+	private float _relicActionTimer = 0f;
+
+	private void UpdateActiveRelicsState()
+	{
+		IsRelicAutoFarmActive = false;
+		IsRelicAutoHealActive = false;
+		IsRelicAutoCollectActive = false;
+
+		foreach (GameCard gc in this.AllCards)
+		{
+			if (gc != null && gc.CardData is ShrineCardData shrine && !gc.Destroyed)
+			{
+				GameCard curr = gc.Child;
+				while (curr != null)
+				{
+					if (curr.CardData != null && !curr.Destroyed && curr.CardData.IsAncientRelic)
+					{
+						string rid = curr.CardData.Id.ToLower();
+						if (rid == "item_ancient_relic_auto_farm") IsRelicAutoFarmActive = true;
+						else if (rid == "item_ancient_relic_auto_heal") IsRelicAutoHealActive = true;
+						else if (rid == "item_ancient_relic_auto_collect") IsRelicAutoCollectActive = true;
+					}
+					curr = curr.Child;
+				}
+			}
+		}
+	}
+
+	private void ExecuteCentralizedRelicAutomation()
+	{
+		// 1. Cổ vật Tự động Canh Tác (Auto Farm)
+		if (IsRelicAutoFarmActive)
+		{
+			foreach (GameCard gc in this.AllCards)
+			{
+				if (gc != null && gc.CardData != null && !gc.Destroyed)
+				{
+					if (gc.CardData is Farmland || gc.CardData.Id == "garden" || gc.CardData.Id == "greenhouse")
+					{
+						if (gc.TimerRunning && (gc.TimerActionId.ToLower().Contains("harvest") || gc.TimerActionId.ToLower().Contains("water")))
+						{
+							gc.CurrentTimerTime += 3.0f;
+						}
+					}
+				}
+			}
+		}
+
+		// 2. Cổ vật Tự động Trị Liệu (Auto Heal)
+		if (IsRelicAutoHealActive)
+		{
+			CatCardData lowestCat = null;
+			int lowestHpDiff = 0;
+			foreach (GameCard gc in this.AllCards)
+			{
+				if (gc != null && gc.CardData is CatCardData cat && !gc.Destroyed)
+				{
+					int hpDiff = cat.ProcessedCombatStats.MaxHealth - cat.HealthPoints;
+					if (hpDiff > lowestHpDiff)
+					{
+						lowestHpDiff = hpDiff;
+						lowestCat = cat;
+					}
+				}
+			}
+			if (lowestCat != null && lowestHpDiff > 0)
+			{
+				lowestCat.HealthPoints = Mathf.Min(lowestCat.HealthPoints + 6, lowestCat.ProcessedCombatStats.MaxHealth);
+				Debug.Log($"[Centralized Relic] Tự động hồi phục +6 HP cho: {lowestCat.Name}");
+			}
+		}
+	}
+
+	private void ExecuteAutoCollectAutomation()
+	{
+		if (!IsRelicAutoCollectActive) return;
+
+		foreach (GameCard freeCard in this.AllCards)
+		{
+			if (freeCard != null && freeCard.CardData != null && !freeCard.Destroyed && freeCard.Parent == null && freeCard.Child == null && !freeCard.BeingDragged)
+			{
+				// Chỉ tự động gom thẻ Tài nguyên và Thức ăn tự do
+				if (freeCard.CardData.MyCardType == CardType.Resources || freeCard.CardData.MyCardType == CardType.Food)
+				{
+					string targetId = freeCard.CardData.Id;
+					GameCard targetStack = null;
+
+					// Tìm một stack khác làm Key X đang có chứa thẻ cùng loại bên dưới
+					foreach (GameCard otherCard in this.AllCards)
+					{
+						if (otherCard != null && otherCard != freeCard && !otherCard.Destroyed && otherCard.Parent == null)
+						{
+							GameCard childSearch = otherCard;
+							bool hasMatch = false;
+							while (childSearch != null)
+							{
+								if (childSearch.CardData != null && childSearch.CardData.Id == targetId)
+								{
+									hasMatch = true;
+									break;
+								}
+								childSearch = childSearch.Child;
+							}
+							if (hasMatch)
+							{
+								targetStack = otherCard;
+								break;
+							}
+						}
+					}
+
+					if (targetStack != null)
+					{
+						GameCard lastCard = targetStack;
+						while (lastCard.Child != null)
+						{
+							lastCard = lastCard.Child;
+						}
+
+						if (lastCard != freeCard)
+						{
+							// Hút Lerp thẻ bay lướt mượt mà về cuối stack
+							freeCard.transform.position = Vector3.Lerp(freeCard.transform.position, lastCard.transform.position + new Vector3(0f, 0.1f, -0.1f), Time.deltaTime * 5f);
+							if (Vector3.Distance(freeCard.transform.position, lastCard.transform.position) < 0.3f)
+							{
+								lastCard.SetChild(freeCard);
+								freeCard.SetParent(lastCard);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	public List<Blueprint> BlueprintPrefabs
 	{
 		get
@@ -706,6 +847,7 @@ public class WorldManager : MonoBehaviour
 		{
 			this.MonthTimer -= this.MonthTime;
 			this.IncrementMonth();
+			Mewtations.Combat.MewtationsPressureSystem.ProcessSectUpkeepAndDecay();
 			this.EndOfMonth(null);
 		}
 		Ray ray;
@@ -1048,6 +1190,30 @@ public class WorldManager : MonoBehaviour
 		{
 			this.CheckSpiritCutscenes();
 		}
+
+		// Thực thi hệ thống Cổ Vật tự động hóa tập trung
+		if (this.IsPlaying && !this.InAnimation)
+		{
+			// 1. Quét trạng thái Cổ Vật đang hoạt động trong Đền Thờ mỗi 2 giây
+			_relicScanTimer += Time.deltaTime;
+			if (_relicScanTimer >= 2.0f)
+			{
+				_relicScanTimer = 0f;
+				UpdateActiveRelicsState();
+			}
+
+			// 2. Thực thi tính năng tự động hóa Canh tác & Trị liệu mỗi 5 giây
+			_relicActionTimer += Time.deltaTime;
+			if (_relicActionTimer >= 5.0f)
+			{
+				_relicActionTimer = 0f;
+				ExecuteCentralizedRelicAutomation();
+			}
+
+			// 3. Thực thi tính năng Tự động Thu gom (hút Lerp mượt mà mỗi frame)
+			ExecuteAutoCollectAutomation();
+		}
+
 		this.DebugUpdate();
 	}
 

@@ -1564,7 +1564,31 @@ public class GameCard : Draggable, IGameCardOrCardData
 	private void SetToParentPosition(bool hardSetPos = false)
 	{
 		Vector3 vector;
-		if (this.IsCollapsed)
+
+		// Kiểm tra xem root card có sử dụng horizontal slots không (Đền Thờ, Đột Phá Trận)
+		GameCard rootCard = this.GetRootCard();
+		bool useHorizontal = rootCard != null && rootCard.CardData != null && rootCard.CardData.UsesHorizontalSlots;
+
+		if (useHorizontal)
+		{
+			// Tính chỉ mục child trong stack (bắt đầu từ 1)
+			int childIndex = 0;
+			GameCard current = this;
+			while (current.Parent != null)
+			{
+				childIndex++;
+				current = current.Parent;
+			}
+
+			// Dàn các child card theo hàng ngang (trục X), offset nhẹ xuống dưới (trục Z)
+			float horizontalSpacing = WorldManager.instance.CardOverlayOffset * 1.2f;
+			vector = rootCard.transform.position + new Vector3(
+				childIndex * horizontalSpacing, 
+				WorldManager.instance.CardOverlayHeightOffset, 
+				-WorldManager.instance.CardOverlayOffset
+			);
+		}
+		else if (this.IsCollapsed)
 		{
 			vector = this.Parent.transform.position + new Vector3(0f, WorldManager.instance.CardOverlayHeightOffset, -WorldManager.instance.CollapsedCardOverlayOffset);
 		}

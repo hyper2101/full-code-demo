@@ -42,14 +42,27 @@ namespace Mewtations.Combat
             CombatLog.Clear();
             _onCombatEnd = onCombatEnd;
 
+            // Clear unified event pipeline before registering units
+            MewtationsEventPipeline.Clear();
+
             // Freeze main board
             WorldManager.instance.SetViewType(ViewType.Default);
             
-            // Set up formations
+            // Set up formations (executes CombatUnit constructors, registering components)
             Formation.SetupPlayerTeam(playerCats);
             Formation.SetupEnemyTeam(enemies);
 
             AddLog("▶ Trận chiến bắt đầu!");
+
+            // Apply environmental hazards from depth layer
+            if (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive && ExpeditionManager.Instance.ActiveNode != null)
+            {
+                MewtationsPressureSystem.ApplyEnvironmentalModifiers(
+                    ExpeditionManager.Instance.ActiveNode.Biome,
+                    Formation.PlayerUnits,
+                    msg => AddLog(msg)
+                );
+            }
 
             // Open Combat Overlay
             if (CombatOverlayUI.Instance != null)
@@ -153,6 +166,9 @@ namespace Mewtations.Combat
                 {
                     if (!unit.IsAlive || Result != CombatResult.Ongoing) continue;
 
+                    // Trigger Turn Start Event Hooks!
+                    MewtationsEventPipeline.TriggerOnTurnStart(unit, msg => AddLog(msg));
+
                     // 1. Tick debuffs (Burning/Poisoned)
                     unit.TickDebuffs(msg => AddLog(msg));
                     if (!unit.IsAlive)
@@ -193,6 +209,9 @@ namespace Mewtations.Combat
 
                     // 4. Rage Accumulation
                     unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 20); // +20 Rage per action
+
+                    // Trigger Turn End Event Hooks!
+                    MewtationsEventPipeline.TriggerOnTurnEnd(unit, msg => AddLog(msg));
 
                     // 5. Post-Action Checks
                     foreach (var opp in opponents)

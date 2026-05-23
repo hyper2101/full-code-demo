@@ -12,7 +12,18 @@ namespace Mewtations.Expedition
         Ruins,      // Random encounters / mini puzzles
         Lore,       // Unlocking lore cards
         Boss,       // Final progressive boss fight
-        Altar       // Cat God's Altar node for sacrifice & purification
+        Altar,      // Cat God's Altar node for sacrifice & purification
+        Elite,      // Harder elite fight with special rewards
+        Extraction, // Portal node allowing safe retreat and taking all loot home
+        SafeRetreat // Rest node allowing escape with no penalty
+    }
+
+    public enum ExpeditionBiome
+    {
+        Forest,     // Cổ Lộ Rừng Thiêng
+        Swamp,      // Đầm Lầy Độc Lực
+        Peak,       // Đỉnh Lôi Kiếp
+        Abyss       // Hầm Ngục Vô Tận
     }
 
     public enum NodeState
@@ -43,6 +54,7 @@ namespace Mewtations.Expedition
         
         public int BaseAppeasementGreed = 0;
         public int BaseAppeasementCorruption = 0;
+        public string EquippedRelicId = ""; // Lưu trữ ID cổ vật đang trang bị
 
         public void AddGreed(int val)
         {
@@ -63,6 +75,7 @@ namespace Mewtations.Expedition
             RunActiveMutations.Clear();
             BaseAppeasementGreed = 0;
             BaseAppeasementCorruption = 0;
+            EquippedRelicId = "";
         }
     }
 
@@ -113,6 +126,7 @@ namespace Mewtations.Expedition
                 case UnstableClaws: return "Trảo Vuốt Bất Ổn";
                 case LethargicNap: return "Thần Miêu Ngái Ngủ";
                 case CursedFur: return "Nguyền Rủa Lông Tơ";
+                case "morale_collapse": return "Đạo Tâm Trì Trệ (Thiếu Upkeep)";
                 default: return "Đột Biến Linh Khí";
             }
         }
@@ -124,6 +138,7 @@ namespace Mewtations.Expedition
                 case UnstableClaws: return "Tăng 30% sát thương thường nhưng tự tổn hại 2 HP mỗi khi vung vuốt.";
                 case LethargicNap: return "Tốc độ hành động bị giảm 15 đơn vị, bù lại hồi 5 HP mỗi khi kết thúc vòng đấu.";
                 case CursedFur: return "Giảm 5 Giáp, vô hiệu hóa khả năng nhận lá chắn phòng ngự.";
+                case "morale_collapse": return "Tông môn cạn kiệt bổng lộc: Giảm 25% Thần Tốc và Máu tối đa của mèo.";
                 default: return "Cơ thể bị biến đổi do nhiễm độc linh lực.";
             }
         }
@@ -139,6 +154,7 @@ namespace Mewtations.Expedition
         public NodeState State = NodeState.Locked;
         public List<int> OutgoingConnections = new List<int>(); // List of destination Node IDs
         public RouteTheme Theme = RouteTheme.Standard;
+        public ExpeditionBiome Biome = ExpeditionBiome.Forest;
 
         public ExpeditionNode(int id, int layer, int position, NodeType type)
         {

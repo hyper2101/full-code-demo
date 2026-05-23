@@ -63,11 +63,25 @@ public class CatGodMouth : CardData
         }
 
         base.UpdateCard();
-
+ 
         // If a card is stacked on top and timer is not running, start consuming the offering
         if (this.MyGameCard != null)
         {
-            if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "offering")
+            // Soul absorption ritual removed per user request
+            // Intercept for Scar Cleansing ritual
+            else if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "cleansing")
+            {
+                if (!this.MyGameCard.HasChild || !(this.MyGameCard.Child.CardData is CatCardData c) || c.PermanentScars.Count == 0)
+                {
+                    this.MyGameCard.CancelTimer("cleansing");
+                }
+            }
+            else if (!this.MyGameCard.TimerRunning && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData is CatCardData c && c.PermanentScars.Count > 0)
+            {
+                this.MyGameCard.StartTimer(5.0f, new TimerAction(this.PerformScarCleansing), "Nghi Lễ Tẩy Tủy Sẹo...", "cleansing");
+            }
+            // Standard offering consume
+            else if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "offering")
             {
                 if (!this.MyGameCard.HasChild || this.MyGameCard.Child.CardData.MyCardType == CardType.Humans || this.MyGameCard.Child.CardData is CatCardData)
                 {
@@ -83,6 +97,93 @@ public class CatGodMouth : CardData
                     this.MyGameCard.StartTimer(2.0f, new TimerAction(this.ConsumeOffering), "Tiếp nhận Lễ Vật...", "offering");
                 }
             }
+        }
+    }
+
+    private void PerformScarCleansing()
+    {
+        if (this.MyGameCard == null || !this.MyGameCard.HasChild || !(this.MyGameCard.Child.CardData is CatCardData cat)) return;
+
+        string title = "☯️ NGHI LỄ TẨY TỦY SẸO";
+        string text = $"Thần Miêu <b>{cat.Name}</b> sở hữu linh thể mang thương tổn nặng nề (Vết sẹo vĩnh cửu) đang thành kính quỳ trước Miệng Thần Mèo.\n\n" +
+                      $"Tà linh cổ xưa thì thầm đòi hỏi cống nạp một số lượng tiền vàng khổng lồ (30 Vàng) để nghịch chuyển linh lực, tái sinh kinh mạch.\n\n" +
+                      $"• <b>Tỷ lệ tẩy sẹo thành công:</b> 50%.\n" +
+                      $"• <b>Hình phạt nếu thất bại:</b> Ma khí phản phệ dữ dội bạo phát <b>+40 Greed</b> toàn cục và khiến <b>{cat.Name}</b> gánh thêm một Vết sẹo phế mạch mới!";
+
+        // Find all gold on the board
+        var goldCards = new List<GameCard>();
+        foreach (var gc in WorldManager.instance.AllCards)
+        {
+            if (gc != null && gc.CardData.Id == "resource_gold")
+            {
+                goldCards.Add(gc);
+            }
+        }
+        bool hasEnoughGold = goldCards.Count >= 30;
+
+        var choices = new List<Mewtations.Dialogue.DialogueChoice>();
+
+        choices.Add(new Mewtations.Dialogue.DialogueChoice(
+            "Cúng tế 30 Vàng để tẩy tủy.",
+            () => {
+                // Destroy 30 gold
+                int destroyed = 0;
+                for (int i = goldCards.Count - 1; i >= 0 && destroyed < 30; i--)
+                {
+                    if (goldCards[i] != null && !goldCards[i].Destroyed)
+                    {
+                        goldCards[i].DestroyCard(true, true);
+                        destroyed++;
+                    }
+                }
+
+                if (UnityEngine.Random.value <= 0.50f)
+                {
+                    // Success! Clear scars!
+                    cat.PermanentScarsString = "";
+                    string subTitle = "☯️ TẨY TỦY THÀNH CÔNG!";
+                    string subText = $"Thần Mèo chấp nhận tế phẩm! Linh quang tím chói lòa chiếu rọi, tái sinh linh thể cho <b>{cat.Name}</b>. Toàn bộ các vết sẹo vĩnh cửu đã được gột rửa hoàn toàn!";
+                    if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+                    {
+                        Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(subTitle, subText, new List<string> { "Tạ ơn Thần Mèo!" }, (cIdx) => {});
+                    }
+                }
+                else
+                {
+                    // Failure!
+                    if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
+                    {
+                        Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel = Mathf.Min(100, Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel + 40);
+                    }
+
+                    // Add a crippling scar
+                    cat.AddScar(Mewtations.Combat.PermanentScar.CrippledMeridians);
+
+                    string subTitle = "☠️ NGHI THỨC THẤT BẠI!";
+                    string subText = $"Thần Mèo nổi giận nuốt chửng 30 Vàng nhưng ma lực phản phệ dữ dội! \n\n" +
+                                     $"• Sức ép lòng tham gia tăng: <b>+40 Greed</b> toàn cục.\n" +
+                                     $"• <b>{cat.Name}</b> gánh chịu chấn thương linh mạch nghiêm trọng hơn, nhận thêm Vết sẹo: <b><color=red>Phế Mạch (-30 Speed)</color></b>!";
+                    
+                    if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+                    {
+                        Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(subTitle, subText, new List<string> { "Đương đầu tai ách" }, (cIdx) => {});
+                    }
+                }
+            },
+            () => hasEnoughGold,
+            "Cần 30 Vàng để cúng tế"
+        ));
+
+        choices.Add(new Mewtations.Dialogue.DialogueChoice(
+            "Rút lui an toàn",
+            () => {
+                // Return safely
+            }
+        ));
+
+        if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+        {
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices);
         }
     }
 
@@ -155,6 +256,38 @@ public class CatGodMouth : CardData
 
         // Spawn beautiful offering sparkle visual using simple debug or log
         Debug.Log($"[CatGodMouth] Đã dâng tế {offeringData.Name}. Nhận {val} Linh lực. Tiến độ: {OfferingProgress}.");
+
+        // Tỷ lệ 40% rơi đồ vật hồi đáp từ Miệng Thần Mèo khi hiến tế thành công
+        if (UnityEngine.Random.value <= 0.40f)
+        {
+            Vector3 dropPos = this.transform.position + Vector3.back * 0.8f + new Vector3(UnityEngine.Random.Range(-0.2f, 0.2f), 0, UnityEngine.Random.Range(-0.2f, 0.2f));
+            string dropId = "";
+            string dropName = "";
+
+            if (UnityEngine.Random.value <= 0.05f)
+            {
+                // 5% rơi Cống Phẩm Đền Thờ
+                dropId = "item_shrine_offering";
+                dropName = "Cống Phẩm Đền Thờ";
+            }
+            else
+            {
+                // 95% rơi đồ linh tinh
+                string[] junkItems = { "resource_gold", "resource_wood", "resource_stone", "resource_iron_ore", "raw_meat", "food_berry" };
+                dropId = junkItems[UnityEngine.Random.Range(0, junkItems.Length)];
+                dropName = dropId == "resource_gold" ? "Tiền Vàng" : 
+                           dropId == "resource_wood" ? "Gỗ" :
+                           dropId == "resource_stone" ? "Đá" :
+                           dropId == "resource_iron_ore" ? "Quặng Sắt" :
+                           dropId == "raw_meat" ? "Thịt Sống" : "Quả Mọng";
+            }
+
+            if (!string.IsNullOrEmpty(dropId))
+            {
+                WorldManager.instance.CreateCard(dropPos, dropId, true, true, true);
+                Debug.Log($"[CatGodMouth] Thần Mèo hồi đáp nhả ra vật phẩm: {dropName} ({dropId})");
+            }
+        }
 
         CheckThresholdRewards();
     }
@@ -369,11 +502,16 @@ public class CatGodMouth : CardData
 
     protected override bool CanHaveCard(CardData otherCard)
     {
-        // Don't stack human/cat cards directly, only stack resource/item cards
-        if (otherCard.MyCardType == CardType.Humans || otherCard is CatCardData)
+        if (otherCard is CatCardData)
+        {
+            return true;
+        }
+        if (otherCard.MyCardType == CardType.Humans)
         {
             return false;
         }
         return base.CanHaveCard(otherCard);
     }
+
+    // PerformSoulAbsorption removed per user request
 }

@@ -82,6 +82,13 @@ namespace Mewtations.Expedition
                     // Reward loot and increase Corruption (+15 per node traversed)
                     RollLoot(manager, _isBoss);
                     runState.AddCorruption(15);
+
+                    // Thưởng kinh nghiệm tu vi tu tiên cho Mèo khi chiến thắng trận viễn chinh
+                    int expReward = _isBoss ? 150 : 50;
+                    foreach (var cat in manager.ActiveCats)
+                    {
+                        cat.GainExperience(expReward);
+                    }
                     
                     // Add specific Route Theme and Boss memoirs
                     bool isThienLoi = manager.ActiveNode != null && manager.ActiveNode.Theme == RouteTheme.ThienLoi;
@@ -151,6 +158,15 @@ namespace Mewtations.Expedition
             {
                 string loot = possibleLoot[UnityEngine.Random.Range(0, possibleLoot.Length)];
                 manager.CurrentBackpack.AddItem(loot);
+            }
+
+            // Nếu là Boss tiến độ, thưởng thêm Cổ Vật tự động hóa ngẫu nhiên
+            if (isBoss)
+            {
+                string[] relics = { "item_ancient_relic_auto_farm", "item_ancient_relic_auto_collect", "item_ancient_relic_auto_heal" };
+                string chosenRelic = relics[UnityEngine.Random.Range(0, relics.Length)];
+                manager.CurrentBackpack.AddItem(chosenRelic);
+                Debug.Log($"[Expedition] Boss chiến thắng! Nhận thêm Cổ Vật chí tôn: {chosenRelic}");
             }
         }
 
@@ -498,6 +514,141 @@ namespace Mewtations.Expedition
                 
                 Destroy(gameObject);
             }
+        }
+    }
+
+    public class EliteEncounter : IExpeditionEncounter
+    {
+        private int _layer;
+
+        public EliteEncounter(int layer)
+        {
+            _layer = layer;
+        }
+
+        public void Resolve(Action onComplete)
+        {
+            var manager = ExpeditionManager.Instance;
+            var runState = manager.RunState;
+
+            List<Combatable> enemies = new List<Combatable>();
+            Vector3 spawnPos = Vector3.zero;
+
+            string enemyId = "skeleton_mage"; 
+            if (_layer <= 2) enemyId = "demon";
+            else enemyId = "boss_goblin_king";
+
+            var enemyCard = WorldManager.instance.CreateCard(spawnPos, enemyId, false, false, false);
+            if (enemyCard != null && enemyCard.CardData is Combatable comb)
+            {
+                float scaleFactor = 1.8f * (1.0f + (runState.GreedLevel / 10f) * 0.05f);
+                comb.BaseCombatStats.MaxHealth = Mathf.RoundToInt(comb.BaseCombatStats.MaxHealth * scaleFactor);
+                comb.HealthPoints = comb.BaseCombatStats.MaxHealth;
+                comb.BaseCombatStats.AttackDamage = Mathf.RoundToInt(comb.BaseCombatStats.AttackDamage * scaleFactor);
+                comb.BaseCombatStats.Speed += 15;
+                comb.CustomName = $"🔥 Cương Giả {comb.Name}";
+                enemies.Add(comb);
+            }
+
+            Debug.LogWarning($"[Expedition] Bắt đầu trận chiến CƯƠNG GIẢ (ELITE)! Quái vật được tăng 1.8x HP & sát thương.");
+
+            List<Combatable> playerCombats = manager.ActiveCats.Cast<Combatable>().ToList();
+            TurnBasedCombatManager.Instance.StartCombat(playerCombats, enemies, (result) =>
+            {
+                foreach (var enemy in enemies)
+                {
+                    if (enemy != null && enemy.MyGameCard != null)
+                    {
+                        enemy.MyGameCard.DestroyCard(true, true);
+                    }
+                }
+
+                if (result == CombatResult.Victory)
+                {
+                    string[] rareLoot = { "item_breakthrough_pill", "talisman_heavy_armor", "talisman_rage_core", "talisman_health_regen" };
+                    string rolled = rareLoot[UnityEngine.Random.Range(0, rareLoot.Length)];
+                    manager.CurrentBackpack.AddItem(rolled);
+                    
+                    manager.CurrentBackpack.AddItem("resource_gold");
+                    manager.CurrentBackpack.AddItem("resource_gold");
+
+                    runState.AddCorruption(20);
+
+                    foreach (var cat in manager.ActiveCats)
+                    {
+                        cat.AddMemoir(MemoirType.BossKill, "Hạ Cương Giả", "Trảm sát Cương Giả nhận bùa chú");
+                    }
+
+                    string title = "⚔️ CƯƠNG GIẢ PHÁT BẠI";
+                    string text = $"Chúc mừng! Toàn đội đã tiêu diệt thành công Cương Giả hộ vệ.\n\n" +
+                                  $"Thu về linh bảo: <b>{rolled.Replace("item_", "").Replace("talisman_", "").ToUpper()}</b> và Vàng.";
+
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "Thu hoạch và Đi tiếp" }, (idx) =>
+                    {
+                        onComplete?.Invoke();
+                    });
+                }
+                else
+                {
+                    manager.ReturnToBase(isDefeat: true);
+                }
+            });
+        }
+    }
+
+    public class ExtractionEncounter : IExpeditionEncounter
+    {
+        public void Resolve(Action onComplete)
+        {
+            var manager = ExpeditionManager.Instance;
+
+            string title = "🌀 CỔNG TRỤC XUẤT CỔ ĐẠI";
+            string text = "Trước mắt bạn là một Cổng Trục Xuất phát ra hào quang dịu nhẹ. Cổng này cho phép toàn đội kết thúc viễn chinh sớm và đem toàn bộ đồ vật trong Balo về Base an toàn.\n\n" +
+                          "Bạn muốn làm gì?";
+
+            var choices = new List<string> { "🌀 Trục xuất về Base (An toàn 100% loot)", "Rời đi, tiếp tục viễn chinh" };
+
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices, (idx) =>
+            {
+                if (idx == 0)
+                {
+                    manager.ReturnToBase(isDefeat: false);
+                }
+                else
+                {
+                    onComplete?.Invoke();
+                }
+            });
+        }
+    }
+
+    public class SafeRetreatEncounter : IExpeditionEncounter
+    {
+        public void Resolve(Action onComplete)
+        {
+            var manager = ExpeditionManager.Instance;
+
+            string title = "⛺ ẨN TRÁNH CỔ LỘ (TRẠM NGHỈ)";
+            string text = "Một hang động ẩn khuất tự nhiên cực kỳ an toàn. Nơi này linh lực ôn hòa, tránh xa mọi ma thú và ô nhiễm thiên địa.\n\n" +
+                          "Toàn đội có thể chọn nghỉ ngơi để hồi phục thể trạng hoặc dưỡng thương.";
+
+            var choices = new List<string> { "💖 Nghỉ ngơi hồi phục (+15 HP cho toàn đội)", "Rời đi bình thường" };
+
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices, (idx) =>
+            {
+                if (idx == 0)
+                {
+                    foreach (var cat in manager.ActiveCats)
+                    {
+                        cat.HealthPoints = Mathf.Min(cat.ProcessedCombatStats.MaxHealth, cat.HealthPoints + 15);
+                    }
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue("⛺ Dưỡng Thương Hoàn Thành", "Toàn đội mèo phục hồi kinh mạch (+15 HP)!", new List<string> { "Đồng ý" }, (i) => onComplete?.Invoke());
+                }
+                else
+                {
+                    onComplete?.Invoke();
+                }
+            });
         }
     }
 }
