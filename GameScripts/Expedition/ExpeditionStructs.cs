@@ -86,6 +86,8 @@ namespace Mewtations.Expedition
         public const string DivineShieldProtection = "DivineShieldProtection"; // Start combat with +15 Armor
         public const string RageOvercharger = "RageOvercharger";             // Gain +10 extra Rage on attack
         public const string MartialArtsCleave = "MartialArtsCleave";         // Basic attack patterns become cleaving
+        public const string DualWield = "DualWield";                         // Song Binh Hộ Pháp
+        public const string FoodGlutton = "FoodGlutton";                     // Bách Vị Linh Thể
 
         public static string GetDisplayName(string id)
         {
@@ -95,6 +97,8 @@ namespace Mewtations.Expedition
                 case DivineShieldProtection: return "Kim Cương Hộ Thể";
                 case RageOvercharger: return "Nộ Khí Cuồng Triều";
                 case MartialArtsCleave: return "Bá Vương Thương Pháp";
+                case DualWield: return "Song Binh Hộ Pháp";
+                case FoodGlutton: return "Bách Vị Linh Thể";
                 default: return "Thiên Kiêu Thể";
             }
         }
@@ -107,6 +111,8 @@ namespace Mewtations.Expedition
                 case DivineShieldProtection: return "Bắt đầu mỗi trận chiến nhận ngay 15 Giáp bảo hộ.";
                 case RageOvercharger: return "Nhận thêm 10 điểm Nộ khí mỗi lượt hành động.";
                 case MartialArtsCleave: return "Biến đổi đòn đánh cơ bản thành tấn công lan (Cleave) hàng ngang.";
+                case DualWield: return "Cho phép mang 2 vũ khí cùng lúc (gắn vũ khí thứ 2 vào Passive). Giảm 15% ATK.";
+                case FoodGlutton: return "Cho phép mang 2 thức ăn cùng lúc (gắn thức ăn thứ 2 vào Passive). Giảm 10% ATK.";
                 default: return "Sở hữu tố chất tu tiên đặc biệt.";
             }
         }

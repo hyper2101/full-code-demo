@@ -206,6 +206,11 @@ namespace Mewtations.Combat
                 return; // Immune to freeze!
             }
 
+            if (debuff == MewtationsDebuff.Poisoned && HasTrait(Mewtations.Expedition.HeavenlyTalent.HeavenlyPoisonBody))
+            {
+                return; // Immune to poison!
+            }
+
             var existing = ActiveDebuffs.Find(d => d.Type == debuff);
             if (existing != null)
             {
@@ -344,11 +349,7 @@ namespace Mewtations.Combat
                 baseDamage = Mathf.RoundToInt(baseDamage * 1.5f);
             }
 
-            // Apply UnstableClaws damage boost
-            if (attacker.HasMutation(Mewtations.Expedition.UnstableMutation.UnstableClaws))
-            {
-                baseDamage = Mathf.RoundToInt(baseDamage * 1.3f);
-            }
+            // Apply UnstableClaws damage boost removed (now dynamically handled in BeforeAttack hook)
 
             // --- EVENT PIPELINE HOOKS & CONSTITUTIONS ---
 
@@ -625,6 +626,23 @@ namespace Mewtations.Combat
                 attacker.TakeDamage(4);
                 logCallback?.Invoke($"☣️ [TẨU HỎA NHẬP MA] Sức mạnh biến dị quá tải bùng nổ! {attacker.Name} gánh chịu 4 sát thương linh lực phản phệ!");
             }
+
+            // Apply BrokenFireVein backfire
+            bool usesFire = false;
+            var weapon = attacker.Source.GetEquipableOfEquipableType(EquipableType.Weapon);
+            if (weapon != null && (weapon.Id.ToLower().Contains("fire") || weapon.Id.ToLower().Contains("hỏa") || weapon.Id.ToLower().Contains("hoa")))
+            {
+                usesFire = true;
+            }
+            if (attacker.Element == CatElement.Fire)
+            {
+                usesFire = true;
+            }
+            if (usesFire && attacker.HasTrait(Mewtations.Combat.PermanentScar.BrokenFireVein) && attacker.IsAlive)
+            {
+                attacker.TakeDamage(2);
+                logCallback?.Invoke($"🔥 [HỎA MẠCH ĐỨT GÃY] {attacker.Name} sử dụng vũ khí/chiêu thức hệ Hỏa khi đang bị Đứt Hỏa Mạch! Tự chịu phản phệ -2 HP!");
+            }
         }
     }
 
@@ -650,9 +668,9 @@ namespace Mewtations.Combat
         public static void ExecuteUltimate(CombatUnit attacker, List<CombatUnit> allies, List<CombatUnit> enemies, Action<string> logCallback)
         {
             var cat = attacker.Source as CatCardData;
-            if (cat != null && cat.IsUltimateLocked)
+            if (cat != null && (cat.IsUltimateLocked || cat.HasScar(Mewtations.Combat.PermanentScar.CursedMeridians)))
             {
-                logCallback?.Invoke($"[KHÓA KỸ NĂNG] Kỹ năng Nộ của {attacker.Name} đã bị khóa do bị nguyền rủa! Thi triển Ultimate thất bại!");
+                logCallback?.Invoke($"[KHÓA KỸ NĂNG] Kỹ năng Nộ của {attacker.Name} đã bị khóa do bị nguyền rủa hoặc phế ấn! Thi triển Ultimate thất bại!");
                 attacker.CurrentRage = 0; // Consume the Rage as backfire/dissipated energy
                 var target = GetPrimaryTarget(enemies);
                 if (target != null)
@@ -694,10 +712,7 @@ namespace Mewtations.Combat
                 isSpiritualBacklash = true;
                 mutDmgMultiplier *= 1.5f;
             }
-            if (attacker.HasMutation(Mewtations.Expedition.UnstableMutation.UnstableClaws))
-            {
-                mutDmgMultiplier *= 1.3f;
-            }
+            // Apply UnstableClaws damage boost removed (now dynamically handled in BeforeAttack hook)
 
             int ultDamage = Mathf.RoundToInt(baseAttack * 2.0f * rageMultiplier * roleDmgMultiplier * mutDmgMultiplier);
 
@@ -934,6 +949,23 @@ namespace Mewtations.Combat
                         logCallback?.Invoke($"⚡ [CỔ VŨ] {attacker.Name} truyền năng lượng, giúp đồng đội {ally.Name} nhận +10 Nộ!");
                     }
                 }
+            }
+
+            // Apply BrokenFireVein backfire for Ultimate
+            bool usesFireUlt = false;
+            var weaponUlt = attacker.Source.GetEquipableOfEquipableType(EquipableType.Weapon);
+            if (weaponUlt != null && (weaponUlt.Id.ToLower().Contains("fire") || weaponUlt.Id.ToLower().Contains("hỏa") || weaponUlt.Id.ToLower().Contains("hoa")))
+            {
+                usesFireUlt = true;
+            }
+            if (attacker.Element == CatElement.Fire)
+            {
+                usesFireUlt = true;
+            }
+            if (usesFireUlt && attacker.HasTrait(Mewtations.Combat.PermanentScar.BrokenFireVein) && attacker.IsAlive)
+            {
+                attacker.TakeDamage(2);
+                logCallback?.Invoke($"🔥 [HỎA MẠCH ĐỨT GÃY] {attacker.Name} sử dụng Bí kỹ hệ Hỏa khi đang bị Đứt Hỏa Mạch! Tự chịu phản phệ -2 HP!");
             }
         }
 

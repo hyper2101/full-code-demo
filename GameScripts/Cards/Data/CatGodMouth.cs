@@ -67,7 +67,20 @@ public class CatGodMouth : CardData
         // If a card is stacked on top and timer is not running, start consuming the offering
         if (this.MyGameCard != null)
         {
-            // Soul absorption ritual removed per user request
+            // Intercept for Meridian Cure ritual (Tẩu Hỏa Nhập Ma)
+            if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "meridian_cure")
+            {
+                if (!this.MyGameCard.HasChild || !(this.MyGameCard.Child.CardData is CatCardData cat) || 
+                    (!cat.IsPillSlotLocked && !cat.IsFoodSlotLocked && !cat.IsPassiveSlotsLocked && !cat.IsEquipmentSlotsLocked))
+                {
+                    this.MyGameCard.CancelTimer("meridian_cure");
+                }
+            }
+            else if (!this.MyGameCard.TimerRunning && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData is CatCardData cat && 
+                     (cat.IsPillSlotLocked || cat.IsFoodSlotLocked || cat.IsPassiveSlotsLocked || cat.IsEquipmentSlotsLocked))
+            {
+                this.MyGameCard.StartTimer(5.0f, new TimerAction(this.PerformMeridianCure), "Nghi Lễ Hộ Mệnh Trị Liệu...", "meridian_cure");
+            }
             // Intercept for Scar Cleansing ritual
             else if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "cleansing")
             {
@@ -97,6 +110,83 @@ public class CatGodMouth : CardData
                     this.MyGameCard.StartTimer(2.0f, new TimerAction(this.ConsumeOffering), "Tiếp nhận Lễ Vật...", "offering");
                 }
             }
+        }
+    }
+
+    private void PerformMeridianCure()
+    {
+        if (this.MyGameCard == null || !this.MyGameCard.HasChild || !(this.MyGameCard.Child.CardData is CatCardData cat)) return;
+
+        string title = "☯️ NGHI LỄ HỘ MỆNH TRỊ LIỆU KINH MẠCH";
+        string text = $"Thần Miêu <b>{cat.Name}</b> bị tẩu hỏa nhập ma, bế tắc linh mạch nghiêm trọng sau lôi kiếp đột phá thất bại.\n\n" +
+                      $"Linh khí bạo phát đòi hỏi cúng tế vàng và linh dược cụ thể để hồi phục mạch tượng hoàn hảo:\n\n" +
+                      $"• <b>Tế phẩm yêu cầu:</b> 15 Vàng & 1 Thuốc hồi máu (`item_healing_potion`).\n" +
+                      $"• <b>Hiệu quả:</b> Gỡ bỏ hoàn toàn tình trạng bế tắc, giải phóng tất cả các ô bị khóa an toàn 100%!";
+
+        // Tìm tất cả vàng và thuốc trên bàn
+        var goldCards = new List<GameCard>();
+        var potionCards = new List<GameCard>();
+
+        foreach (var gc in WorldManager.instance.AllCards)
+        {
+            if (gc != null && !gc.Destroyed)
+            {
+                if (gc.CardData.Id == "resource_gold") goldCards.Add(gc);
+                else if (gc.CardData.Id.ToLower() == "item_healing_potion") potionCards.Add(gc);
+            }
+        }
+
+        bool hasResources = goldCards.Count >= 15 && potionCards.Count >= 1;
+
+        var choices = new List<Mewtations.Dialogue.DialogueChoice>();
+
+        choices.Add(new Mewtations.Dialogue.DialogueChoice(
+            "Cúng tế 15 Vàng & 1 Thuốc hồi máu để trị liệu.",
+            () => {
+                // Tiêu hủy 15 vàng
+                int destroyedGold = 0;
+                for (int i = goldCards.Count - 1; i >= 0 && destroyedGold < 15; i--)
+                {
+                    if (goldCards[i] != null && !goldCards[i].Destroyed)
+                    {
+                        goldCards[i].DestroyCard(true, true);
+                        destroyedGold++;
+                    }
+                }
+
+                // Tiêu hủy 1 thuốc
+                if (potionCards.Count > 0 && potionCards[0] != null && !potionCards[0].Destroyed)
+                {
+                    potionCards[0].DestroyCard(true, true);
+                }
+
+                // Chữa trị thành công!
+                cat.IsPillSlotLocked = false;
+                cat.IsFoodSlotLocked = false;
+                cat.IsPassiveSlotsLocked = false;
+                cat.IsEquipmentSlotsLocked = false;
+
+                string subTitle = "☯️ KINH MẠCH KHAI THÔNG!";
+                string subText = $"Dược lực bùng nổ kết hợp với linh lực cúng tế đã gột rửa hoàn toàn các bế tắc trong kinh mạch của <b>{cat.Name}</b>!\n\n" +
+                                 $"🌟 Mọi ô chứa bị khóa đã được mở khóa an toàn. <b>{cat.Name}</b> đã khôi phục mạch tượng hoàn hảo để tiếp tục tu luyện!";
+                
+                if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+                {
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(subTitle, subText, new List<string> { "Đại cát đại lợi!" }, (cIdx) => {});
+                }
+            },
+            () => hasResources,
+            "Cần 15 Vàng & 1 Thuốc hồi máu"
+        ));
+
+        choices.Add(new Mewtations.Dialogue.DialogueChoice(
+            "Rút lui",
+            () => {}
+        ));
+
+        if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+        {
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices);
         }
     }
 
@@ -332,7 +422,9 @@ public class CatGodMouth : CardData
 
                     if (Mewtations.Dialogue.DialogueSystem.Instance != null)
                     {
-                        Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "Đại cát đại lợi!" }, (choiceIdx) => { });
+                        Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "Đại cát đại lợi!" }, (choiceIdx) => { 
+                            TriggerCatGodWrath($"Thiên Phú {Mewtations.Expedition.HeavenlyTalent.GetDisplayName(chosenTalent)}");
+                        });
                     }
                     return;
                 }
@@ -405,8 +497,89 @@ public class CatGodMouth : CardData
 
             if (Mewtations.Dialogue.DialogueSystem.Instance != null)
             {
-                Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "Tạ ơn Thần Mèo!" }, (choiceIdx) => { });
+                Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "Tạ ơn Thần Mèo!" }, (choiceIdx) => { 
+                    if (rewardId == "cat_basic" || rewardId == "item_heavenly_relic" || rewardId == "item_breakthrough_pill")
+                    {
+                        TriggerCatGodWrath(rewardName);
+                    }
+                });
             }
+        }
+    }
+
+    private void TriggerCatGodWrath(string rewardName)
+    {
+        string title = "⚠️ THẦN MÈO PHẪN NỘ: LÒNG THAM QUÁ ĐỘ!";
+        string text = $"Ngươi đã rút được báu vật tối cao **{rewardName}** từ Miệng Thần Mèo!\n\n" +
+                      $"Lực lượng của báu vật quá lớn làm khuấy động phong ấn thiên địa. Tà thần hư không phẫn nộ đòi hỏi ngươi phải cúng nạp vàng cúng tế để xoa dịu lòng tham toàn cục, nếu không ma khí sẽ triệu hồi Tà Linh Hư Không tấn công tông môn!\n\n" +
+                      $"• **Lòng Tham gia tăng:** **+30 Greed** khí vận.\n" +
+                      $"• **Lựa chọn của ngươi là gì?**";
+
+        // Tăng Greed mặc định
+        if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
+        {
+            Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel = Mathf.Min(100, Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel + 30);
+        }
+
+        // Tìm tất cả vàng trên bàn
+        var goldCards = new List<GameCard>();
+        foreach (var gc in WorldManager.instance.AllCards)
+        {
+            if (gc != null && gc.CardData.Id == "resource_gold")
+            {
+                goldCards.Add(gc);
+            }
+        }
+        bool hasEnoughGold = goldCards.Count >= 20;
+
+        var choices = new List<Mewtations.Dialogue.DialogueChoice>();
+
+        choices.Add(new Mewtations.Dialogue.DialogueChoice(
+            "Cúng tế 20 Vàng để xoa dịu (Giảm 20 Greed)",
+            () => {
+                int destroyed = 0;
+                for (int i = goldCards.Count - 1; i >= 0 && destroyed < 20; i--)
+                {
+                    if (goldCards[i] != null && !goldCards[i].Destroyed)
+                    {
+                        goldCards[i].DestroyCard(true, true);
+                        destroyed++;
+                    }
+                }
+                if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
+                {
+                    Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel = Mathf.Max(0, Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel - 20);
+                }
+
+                string subTitle = "THẦN LINH YÊN VỊ";
+                string subText = "Thần Mèo chấp nhận 20 Vàng xoa dịu lòng tham, xua tan một phần ma khí hư không xung quanh!";
+                if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+                {
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(subTitle, subText, new List<string> { "Lành thay!" }, (idx) => {});
+                }
+            },
+            () => hasEnoughGold,
+            "Cần 20 Vàng"
+        ));
+
+        choices.Add(new Mewtations.Dialogue.DialogueChoice(
+            "Từ chối! Chấp nhận chiến đấu với Tà Linh Hư Không (`mob_void_spirit`)",
+            () => {
+                Vector3 spawnPos = this.transform.position + Vector3.back * 1.5f;
+                WorldManager.instance.CreateCard(spawnPos, "mob_void_spirit", true, true, true);
+
+                string subTitle = "TÀ LINH GIÁNG THẾ!";
+                string subText = "Hư không vỡ vụn! Một thực thể Tà Linh Hư Không gớm ghiếc (`mob_void_spirit`) chui ra từ kẽ nứt và lao vào tấn công quân đội của bạn!";
+                if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+                {
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(subTitle, subText, new List<string> { "Chuẩn bị chiến đấu!" }, (idx) => {});
+                }
+            }
+        ));
+
+        if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+        {
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices);
         }
     }
 

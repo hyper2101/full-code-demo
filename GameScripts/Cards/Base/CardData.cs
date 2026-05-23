@@ -939,6 +939,28 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 			}
 			this.MyGameCard.Equip(equipable);
 		}
+		else if (equipable.EquipableType == EquipableType.Weapon && this is CatCardData catWeap && catWeap.HasTrait(Mewtations.Expedition.HeavenlyTalent.DualWield))
+		{
+			List<Equipable> existingWeapons = this.GetAllEquipables().FindAll(x => x != null && x.EquipableType == EquipableType.Weapon);
+			if (existingWeapons.Count >= 2)
+			{
+				Equipable oldest = existingWeapons[0];
+				this.MyGameCard.Unequip(oldest);
+				oldest.MyGameCard.SendIt();
+			}
+			this.MyGameCard.Equip(equipable);
+		}
+		else if (equipable.EquipableType == EquipableType.Food && this is CatCardData catFood && catFood.HasTrait(Mewtations.Expedition.HeavenlyTalent.FoodGlutton))
+		{
+			List<Equipable> existingFoods = this.GetAllEquipables().FindAll(x => x != null && x.EquipableType == EquipableType.Food);
+			if (existingFoods.Count >= 2)
+			{
+				Equipable oldest = existingFoods[0];
+				this.MyGameCard.Unequip(oldest);
+				oldest.MyGameCard.SendIt();
+			}
+			this.MyGameCard.Equip(equipable);
+		}
 		else
 		{
 			Equipable equipableOfEquipableType = this.GetEquipableOfEquipableType(equipable.EquipableType);

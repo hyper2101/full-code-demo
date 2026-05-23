@@ -22,6 +22,8 @@ namespace Mewtations.Combat
             Register(HeavenlyTalent.RageOvercharger, () => new RageOverchargerTalent());
             Register(HeavenlyTalent.HeavenlyPoisonBody, () => new HeavenlyPoisonBodyTalent());
             Register(HeavenlyTalent.MartialArtsCleave, () => new MartialArtsCleaveTalent());
+            Register(HeavenlyTalent.DualWield, () => new DualWieldTalent());
+            Register(HeavenlyTalent.FoodGlutton, () => new FoodGluttonTalent());
 
             // --- UNSTABLE MUTATIONS ---
             Register(UnstableMutation.LethargicNap, () => new LethargicNapMutation());
@@ -34,6 +36,11 @@ namespace Mewtations.Combat
             Register(PermanentScar.CrippledMeridians, () => PermanentScar.CreateComponent(PermanentScar.CrippledMeridians));
             Register(PermanentScar.BloodDepletion, () => PermanentScar.CreateComponent(PermanentScar.BloodDepletion));
             Register(PermanentScar.SoulScar, () => PermanentScar.CreateComponent(PermanentScar.SoulScar));
+            Register(PermanentScar.BrokenClaws, () => PermanentScar.CreateComponent(PermanentScar.BrokenClaws));
+            Register(PermanentScar.CursedMeridians, () => PermanentScar.CreateComponent(PermanentScar.CursedMeridians));
+            Register(PermanentScar.BrokenFireVein, () => PermanentScar.CreateComponent(PermanentScar.BrokenFireVein));
+            Register(PermanentScar.HeartDemonPossessed, () => PermanentScar.CreateComponent(PermanentScar.HeartDemonPossessed));
+            Register(PermanentScar.ShatteredSoul, () => PermanentScar.CreateComponent(PermanentScar.ShatteredSoul));
 
             // --- TALISMANS ---
             Register("talisman_heavy_armor", () => new HeavyArmorTalisman());
@@ -102,11 +109,11 @@ namespace Mewtations.Combat
         {
             public string Id => "talent_poison_body";
             public string DisplayName => "Heavenly Poison Body";
-            public string Description => "Inflicts Poisoned status (3 turns) on target with every attack.";
+            public string Description => "Inflicts Poisoned status (3 turns) on target with 30% chance.";
             public void Initialize(CombatUnit unit) {}
             public void AfterAttack(CombatUnit attacker, CombatUnit target, int damage, Action<string> logCallback)
             {
-                if (target.IsAlive)
+                if (target.IsAlive && UnityEngine.Random.value <= 0.30f)
                 {
                     target.AddDebuff(MewtationsDebuff.Poisoned, 3);
                     logCallback?.Invoke($"☠️ Đòn đánh của {attacker.Name} tẩm độc linh lực, gây trúng độc lên {target.Name}!");
@@ -229,5 +236,21 @@ namespace Mewtations.Combat
         }
 
         // DemonicTranscendenceComponent removed per user request
+
+        private class DualWieldTalent : IMewtationsComponent
+        {
+            public string Id => HeavenlyTalent.DualWield;
+            public string DisplayName => HeavenlyTalent.GetDisplayName(HeavenlyTalent.DualWield);
+            public string Description => HeavenlyTalent.GetDescription(HeavenlyTalent.DualWield);
+            public void Initialize(CombatUnit unit) { }
+        }
+
+        private class FoodGluttonTalent : IMewtationsComponent
+        {
+            public string Id => HeavenlyTalent.FoodGlutton;
+            public string DisplayName => HeavenlyTalent.GetDisplayName(HeavenlyTalent.FoodGlutton);
+            public string Description => HeavenlyTalent.GetDescription(HeavenlyTalent.FoodGlutton);
+            public void Initialize(CombatUnit unit) { }
+        }
     }
 }

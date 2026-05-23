@@ -7,6 +7,8 @@ public class ShrineCardData : CardData
 	[ExtraData("max_shrine_slots")]
 	public int MaxSlots = 2;
 
+	private string _cachedRelicsHash = "";
+
 	public override bool UsesHorizontalSlots
 	{
 		get
@@ -54,12 +56,21 @@ public class ShrineCardData : CardData
 
 		if (this.MyGameCard != null)
 		{
-			// 1. Cập nhật mô tả thẻ theo số slot hiện tại
+			// 1. Kiểm tra sự thay đổi của các cổ vật trong stack đền thờ (Event-driven)
+			string currentHash = GetRelicsHash();
+			if (currentHash != _cachedRelicsHash)
+			{
+				_cachedRelicsHash = currentHash;
+				// Bắn sự kiện lên Event Bus để báo cho RelicAutomationSystem cập nhật lập tức
+				EventBus.Publish(new OnShrineStackChangedEvent(this));
+			}
+
+			// 2. Cập nhật mô tả thẻ theo số slot hiện tại
 			this.descriptionOverride = "Đền Thờ Thần Mèo cổ kính. Nơi trang bị Cổ Vật và hiến tế Cống Phẩm để mở khóa sức mạnh tự động hóa.\n\n" +
 			                           $"• <b>Số ô Cổ Vật tối đa:</b> <color=#ffdd22>{MaxSlots}</color>\n" +
 			                           $"• Đặt thẻ <b>Cống Phẩm</b> vào ô để mở rộng thêm ô Đền Thờ vĩnh viễn.";
 
-			// 2. Quản lý timer dâng nạp Cống Phẩm
+			// 3. Quản lý timer dâng nạp Cống Phẩm
 			if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "upgrade_shrine")
 			{
 				if (!HasOfferingInStack())
@@ -73,6 +84,22 @@ public class ShrineCardData : CardData
 				this.MyGameCard.StartTimer(15.0f, new TimerAction(this.UpgradeShrineSlots), "Đang dâng nạp Cống Phẩm lên Đền Thờ...", "upgrade_shrine", true, false, false);
 			}
 		}
+	}
+
+	private string GetRelicsHash()
+	{
+		if (this.MyGameCard == null) return "";
+		string hash = "";
+		GameCard curr = this.MyGameCard.Child;
+		while (curr != null)
+		{
+			if (curr.CardData != null && !curr.Destroyed && curr.CardData.IsAncientRelic)
+			{
+				hash += curr.CardData.Id + ",";
+			}
+			curr = curr.Child;
+		}
+		return hash;
 	}
 
 	private bool HasOfferingInStack()
@@ -113,6 +140,9 @@ public class ShrineCardData : CardData
 		{
 			// Tăng slot đền thờ
 			MaxSlots++;
+
+			// Bắn sự kiện thay đổi stack để tự động cập nhật registry
+			EventBus.Publish(new OnShrineStackChangedEvent(this));
 
 			string title = "☯️ ĐỀN THỜ THĂNG CẤP!";
 			string text = $"Thần Mèo đã tiếp nhận Cống Phẩm thành kính của bạn!\n\n" +

@@ -1427,11 +1427,25 @@ public class GameCard : Draggable, IGameCardOrCardData
 		return this.EquipmentHolder.GetEquipmentStackPosition(((Equipable)this.CardData).EquipableType);
 	}
 
+	private bool _uiTextDirty = false;
+	public void FlagUiTextDirty()
+	{
+		_uiTextDirty = true;
+	}
+
 	protected override void LateUpdate()
 	{
 		if (this.MyBoard != null && !this.MyBoard.IsCurrent)
 		{
 			return;
+		}
+		if (_uiTextDirty)
+		{
+			_uiTextDirty = false;
+			if (this.CardData != null)
+			{
+				this.CardData.UpdateCardText();
+			}
 		}
 		this.PushAwayFromOthers();
 		if (this.Parent == null && !this.IsEquipped && !this.IsWorking)

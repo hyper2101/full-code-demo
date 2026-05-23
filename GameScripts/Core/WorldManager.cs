@@ -305,6 +305,10 @@ public class WorldManager : MonoBehaviour
 
 	private void Start()
 	{
+		if (RelicAutomationSystem.Instance == null)
+		{
+			new GameObject("RelicAutomationSystem").AddComponent<RelicAutomationSystem>();
+		}
 		OptionsScreen.LoadSettings();
 		QuestManager.instance.CheckSteamAchievements();
 		WorldManager.CheckForceReloadSave();

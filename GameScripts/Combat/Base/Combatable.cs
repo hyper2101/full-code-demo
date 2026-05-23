@@ -159,16 +159,29 @@ public class Combatable : CardData
 		{
 			num *= 0.6f;
 		}
+		if (this is CatCardData cat && cat.HasScar(Mewtations.Combat.PermanentScar.HeartDemonPossessed))
+		{
+			num *= 0.8f; // Giảm 20% tỷ lệ đánh trúng
+		}
 		return num;
 	}
 
 	protected virtual float GetAttackTime()
 	{
+		float baseTime = this.ProcessedCombatStats.AttackSpeed;
 		if (base.HasStatusEffectOfType<StatusEffect_Frenzy>())
 		{
-			return CombatStats.IncrementAttackSpeed(this.ProcessedCombatStats.AttackSpeed, 1);
+			baseTime = CombatStats.IncrementAttackSpeed(baseTime, 1);
 		}
-		return this.ProcessedCombatStats.AttackSpeed;
+		if (_statusEffectPipeline != null)
+		{
+			int slowPercent = _statusEffectPipeline.GetSlowPercent();
+			if (slowPercent > 0)
+			{
+				baseTime *= (1f + slowPercent / 100f);
+			}
+		}
+		return baseTime;
 	}
 
 	public float DamageMultiplier
@@ -391,6 +404,10 @@ public class Combatable : CardData
 
 	public override void UpdateCard()
 	{
+		if (_statusEffectPipeline != null && WorldManager.instance != null && !WorldManager.instance.GamePaused)
+		{
+			_statusEffectPipeline.UpdateTick(Time.deltaTime * WorldManager.instance.TimeScale);
+		}
 		if (this.previouseHealthPoints != this.HealthPoints)
 		{
 			this.OnHealthChange();
@@ -794,6 +811,46 @@ public class Combatable : CardData
 		}
 	}
 
+	private void ApplyElementalAttackEffect(Combatable target, int damage)
+	{
+		if (target == null || target.HealthPoints <= 0) return;
+		CatElement attackerElement = CatElement.None;
+		if (this is CatCardData cat)
+		{
+			attackerElement = cat.Element;
+		}
+		if (attackerElement == CatElement.None) return;
+		switch (attackerElement)
+		{
+			case CatElement.Fire:
+				target.ApplyStatusEffect(new ActiveStatusEffect(
+					"burn",
+					"Thiêu Đốt",
+					4.0f,
+					StatusEffectStackingRule.AccumulateStacks,
+					10,
+					1.0f,
+					(owner, stacks) => {
+						int dotDmg = Mathf.Max(1, Mathf.RoundToInt(2f * (1f + (stacks - 1) * 0.6f)));
+						owner.Damage(dotDmg);
+						owner.MyGameCard.RotWobble(0.2f);
+					}
+				));
+				break;
+			case CatElement.Ice:
+				target.ApplyStatusEffect(new ActiveStatusEffect(
+					"slow",
+					"Làm Chậm",
+					3.5f,
+					StatusEffectStackingRule.RefreshDuration
+				));
+				break;
+			case CatElement.Lightning:
+				ChainLightningSystem.CastChainLightning(this, target, damage, 4, 0.25f);
+				break;
+		}
+	}
+
 	public virtual void PerformAttack(Combatable target, Vector3 attackPos)
 	{
 		if (target == null)
@@ -817,10 +874,12 @@ public class Combatable : CardData
 			{
 				target.Damage(num);
 			}
+			this.ApplyElementalAttackEffect(target, num);
 			this.ShowHitText(this, target, attackPos, this.AttackIsHit, num, new SpecialHitType?(this.AttackSpecialHit.HitType));
 			return;
 		}
 		target.Damage(num);
+		this.ApplyElementalAttackEffect(target, num);
 		this.ShowHitText(this, target, attackPos, this.AttackIsHit, num, null);
 	}
 
@@ -1234,4 +1293,22 @@ public class Combatable : CardData
 
 	[HideInInspector]
 	private bool isDead;
+
+	protected StatusEffectPipeline _statusEffectPipeline;
+	public StatusEffectPipeline StatusEffects
+	{
+		get
+		{
+			if (_statusEffectPipeline == null)
+			{
+				_statusEffectPipeline = new StatusEffectPipeline(this);
+			}
+			return _statusEffectPipeline;
+		}
+	}
+
+	public void ApplyStatusEffect(ActiveStatusEffect effect)
+	{
+		StatusEffects.ApplyEffect(effect);
+	}
 }

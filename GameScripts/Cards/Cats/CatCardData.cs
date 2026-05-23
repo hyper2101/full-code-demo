@@ -58,20 +58,109 @@ public class CatCardData : Combatable
         return PermanentScars.Contains(id);
     }
 
+    private bool _statsDirty = true;
+    private CombatStats _cachedCombatStats;
+    private ModifierPipeline _modifierPipeline;
+
+    private void Awake()
+    {
+        _modifierPipeline = new ModifierPipeline(OnModifiersChanged);
+        _statusEffectPipeline = new StatusEffectPipeline(this);
+    }
+
+    private void OnModifiersChanged()
+    {
+        // Tối ưu hóa: Chỉ publish event khi chỉ số thực tế sau tính toán thực sự thay đổi
+        int oldMaxHp = _cachedCombatStats != null ? _cachedCombatStats.MaxHealth : -1;
+        int oldAtk = _cachedCombatStats != null ? _cachedCombatStats.AttackDamage : -1;
+
+        _statsDirty = true;
+        CombatStats newStats = ProcessedCombatStats;
+
+        if (newStats.MaxHealth != oldMaxHp || newStats.AttackDamage != oldAtk)
+        {
+            // Báo hiệu thay đổi chỉ số qua Event Bus
+            EventBus.Publish(new OnStatsChangedEvent(this));
+        }
+    }
+
+    private void OnEnable()
+    {
+        EventBus.Subscribe<OnStatsChangedEvent>(OnStatsChanged);
+    }
+
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe<OnStatsChangedEvent>(OnStatsChanged);
+    }
+
+    private void OnStatsChanged(OnStatsChangedEvent ev)
+    {
+        if (ev.Cat == this)
+        {
+            if (this.MyGameCard != null)
+            {
+                this.MyGameCard.FlagUiTextDirty();
+            }
+            else
+            {
+                this.UpdateCardText();
+            }
+        }
+    }
+
+    public void AddModifier(StatModifier mod)
+    {
+        _modifierPipeline?.AddModifier(mod);
+    }
+
+    public void RemoveModifier(string id)
+    {
+        _modifierPipeline?.RemoveModifier(id);
+    }
+
     public override CombatStats ProcessedCombatStats
     {
         get
         {
-            CombatStats stats = base.ProcessedCombatStats;
-            if (Constitution == Mewtations.Combat.CatConstitution.BaoLinhThienKieu)
+            if (_statsDirty || _cachedCombatStats == null)
             {
-                stats.MaxHealth = Mathf.Min(35, stats.MaxHealth);
+                _statsDirty = false;
+                CombatStats stats = base.ProcessedCombatStats;
+
+                // Áp dụng Modifier Pipeline
+                if (_modifierPipeline != null)
+                {
+                    stats.MaxHealth = Mathf.RoundToInt(_modifierPipeline.CalculateValue(TargetStat.MaxHealth, stats.MaxHealth));
+                    stats.AttackDamage = Mathf.RoundToInt(_modifierPipeline.CalculateValue(TargetStat.AttackDamage, stats.AttackDamage));
+                }
+
+                if (Constitution == Mewtations.Combat.CatConstitution.BaoLinhThienKieu)
+                {
+                    stats.MaxHealth = Mathf.Min(35, stats.MaxHealth);
+                }
+                if (HasScar(Mewtations.Combat.PermanentScar.BloodDepletion))
+                {
+                    stats.MaxHealth = Mathf.Max(1, stats.MaxHealth - 15);
+                }
+
+                // 2 Thiên phú mới và Sẹo BrokenClaws
+                if (HasTrait(Mewtations.Expedition.HeavenlyTalent.DualWield))
+                {
+                    stats.AttackDamage = Mathf.RoundToInt(stats.AttackDamage * 0.85f); // giảm 15% ATK
+                }
+                if (HasTrait(Mewtations.Expedition.HeavenlyTalent.FoodGlutton))
+                {
+                    stats.AttackDamage = Mathf.RoundToInt(stats.AttackDamage * 0.90f); // giảm 10% ATK
+                }
+                if (HasScar(Mewtations.Combat.PermanentScar.BrokenClaws))
+                {
+                    stats.AttackDamage = Mathf.Max(1, stats.AttackDamage - 5); // giảm 5 ATK
+                }
+
+                _cachedCombatStats = stats;
             }
-            if (HasScar(Mewtations.Combat.PermanentScar.BloodDepletion))
-            {
-                stats.MaxHealth = Mathf.Max(1, stats.MaxHealth - 15);
-            }
-            return stats;
+            return _cachedCombatStats;
         }
     }
 
@@ -124,6 +213,10 @@ public class CatCardData : Combatable
 
     public void GainExperience(int amount)
     {
+        if (HasScar(Mewtations.Combat.PermanentScar.ShatteredSoul))
+        {
+            return; // Khóa nhận Exp thường!
+        }
         if (Level <= 0) Level = 1;
 
         // Cấp độ chẵn 9, 19, 29... chuẩn bị lên 10, 20, 30... thì cần đột phá lôi kiếp mới vượt qua được!
@@ -334,6 +427,48 @@ public class CatCardData : Combatable
 
         // Đột phá bây giờ chỉ diễn ra thông qua Đột Phá Trận (BreakthroughArrayCardData)
         // Loại bỏ hoàn toàn trigger cũ khi đặt Linh đan trực tiếp lên Mèo.
+
+        // Kiểm tra giải sẹo CursedMeridians bằng item_healing_potion
+        if (HasScar(Mewtations.Combat.PermanentScar.CursedMeridians))
+        {
+            if (this.MyGameCard != null && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.Id == "item_healing_potion")
+            {
+                if (!this.MyGameCard.TimerRunning)
+                {
+                    this.MyGameCard.StartTimer(3f, new TimerAction(ResolveCursedMeridians), "Đang khơi thông kinh mạch...", "resolve_cursed_meridians");
+                }
+            }
+            else
+            {
+                if (this.MyGameCard != null && this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "resolve_cursed_meridians")
+                {
+                    this.MyGameCard.CancelTimer("resolve_cursed_meridians");
+                }
+            }
+        }
+    }
+
+    public void ResolveCursedMeridians()
+    {
+        if (this.MyGameCard != null && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.Id == "item_healing_potion")
+        {
+            GameCard potion = this.MyGameCard.Child;
+            potion.DestroyCard(true, true); // Tiêu thụ thuốc đỏ
+        }
+
+        RemoveScar(Mewtations.Combat.PermanentScar.CursedMeridians);
+        IsUltimateLocked = false;
+
+        string title = "☯️ KINH MẠCH PHỤC HỒI!";
+        string text = $"Dược lực từ bình thuốc đỏ đã len lỏi vào linh mạch, tẩy rửa hoàn toàn cấm chế phế ấn cho <b>{Name}</b>!\n\n" +
+                      $"Linh mạch đã được đả thông hoàn toàn, khôi phục khả năng thi triển **Ultimate Skill**!";
+
+        if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+        {
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "Quá tốt rồi!" }, (idx) => {});
+        }
+
+        UpdateCardText();
     }
 
     // PerformHealingChamber removed per user request
@@ -808,11 +943,25 @@ public class CatCardData : Combatable
             return false;
         }
 
+        // Chữa sẹo phế ấn bằng thuốc đỏ
+        if (otherCard.Id == "item_healing_potion" && HasScar(Mewtations.Combat.PermanentScar.CursedMeridians))
+        {
+            return true;
+        }
+
         // 2. Validate food slot (BT level 2)
         if (otherCard.MyCardType == CardType.Food || (otherCard is Equipable eqFood && eqFood.EquipableType == EquipableType.Food)) 
         {
             if (IsFoodSlotLocked) return false;
-            return HasFoodSlot;
+            if (!HasFoodSlot) return false;
+            
+            int maxFoods = 1;
+            if (HasTrait(Mewtations.Expedition.HeavenlyTalent.FoodGlutton))
+            {
+                maxFoods = 2;
+            }
+            int currentFoods = GetAllEquipables().Count(eq => eq.EquipableType == EquipableType.Food);
+            return currentFoods < maxFoods;
         }
 
         // 3. Validate Pill slot (BT level 1)
@@ -844,6 +993,16 @@ public class CatCardData : Combatable
         // 5. Equipment slots (Weapon & Talismans) are allowed by default
         if (otherCard.MyCardType == CardType.Equipment)
         {
+            if (otherCard is Equipable eqWeap && eqWeap.EquipableType == EquipableType.Weapon)
+            {
+                int maxWeapons = 1;
+                if (HasTrait(Mewtations.Expedition.HeavenlyTalent.DualWield))
+                {
+                    maxWeapons = 2;
+                }
+                int currentWeapons = GetAllEquipables().Count(eq => eq.EquipableType == EquipableType.Weapon);
+                return currentWeapons < maxWeapons;
+            }
             return true;
         }
 
