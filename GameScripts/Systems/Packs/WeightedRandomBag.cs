@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,6 +25,17 @@ public class WeightedRandomBag<T>
 
 	public T Choose()
 	{
+		if (this.entries.Count == 0)
+		{
+			Debug.LogWarning("[WeightedRandomBag] Attempted to Choose() from an empty bag! Returning default(T).");
+			return default(T);
+		}
+		if (this.totalWeight <= 0f)
+		{
+			Debug.LogWarning($"[WeightedRandomBag] Total weight <= 0 ({this.totalWeight}) with {this.entries.Count} entries! Falling back to first entry.");
+			this.lastPickedEntry = this.entries[0];
+			return this.entries[0].item;
+		}
 		float num = Random.value * this.totalWeight;
 		foreach (WeightedRandomBag<T>.Entry entry in this.entries)
 		{

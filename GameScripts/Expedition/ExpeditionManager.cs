@@ -679,7 +679,7 @@ namespace Mewtations.Expedition
             }
         }
 
-        public void ReturnToBase(bool isDefeat)
+        public void ReturnToBase(bool isDefeat, bool isManualRetreat = false)
         {
             IsExpeditionActive = false;
             State = ExpeditionState.Idle;
@@ -732,11 +732,24 @@ namespace Mewtations.Expedition
                     // Calculate and apply scaled drop penalty on force abandon/retreat/defeat
                     if (CurrentBackpack != null)
                     {
-                        float rate = ExpeditionExtractionSystem.CalculateLootRetentionRate(RunState, CurrentBackpack);
-                        ExpeditionExtractionSystem.ApplyAbandonPenalty(CurrentBackpack, rate);
+                        if (isManualRetreat)
+                        {
+                            // Cowardice Tax: lose exactly 50% of backpack items randomly, and add +15 Greed!
+                            if (RunState != null)
+                            {
+                                RunState.GreedLevel = Mathf.Min(100, RunState.GreedLevel + 15);
+                            }
+                            ExpeditionExtractionSystem.ApplyManualRetreatPenalty(CurrentBackpack);
+                            Debug.Log("[Expedition] Người chơi chủ động rút lui! Áp dụng Thuế Nhát Gan: Mất ngẫu nhiên 50% balo, +15 Greed khí vận.");
+                        }
+                        else
+                        {
+                            float rate = ExpeditionExtractionSystem.CalculateLootRetentionRate(RunState, CurrentBackpack);
+                            ExpeditionExtractionSystem.ApplyAbandonPenalty(CurrentBackpack, rate);
+                            Debug.Log("[Expedition] Viễn chinh thất bại hoặc bị tiêu diệt! Áp dụng hình phạt hao hụt balo nghiêm trọng.");
+                        }
                         ExpeditionRewardSystem.SpawnBackpackLoot(CurrentBackpack, spawnPos);
                     }
-                    Debug.Log("[Expedition] Viễn chinh thất bại hoặc rút lui! Áp dụng hình phạt hao hụt balo.");
                 }
 
                 // Restore Backpack Card if present

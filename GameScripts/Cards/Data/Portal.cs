@@ -52,7 +52,7 @@ public class Portal : CardData
 	public void RemoveNonHuman()
 	{
 		GameCard parent = this.MyGameCard.Parent;
-		base.RestackChildrenMatchingPredicate((CardData x) => x.MyCardType != CardType.Humans);
+		base.RestackChildrenMatchingPredicate((CardData x) => !this.CardIsAllowedInPortal(x));
 		if (parent != null && parent.CardData is HeavyFoundation)
 		{
 			this.MyGameCard.Parent = parent;
@@ -65,7 +65,7 @@ public class Portal : CardData
 		List<GameCard> childCards = this.MyGameCard.GetChildCards();
 		for (int i = childCards.Count - 1; i >= 0; i--)
 		{
-			if (childCards[i].CardData is BaseVillager)
+			if (childCards[i].CardData is BaseVillager || childCards[i].CardData is CatCardData)
 			{
 				childCards[i].RemoveFromParent();
 				break;
@@ -83,7 +83,7 @@ public class Portal : CardData
 		List<GameCard> childCards = this.MyGameCard.GetChildCards();
 		for (int i = childCards.Count - 1; i >= this.MaxVillagerCount; i--)
 		{
-			if (childCards[i].CardData is BaseVillager)
+			if (childCards[i].CardData is BaseVillager || childCards[i].CardData is CatCardData)
 			{
 				childCards[i].RemoveFromParent();
 			}
@@ -99,7 +99,15 @@ public class Portal : CardData
 	{
 		if (!TransitionScreen.InTransition && !WorldManager.instance.InAnimation)
 		{
-			GameCanvas.instance.ChangeLocationPrompt(new Action(this.GoAway), new Action(this.Stay), "forest");
+			bool hasCats = this.MyGameCard.GetAllCardsInStack().Any(c => c.CardData is CatCardData);
+			if (hasCats)
+			{
+				this.GoAway();
+			}
+			else
+			{
+				GameCanvas.instance.ChangeLocationPrompt(new Action(this.GoAway), new Action(this.Stay), "forest");
+			}
 		}
 	}
 

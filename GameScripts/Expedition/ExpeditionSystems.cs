@@ -170,6 +170,27 @@ namespace Mewtations.Expedition
 
             Debug.Log($"[Extraction] Áp dụng trừng phạt: Chỉ giữ lại {keepCount}/{originalCount} vật phẩm (Tỉ lệ giữ: {retentionRate:P0}).");
         }
+
+        public static void ApplyManualRetreatPenalty(Backpack backpack)
+        {
+            int originalCount = backpack.ContainedCardIds.Count;
+            if (originalCount == 0) return;
+
+            List<string> items = new List<string>(backpack.ContainedCardIds);
+            backpack.Clear();
+
+            int keptCount = 0;
+            foreach (var item in items)
+            {
+                if (UnityEngine.Random.value < 0.50f)
+                {
+                    backpack.AddItem(item);
+                    keptCount++;
+                }
+            }
+
+            Debug.Log($"[Extraction] Thuế Nhát Gan: Giữ lại {keptCount}/{originalCount} vật phẩm (Mất ngẫu nhiên 50% bất kể thứ gì).");
+        }
     }
 
     public static class MutationPersistenceSystem

@@ -41,6 +41,43 @@ public class CatCardData : Combatable
         {
             list.Add(scarId);
             PermanentScarsString = string.Join(",", list);
+
+            // Spawns lore-friendly/existential narrative floating text
+            if (this.MyGameCard != null)
+            {
+                string narrativeMsg = "";
+                switch (scarId)
+                {
+                    case Mewtations.Combat.PermanentScar.CrippledMeridians:
+                        narrativeMsg = "Mèo đen dẫm phải thiên đinh!";
+                        break;
+                    case Mewtations.Combat.PermanentScar.BloodDepletion:
+                        narrativeMsg = "Huyết mạch kiệt quệ, khí sắc hao tổn...";
+                        break;
+                    case Mewtations.Combat.PermanentScar.SoulScar:
+                        narrativeMsg = "Để lại một vết cắn khó nhìn...";
+                        break;
+                    case Mewtations.Combat.PermanentScar.BrokenClaws:
+                        narrativeMsg = "Phế trảo hao mòn, lực bất tòng tâm...";
+                        break;
+                    case Mewtations.Combat.PermanentScar.CursedMeridians:
+                        narrativeMsg = "Kinh mạch phế tắc bởi cấm ấn tàn bạo!";
+                        break;
+                    case Mewtations.Combat.PermanentScar.BrokenFireVein:
+                        narrativeMsg = "Tai trái cháy xém vì lôi kiếp...";
+                        break;
+                    case Mewtations.Combat.PermanentScar.HeartDemonPossessed:
+                        narrativeMsg = "Tâm ma quấy rối, hư ảnh mịt mù...";
+                        break;
+                    case Mewtations.Combat.PermanentScar.ShatteredSoul:
+                        narrativeMsg = "Hồn phách lay lắt, linh căn tổn hao...";
+                        break;
+                    default:
+                        narrativeMsg = "Một vết sẹo linh mạch vĩnh viễn...";
+                        break;
+                }
+                WorldManager.instance.CreateFloatingText(this.MyGameCard, false, 0, narrativeMsg, "", false, 0, 2f, true);
+            }
         }
     }
 
@@ -421,9 +458,67 @@ public class CatCardData : Combatable
         return ActiveMutations.Contains(id);
     }
 
+    protected override string GetTooltipText()
+    {
+        string baseText = base.GetTooltipText();
+        
+        // Tooltip Synergy compatibility check
+        if (WorldManager.instance.DraggingCard != null && WorldManager.instance.DraggingCard.CardData != null)
+        {
+            CardData draggingData = WorldManager.instance.DraggingCard.CardData;
+            if (draggingData.IsPassiveTalisman)
+            {
+                int maxTalismans = 2;
+                if (this.BreakthroughLevel >= 4) maxTalismans = 2;
+                else if (this.BreakthroughLevel == 3) maxTalismans = 1;
+                else maxTalismans = 0;
+
+                int currentTalismans = this.GetAllEquipables().Count(x => x != null && x.EquipableType == EquipableType.Talisman);
+
+                if (IsEquipmentSlotsLocked)
+                {
+                    baseText += "\n<color=red>✗ Kinh mạch bế tắc: Ô trang bị bị khóa!</color>";
+                }
+                else if (maxTalismans <= 0)
+                {
+                    baseText += "\n<color=red>✗ Đột phá Luyện Khí chưa đủ để lắp bùa!</color>";
+                }
+                else if (currentTalismans >= maxTalismans)
+                {
+                    baseText += "\n<color=yellow>! Ô bùa đầy (Lắp tối đa " + maxTalismans + " bùa, bùa cũ sẽ bị tháo ra).</color>";
+                }
+                else
+                {
+                    baseText += "\n<color=green>✓ Tương thích bùa hộ mệnh!</color>";
+                }
+            }
+        }
+        return baseText;
+    }
+
     public override void UpdateCard()
     {
         base.UpdateCard();
+
+        // 4.3: Tooltip Synergy (Talisman hover highlight)
+        if (WorldManager.instance.DraggingCard != null && WorldManager.instance.DraggingCard.CardData != null && WorldManager.instance.DraggingCard != this.MyGameCard)
+        {
+            CardData draggingData = WorldManager.instance.DraggingCard.CardData;
+            if (draggingData.IsPassiveTalisman)
+            {
+                int maxTalismans = 2;
+                if (this.BreakthroughLevel >= 4) maxTalismans = 2;
+                else if (this.BreakthroughLevel == 3) maxTalismans = 1;
+                else maxTalismans = 0;
+
+                int currentTalismans = this.GetAllEquipables().Count(x => x != null && x.EquipableType == EquipableType.Talisman);
+
+                if (!IsEquipmentSlotsLocked && maxTalismans > 0 && currentTalismans < maxTalismans)
+                {
+                    this.MyGameCard.HighlightActive = true;
+                }
+            }
+        }
 
         // Đột phá bây giờ chỉ diễn ra thông qua Đột Phá Trận (BreakthroughArrayCardData)
         // Loại bỏ hoàn toàn trigger cũ khi đặt Linh đan trực tiếp lên Mèo.
@@ -431,7 +526,7 @@ public class CatCardData : Combatable
         // Kiểm tra giải sẹo CursedMeridians bằng item_healing_potion
         if (HasScar(Mewtations.Combat.PermanentScar.CursedMeridians))
         {
-            if (this.MyGameCard != null && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.Id == "item_healing_potion")
+            if (this.MyGameCard != null && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.IsHealingPotion)
             {
                 if (!this.MyGameCard.TimerRunning)
                 {
@@ -450,7 +545,7 @@ public class CatCardData : Combatable
 
     public void ResolveCursedMeridians()
     {
-        if (this.MyGameCard != null && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.Id == "item_healing_potion")
+        if (this.MyGameCard != null && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.IsHealingPotion)
         {
             GameCard potion = this.MyGameCard.Child;
             potion.DestroyCard(true, true); // Tiêu thụ thuốc đỏ
@@ -944,7 +1039,7 @@ public class CatCardData : Combatable
         }
 
         // Chữa sẹo phế ấn bằng thuốc đỏ
-        if (otherCard.Id == "item_healing_potion" && HasScar(Mewtations.Combat.PermanentScar.CursedMeridians))
+        if (otherCard.IsHealingPotion && HasScar(Mewtations.Combat.PermanentScar.CursedMeridians))
         {
             return true;
         }
@@ -965,10 +1060,10 @@ public class CatCardData : Combatable
         }
 
         // 3. Validate Pill slot (BT level 1)
-        if (otherCard.Id == "item_pill" || otherCard.Id.Contains("pill"))
+        if (otherCard.IsCultivationPill)
         {
             // breakthrough pill can be stacked on anyone to trigger breakthrough
-            if (otherCard.Id == "item_breakthrough_pill")
+            if (otherCard.IsBreakthroughPill)
             {
                 return true;
             }
@@ -977,7 +1072,7 @@ public class CatCardData : Combatable
         }
 
         // 4. Validate Passive Slots (BT level 3 & 4: Max 1 for level 3, Max 2 for level 4)
-        if (otherCard.Id.StartsWith("item_passive_") || otherCard.Id.Contains("passive") || (otherCard is Equipable eqTal && eqTal.EquipableType == EquipableType.Talisman))
+        if (otherCard.IsPassiveTalisman)
         {
             if (IsPassiveSlotsLocked) return false;
 
@@ -985,9 +1080,8 @@ public class CatCardData : Combatable
             if (BreakthroughLevel >= 4) maxPassives = 2;
             else if (BreakthroughLevel == 3) maxPassives = 1;
 
-            int currentPassives = ChildrenMatchingPredicateCount(c => c.Id.StartsWith("item_passive_") || c.Id.Contains("passive"));
-            int equippedTalismans = GetAllEquipables().Count(eq => eq.EquipableType == EquipableType.Talisman);
-            return (currentPassives + equippedTalismans) < maxPassives;
+            int currentPassives = ChildrenMatchingPredicateCount(c => c.IsPassiveTalisman);
+            return currentPassives < maxPassives;
         }
 
         // 5. Equipment slots (Weapon & Talismans) are allowed by default

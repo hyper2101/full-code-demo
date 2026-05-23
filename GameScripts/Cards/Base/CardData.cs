@@ -1799,6 +1799,12 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 
 	public bool IsEventCard = false;
 
+	// Virtual properties for clean card classification in Mewtations
+	public virtual bool IsBreakthroughPill => this.Id != null && this.Id.ToLower() == "item_breakthrough_pill";
+	public virtual bool IsHealingPotion => this.Id != null && this.Id.ToLower() == "item_healing_potion";
+	public virtual bool IsCultivationPill => this.Id != null && (this.Id.ToLower() == "item_pill" || this.Id.ToLower().Contains("pill"));
+	public virtual bool IsPassiveTalisman => this.Id != null && (this.Id.ToLower().StartsWith("item_passive_") || this.Id.ToLower().Contains("passive") || (this is Equipable eq && eq.EquipableType == EquipableType.Talisman));
+
 	[ExtraData("custom_name")]
 	[HideInInspector]
 	public string CustomName;

@@ -85,6 +85,48 @@ namespace Mewtations.Combat
             return false;
         }
 
+        private static readonly Dictionary<string, List<string>> _idToTags = new Dictionary<string, List<string>>
+        {
+            { "talisman_heavy_armor", new List<string> { "HeavyArmor", "FireResist" } },
+            { "talisman_iron_will", new List<string> { "IronWill", "FireResist", "SwampAdapted" } },
+            { "talisman_health_regen", new List<string> { "HealthRegen", "SwampAdapted" } }
+        };
+
+        private List<string> GetTagsForId(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return new List<string>();
+            string lower = id.ToLower();
+            if (_idToTags.TryGetValue(lower, out var tags))
+            {
+                return tags;
+            }
+            return new List<string>();
+        }
+
+        public bool HasGameplayTag(string tag)
+        {
+            if (Source is CatCardData cat)
+            {
+                // Equipment
+                var allEquipables = cat.GetAllEquipables();
+                foreach (var eq in allEquipables)
+                {
+                    if (eq != null && GetTagsForId(eq.Id).Contains(tag)) return true;
+                }
+                // Traits
+                foreach (var trait in cat.PermanentTraits)
+                {
+                    if (GetTagsForId(trait).Contains(tag)) return true;
+                }
+                // Mutations
+                foreach (var mut in cat.ActiveMutations)
+                {
+                    if (GetTagsForId(mut).Contains(tag)) return true;
+                }
+            }
+            return false;
+        }
+
         public CombatUnit(Combatable source, bool isPlayer, int slotIndex)
         {
             Source = source;

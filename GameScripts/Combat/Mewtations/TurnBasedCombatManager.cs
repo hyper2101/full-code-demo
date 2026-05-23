@@ -24,6 +24,7 @@ namespace Mewtations.Combat
         public bool IsCombatActive = false;
         public CombatResult Result = CombatResult.Ongoing;
         public int CurrentRound = 1;
+        public List<ICombatHazard> ActiveHazards = new List<ICombatHazard>();
 
         private Coroutine _combatCoroutine;
         private Action<CombatResult> _onCombatEnd;
@@ -53,6 +54,9 @@ namespace Mewtations.Combat
             Formation.SetupEnemyTeam(enemies);
 
             AddLog("▶ Trận chiến bắt đầu!");
+
+            // Initialize hazards for the current battle
+            InitializeHazards();
 
             // Apply environmental hazards from depth layer
             if (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive && ExpeditionManager.Instance.ActiveNode != null)
@@ -88,6 +92,41 @@ namespace Mewtations.Combat
             EndCombat();
         }
 
+        private void InitializeHazards()
+        {
+            ActiveHazards.Clear();
+            if (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive)
+            {
+                var runState = ExpeditionManager.Instance.RunState;
+                var activeNode = ExpeditionManager.Instance.ActiveNode;
+
+                if (runState != null && runState.GreedLevel >= 75)
+                {
+                    ActiveHazards.Add(new GreedPunishmentHazard());
+                }
+
+                if (activeNode != null && activeNode.Theme == Mewtations.Expedition.RouteTheme.ThienLoi)
+                {
+                    ActiveHazards.Add(new ThienLoiHazard());
+                }
+
+                // Register Field hazards based on biome and theme
+                if (activeNode != null)
+                {
+                    if (activeNode.Biome == ExpeditionBiome.Swamp)
+                    {
+                        ActiveHazards.Add(new SwampFieldHazard());
+                        Debug.Log("[CombatHazards] Trận địa Đầm Lầy Tộc Cóc được thiết lập cho cuộc chiến!");
+                    }
+                    else if (activeNode.Biome == ExpeditionBiome.Peak || activeNode.Theme == RouteTheme.TaDao)
+                    {
+                        ActiveHazards.Add(new FireFieldHazard());
+                        Debug.Log("[CombatHazards] Trận Pháp Mưa Lửa được thiết lập cho cuộc chiến!");
+                    }
+                }
+            }
+        }
+
         private IEnumerator CombatLoopRoutine()
         {
             int round = 1;
@@ -96,63 +135,21 @@ namespace Mewtations.Combat
                 CurrentRound = round;
                 AddLog($"--- VÒNG LẦN {round} ---");
 
-                // Cat God's Punishment Curse (Linh Thần Trừng Phạt) for high Greed
-                if (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive && ExpeditionManager.Instance.RunState.GreedLevel >= 75)
+                // Trigger Round Start environment and greed hazards
+                foreach (var hazard in ActiveHazards)
                 {
-                    AddLog("⚡ LÔI PHẠT TRỪNG PHẠT! Thần Mèo phẫn nộ trước lòng tham vô độ (Greed >= 75)! Sét đánh giáng xuống toàn bộ Thần Miêu!");
-                    var aliveUnits = Formation.PlayerUnits.FindAll(u => u.IsAlive);
-                    foreach (var unit in aliveUnits)
-                    {
-                        unit.CurrentHP = Mathf.Max(0, unit.CurrentHP - 3);
-                        if (unit.Source != null)
-                        {
-                            unit.Source.HealthPoints = unit.CurrentHP;
-                        }
-                        AddLog($"   • {unit.Name} gánh chịu 3 sát thương lôi phạt (Máu hiện tại: {unit.CurrentHP} HP)");
-                    }
-                    
-                    // Check deaths caused by curse
-                    foreach (var unit in aliveUnits)
-                    {
-                        if (unit.CurrentHP <= 0)
-                        {
-                            CheckUnitDeath(unit);
-                        }
-                    }
-                    CheckCombatEndConditions();
-                    if (Result != CombatResult.Ongoing) break;
+                    hazard.OnRoundStart(this, round, AddLog);
                 }
+                if (Result != CombatResult.Ongoing) break;
 
-                // Kiếp Lôi Bạo Phá hazard (Thiên Lôi Theme)
-                if (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive && ExpeditionManager.Instance.ActiveNode != null && ExpeditionManager.Instance.ActiveNode.Theme == Mewtations.Expedition.RouteTheme.ThienLoi)
+                // (Wait 1.0s between events loop omitted for brief)
+
+                // Trigger Round End hazards
+                foreach (var hazard in ActiveHazards)
                 {
-                    if (UnityEngine.Random.value <= 0.15f)
-                    {
-                        var alivePlayerUnits = Formation.PlayerUnits.FindAll(u => u.IsAlive);
-                        var aliveEnemyUnits = Formation.EnemyUnits.FindAll(u => u.IsAlive);
-                        var allAlive = new List<CombatUnit>();
-                        allAlive.AddRange(alivePlayerUnits);
-                        allAlive.AddRange(aliveEnemyUnits);
-
-                        if (allAlive.Count > 0)
-                        {
-                            var targetUnit = allAlive[UnityEngine.Random.Range(0, allAlive.Count)];
-                            targetUnit.CurrentHP = Mathf.Max(0, targetUnit.CurrentHP - 5);
-                            if (targetUnit.Source != null)
-                            {
-                                targetUnit.Source.HealthPoints = targetUnit.CurrentHP;
-                            }
-                            AddLog($"⚡ KIẾP LÔI BẠO PHÁ! Sét đánh ngẫu nhiên giáng xuống {targetUnit.Name} gây 5 sát thương lôi pháp! (Máu hiện tại: {targetUnit.CurrentHP} HP)");
-
-                            if (targetUnit.CurrentHP <= 0)
-                            {
-                                CheckUnitDeath(targetUnit);
-                            }
-                            CheckCombatEndConditions();
-                            if (Result != CombatResult.Ongoing) break;
-                        }
-                    }
+                    hazard.OnRoundEnd(this, round, AddLog);
                 }
+                if (Result != CombatResult.Ongoing) break;
 
                 // Get all active combat units
                 List<CombatUnit> allUnits = new List<CombatUnit>();

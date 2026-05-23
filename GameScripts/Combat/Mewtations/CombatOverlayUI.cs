@@ -8,8 +8,8 @@ namespace Mewtations.Combat
     {
         public static CombatOverlayUI Instance { get; private set; }
 
-        private bool _isVisible = false;
         private Vector2 _logScrollPosition = Vector2.zero;
+        private float _pulseValue;
 
         // Custom premium GUI Styles
         private GUIStyle _panelStyle;
@@ -103,6 +103,7 @@ namespace Mewtations.Combat
             if (!_isVisible || !TurnBasedCombatManager.Instance.IsCombatActive) return;
 
             InitializeStyles();
+            _pulseValue = 0.4f + 0.4f * Mathf.Sin(Time.time * 6.0f);
 
             // Set up full screen layout
             float screenWidth = Screen.width;
@@ -142,13 +143,10 @@ namespace Mewtations.Combat
 
             GUILayout.Space(20);
 
-            // Retreat Button
+            // Retreat Button Disabled for epic deathmatches
             if (TurnBasedCombatManager.Instance.Result == CombatResult.Ongoing)
             {
-                if (GUILayout.Button("🏳 RÚT LUI (BỎ CUỘC)", _buttonStyle, GUILayout.Height(50)))
-                {
-                    TurnBasedCombatManager.Instance.Retreat();
-                }
+                GUILayout.Label("<color=red><b>⚡ ĐÃ BƯỚC VÀO TỬ CHIẾN\nKhông thể rút lui khỏi thiên kiếp!</b></color>", _headerStyle);
             }
             else
             {
@@ -202,7 +200,18 @@ namespace Mewtations.Combat
         {
             var unit = units.Find(u => u.SlotIndex == slotIndex);
 
-            GUILayout.BeginVertical(_unitCardStyle, GUILayout.Width(Screen.width * 0.12f), GUILayout.Height(140));
+            GUIStyle cardStyle = new GUIStyle(_unitCardStyle);
+            if (unit != null && unit.IsAlive && unit.IsPlayer)
+            {
+                float hpPercent = (float)unit.CurrentHP / unit.MaxHP;
+                if (hpPercent < 0.20f)
+                {
+                    Texture2D pulseRedBg = CreateColorTexture(new Color(0.8f, 0.1f, 0.1f, _pulseValue));
+                    cardStyle.normal.background = pulseRedBg;
+                }
+            }
+
+            GUILayout.BeginVertical(cardStyle, GUILayout.Width(Screen.width * 0.12f), GUILayout.Height(140));
 
             if (unit == null || !unit.IsAlive)
             {

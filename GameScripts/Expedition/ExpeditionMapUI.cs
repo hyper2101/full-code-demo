@@ -357,9 +357,9 @@ namespace Mewtations.Expedition
             GUILayout.Space(30);
 
             // ABANDON EXPEDITION BUTTON
-            if (GUILayout.Button("🏳 RÚT LUI KHỎI VIỄN CHINH (MẤT LOOT)", _buttonStyle, GUILayout.Height(50)))
+            if (GUILayout.Button("🏳 RÚT LUI KHỎI VIỄN CHINH (THUẾ NHÁT GAN -50% LOOT)", _buttonStyle, GUILayout.Height(50)))
             {
-                ExpeditionManager.Instance.ReturnToBase(isDefeat: true);
+                ExpeditionManager.Instance.ReturnToBase(isDefeat: true, isManualRetreat: true);
             }
 
             GUILayout.EndVertical();

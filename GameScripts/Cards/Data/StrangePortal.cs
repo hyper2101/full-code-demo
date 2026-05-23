@@ -16,7 +16,8 @@ public class StrangePortal : Portal
 	{
 		if (!TransitionScreen.InTransition && !WorldManager.instance.InAnimation)
 		{
-			int num = base.ChildrenMatchingPredicateCount((CardData x) => x is BaseVillager);
+			bool hasCats = base.ChildrenMatchingPredicateCount((CardData x) => x is CatCardData) > 0;
+			int num = base.ChildrenMatchingPredicateCount((CardData x) => x is BaseVillager || x is CatCardData);
 			if (!this.MyGameCard.TimerRunning && num == 0)
 			{
 				this.MyGameCard.StartTimer(this.SpawnTime, new TimerAction(this.SpawnCreature), SokLoc.Translate("new_portal_shaking"), base.GetActionId("SpawnCreature"), true, false, false);
@@ -27,15 +28,16 @@ public class StrangePortal : Portal
 			}
 			if (num > 0)
 			{
-				if (!WorldManager.instance.CurrentBoard.BoardOptions.CanTravelToForest)
+				if (!hasCats && !WorldManager.instance.CurrentBoard.BoardOptions.CanTravelToForest)
 				{
 					GameCanvas.instance.ShowCantChangeBoardSpirit();
 					base.Stay();
 					return;
 				}
 				base.RemoveNonHuman();
-				int cardCount = WorldManager.instance.GetCardCount((CardData x) => x is BaseVillager);
-				if (base.ChildrenMatchingPredicateCount((CardData x) => x is BaseVillager) > this.MaxVillagerCount)
+				
+				int currentOnPortal = base.ChildrenMatchingPredicateCount((CardData x) => x is BaseVillager || x is CatCardData);
+				if (currentOnPortal > this.MaxVillagerCount)
 				{
 					if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == base.GetActionId("TakePortal"))
 					{
@@ -45,17 +47,25 @@ public class StrangePortal : Portal
 					GameCanvas.instance.MaxVillagerCountPrompt("label_taking_portal_title", this.MaxVillagerCount);
 					base.RemoveExcessVillagersInPortal();
 				}
-				if (num == cardCount)
+				
+				if (!hasCats)
 				{
-					if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == base.GetActionId("TakePortal"))
+					int humanCount = WorldManager.instance.GetCardCount((CardData x) => x is BaseVillager);
+					int humansOnPortal = base.ChildrenMatchingPredicateCount((CardData x) => x is BaseVillager);
+					if (humansOnPortal == humanCount)
 					{
-						this.TravelTimer = this.MyGameCard.CurrentTimerTime;
+						if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == base.GetActionId("TakePortal"))
+						{
+							this.TravelTimer = this.MyGameCard.CurrentTimerTime;
+						}
+						this.MyGameCard.CancelTimer(base.GetActionId("TakePortal"));
+						GameCanvas.instance.OneVillagerNeedsToStayPrompt("label_taking_portal_title");
+						base.RemoveLastVillagerInPortal();
+						return;
 					}
-					this.MyGameCard.CancelTimer(base.GetActionId("TakePortal"));
-					GameCanvas.instance.OneVillagerNeedsToStayPrompt("label_taking_portal_title");
-					base.RemoveLastVillagerInPortal();
 				}
-				else if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId != base.GetActionId("TakePortal"))
+				
+				if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId != base.GetActionId("TakePortal"))
 				{
 					this.SpawnTimer = this.MyGameCard.CurrentTimerTime;
 					this.MyGameCard.CancelTimer(base.GetActionId("SpawnCreature"));

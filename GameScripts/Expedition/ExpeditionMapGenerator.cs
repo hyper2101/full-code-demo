@@ -125,61 +125,66 @@ namespace Mewtations.Expedition
 
         private static NodeType RollNodeType(int layerIndex, int maxLayers)
         {
-            // Distribution change as we go deeper: Combat increases, lore/event are scattered
-            float r = UnityEngine.Random.value;
+            var bag = new WeightedRandomBag<NodeType>();
 
             if (layerIndex == maxLayers - 2)
             {
                 // Floor before boss: Combat, Elite, Ruins, or Extraction
-                if (r < 0.40f) return NodeType.Combat;
-                if (r < 0.60f) return NodeType.Elite;
-                if (r < 0.75f) return NodeType.Extraction;
-                if (r < 0.90f) return NodeType.Ruins;
-                return NodeType.Event;
+                bag.AddEntry(NodeType.Combat, 40f);
+                bag.AddEntry(NodeType.Elite, 20f);
+                bag.AddEntry(NodeType.Extraction, 15f);
+                bag.AddEntry(NodeType.Ruins, 15f);
+                bag.AddEntry(NodeType.Event, 10f);
+                return bag.Choose();
             }
 
-            if (r < 0.30f) return NodeType.Combat;     // 30% combat
-            if (r < 0.45f) return NodeType.Resource;   // 15% resource
-            if (r < 0.55f) return NodeType.Elite;      // 10% elite
-            if (r < 0.65f) return NodeType.Extraction; // 10% extraction portal
-            if (r < 0.75f) return NodeType.SafeRetreat;// 10% safe retreat
-            if (r < 0.85f) return NodeType.Event;      // 10% event/choice dialogue
-            if (r < 0.90f) return NodeType.Altar;      // 5% Cat God's Altar
-            if (r < 0.95f) return NodeType.Ruins;      // 5% ruins
-            return NodeType.Lore;                      // 5% lore/story card
+            bag.AddEntry(NodeType.Combat, 30f);     // 30% combat
+            bag.AddEntry(NodeType.Resource, 15f);   // 15% resource
+            bag.AddEntry(NodeType.Elite, 10f);      // 10% elite
+            bag.AddEntry(NodeType.Extraction, 10f); // 10% extraction portal
+            bag.AddEntry(NodeType.SafeRetreat, 10f);// 10% safe retreat
+            bag.AddEntry(NodeType.Event, 10f);      // 10% event/choice dialogue
+            bag.AddEntry(NodeType.Altar, 5f);       // 5% Cat God's Altar
+            bag.AddEntry(NodeType.Ruins, 5f);       // 5% ruins
+            bag.AddEntry(NodeType.Lore, 5f);        // 5% lore/story card
+            return bag.Choose();
         }
 
         private static RouteTheme RollRouteTheme(NodeType type)
         {
             if (type == NodeType.Boss || type == NodeType.Lore) return RouteTheme.Standard;
 
-            float r = UnityEngine.Random.value;
+            var bag = new WeightedRandomBag<RouteTheme>();
             if (type == NodeType.Combat)
             {
-                if (r < 0.25f) return RouteTheme.ThuTrieu;
-                if (r < 0.50f) return RouteTheme.ThienLoi;
-                if (r < 0.75f) return RouteTheme.TaDao;
-                return RouteTheme.Standard;
+                bag.AddEntry(RouteTheme.ThuTrieu, 25f);
+                bag.AddEntry(RouteTheme.ThienLoi, 25f);
+                bag.AddEntry(RouteTheme.TaDao, 25f);
+                bag.AddEntry(RouteTheme.Standard, 25f);
+                return bag.Choose();
             }
             else if (type == NodeType.Resource)
             {
-                if (r < 0.40f) return RouteTheme.ThamLam;
-                if (r < 0.70f) return RouteTheme.TaDao;
-                return RouteTheme.Standard;
+                bag.AddEntry(RouteTheme.ThamLam, 40f);
+                bag.AddEntry(RouteTheme.TaDao, 30f);
+                bag.AddEntry(RouteTheme.Standard, 30f);
+                return bag.Choose();
             }
             else if (type == NodeType.Altar || type == NodeType.Ruins)
             {
-                if (r < 0.50f) return RouteTheme.TaDao;
-                if (r < 0.80f) return RouteTheme.ThienLoi;
-                return RouteTheme.Standard;
+                bag.AddEntry(RouteTheme.TaDao, 50f);
+                bag.AddEntry(RouteTheme.ThienLoi, 30f);
+                bag.AddEntry(RouteTheme.Standard, 20f);
+                return bag.Choose();
             }
 
             // Fallback
-            if (r < 0.20f) return RouteTheme.TaDao;
-            if (r < 0.40f) return RouteTheme.ThienLoi;
-            if (r < 0.60f) return RouteTheme.ThamLam;
-            if (r < 0.80f) return RouteTheme.ThuTrieu;
-            return RouteTheme.Standard;
+            bag.AddEntry(RouteTheme.TaDao, 20f);
+            bag.AddEntry(RouteTheme.ThienLoi, 20f);
+            bag.AddEntry(RouteTheme.ThamLam, 20f);
+            bag.AddEntry(RouteTheme.ThuTrieu, 20f);
+            bag.AddEntry(RouteTheme.Standard, 20f);
+            return bag.Choose();
         }
     }
 }

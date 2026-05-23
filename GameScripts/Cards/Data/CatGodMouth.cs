@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public enum CatGodState { Idle, OfferingPull, Consume, RewardSpit, Anger }
+
 public class CatGodMouth : CardData
 {
     [Header("Cat God Mouth Settings")]
+    public CatGodState CurrentState = CatGodState.Idle;
+
     [ExtraData("offering_progress")]
     public int OfferingProgress = 0;
 
@@ -98,7 +102,21 @@ public class CatGodMouth : CardData
             {
                 if (!this.MyGameCard.HasChild || this.MyGameCard.Child.CardData.MyCardType == CardType.Humans || this.MyGameCard.Child.CardData is CatCardData)
                 {
+                    if (this.MyGameCard.HasChild)
+                    {
+                        this.MyGameCard.Child.transform.localScale = Vector3.one;
+                    }
                     this.MyGameCard.CancelTimer("offering");
+                    CurrentState = CatGodState.Idle;
+                }
+                else
+                {
+                    CurrentState = CatGodState.OfferingPull;
+                    // offering pull animation: scale card down and pull towards center
+                    float t = Mathf.Clamp01(this.MyGameCard.CurrentTimerTime / 2.0f);
+                    float scale = 1.0f - 0.8f * t;
+                    this.MyGameCard.Child.transform.localScale = new Vector3(scale, scale, scale);
+                    this.MyGameCard.Child.transform.position = Vector3.Lerp(this.MyGameCard.Child.transform.position, this.transform.position, 0.12f);
                 }
             }
             else if (!this.MyGameCard.TimerRunning && this.MyGameCard.HasChild)
@@ -107,8 +125,17 @@ public class CatGodMouth : CardData
                 // Do not consume other players/cats! Only consume item, food, resource cards
                 if (childData.MyCardType != CardType.Humans && !(childData is CatCardData))
                 {
+                    CurrentState = CatGodState.OfferingPull;
                     this.MyGameCard.StartTimer(2.0f, new TimerAction(this.ConsumeOffering), "Tiếp nhận Lễ Vật...", "offering");
                 }
+                else
+                {
+                    CurrentState = CatGodState.Idle;
+                }
+            }
+            else
+            {
+                CurrentState = CatGodState.Idle;
             }
         }
     }
@@ -296,7 +323,7 @@ public class CatGodMouth : CardData
         OfferingProgress += val;
 
         // Dynamic Greed shift for rare items
-        if (offeringData.Value >= 15 || offeringData.Id.Contains("pill") || offeringData.Id.Contains("relic"))
+        if (offeringData.Value >= 15 || offeringData.IsCultivationPill || offeringData.IsAncientRelic)
         {
             ConsecutiveTrash = 0;
             if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
@@ -334,11 +361,43 @@ public class CatGodMouth : CardData
                 Mewtations.Expedition.ExpeditionManager.Instance.RunState.BaseAppeasementGreed += points;
                 Debug.Log($"[CatGodMouth] Hiến tế khoáng sản/kim loại: Tích lũy {points} điểm Xoa Dịu Tham Lam (Base Greed Appeasement).");
             }
-            else if (offeringData.MyCardType == CardType.Food || lowerId.Contains("food") || lowerId.Contains("potion") || lowerId.Contains("pill"))
+            else if (offeringData.MyCardType == CardType.Food || offeringData.IsHealingPotion || offeringData.IsCultivationPill)
             {
                 Mewtations.Expedition.ExpeditionManager.Instance.RunState.BaseAppeasementCorruption += points;
                 Debug.Log($"[CatGodMouth] Hiến tế lương thực/linh dược: Tích lũy {points} điểm Xoa Dịu Ô Nhiễm (Base Corruption Appeasement).");
             }
+        }
+        
+        // Play premium eat sound effect
+        if (AudioManager.me != null && AudioManager.me.Eat != null)
+        {
+            AudioManager.me.PlaySound2D(AudioManager.me.Eat, UnityEngine.Random.Range(0.85f, 1.15f), 0.5f);
+        }
+
+        // Selective screenshake for rare items cúng tế
+        bool isRare = offeringData.Value >= 15 || offeringData.IsCultivationPill || offeringData.IsAncientRelic;
+        if (isRare && GameCamera.instance != null)
+        {
+            GameCamera.instance.Screenshake = 0.4f;
+        }
+
+        // Display lore-friendly floating text on offering items
+        if (WorldManager.instance != null)
+        {
+            string floatingMsg = "";
+            if (offeringData.Value <= 2)
+            {
+                floatingMsg = "Miệng thần khịt mũi khinh thường.";
+            }
+            else if (isRare)
+            {
+                floatingMsg = "✨ Một tia linh khí rơi xuống...";
+            }
+            else
+            {
+                floatingMsg = $"☯️ Dâng hiến {offeringData.Name}...";
+            }
+            WorldManager.instance.CreateFloatingText(this.MyGameCard, !offeringData.Id.Contains("trash"), 0, floatingMsg, "", !offeringData.Id.Contains("trash"), 0, 1.5f, true);
         }
         
         // Destroy the consumed card
@@ -376,6 +435,11 @@ public class CatGodMouth : CardData
             {
                 WorldManager.instance.CreateCard(dropPos, dropId, true, true, true);
                 Debug.Log($"[CatGodMouth] Thần Mèo hồi đáp nhả ra vật phẩm: {dropName} ({dropId})");
+
+                if (WorldManager.instance != null)
+                {
+                    WorldManager.instance.CreateFloatingText(this.MyGameCard, true, 0, "Thần Mèo nhả ra cục gì đó nhớp nháp...", "", true, 0, 1.8f, true);
+                }
             }
         }
 
@@ -392,6 +456,13 @@ public class CatGodMouth : CardData
         if (OfferingProgress >= 700)
         {
             OfferingProgress -= 700; // Deduct the threshold cleanly instead of setting to 0!
+
+            // Screenshake for massive legendary payout
+            if (GameCamera.instance != null) GameCamera.instance.Screenshake = 0.8f;
+            if (WorldManager.instance != null)
+            {
+                WorldManager.instance.CreateFloatingText(this.MyGameCard, true, 0, "✨ Một tia linh khí rơi xuống...", "", true, 0, 2f, true);
+            }
 
             // 15% chance to award a unique Heavenly Talent
             float roll = UnityEngine.Random.value;
@@ -446,17 +517,31 @@ public class CatGodMouth : CardData
         {
             rewardId = "item_breakthrough_pill";
             rewardName = "Linh Đan Đột Phá";
+            if (GameCamera.instance != null) GameCamera.instance.Screenshake = 0.5f;
+            if (WorldManager.instance != null)
+            {
+                WorldManager.instance.CreateFloatingText(this.MyGameCard, true, 0, "✨ Linh quang hội tụ...", "", true, 0, 1.6f, true);
+            }
         }
         else if (OfferingProgress >= 150)
         {
             rewardId = "item_revive_pill";
             rewardName = "Linh Đan Hồi Sinh";
+            if (GameCamera.instance != null) GameCamera.instance.Screenshake = 0.4f;
+            if (WorldManager.instance != null)
+            {
+                WorldManager.instance.CreateFloatingText(this.MyGameCard, true, 0, "💚 Linh quang sinh cơ hội tụ...", "", true, 0, 1.5f, true);
+            }
         }
         else if (OfferingProgress >= 50)
         {
             // Give 3-5 gold coins
             rewardId = "resource_gold";
             rewardName = "Túi Tiền Vàng của Thần Mèo";
+            if (WorldManager.instance != null)
+            {
+                WorldManager.instance.CreateFloatingText(this.MyGameCard, true, 0, "💰 Thần Mèo nhả ra Vàng...", "", true, 0, 1.2f, true);
+            }
         }
 
         if (!string.IsNullOrEmpty(rewardId))
@@ -509,6 +594,13 @@ public class CatGodMouth : CardData
 
     private void TriggerCatGodWrath(string rewardName)
     {
+        // Screenshake for anger
+        if (GameCamera.instance != null) GameCamera.instance.Screenshake = 0.6f;
+        if (WorldManager.instance != null)
+        {
+            WorldManager.instance.CreateFloatingText(this.MyGameCard, false, 0, "☠️ Thiên đạo chú ý đến ngươi...", "", false, 0, 2f, true);
+        }
+
         string title = "⚠️ THẦN MÈO PHẪN NỘ: LÒNG THAM QUÁ ĐỘ!";
         string text = $"Ngươi đã rút được báu vật tối cao **{rewardName}** từ Miệng Thần Mèo!\n\n" +
                       $"Lực lượng của báu vật quá lớn làm khuấy động phong ấn thiên địa. Tà thần hư không phẫn nộ đòi hỏi ngươi phải cúng nạp vàng cúng tế để xoa dịu lòng tham toàn cục, nếu không ma khí sẽ triệu hồi Tà Linh Hư Không tấn công tông môn!\n\n" +
@@ -585,6 +677,13 @@ public class CatGodMouth : CardData
 
     private void TriggerCosmicTemptation()
     {
+        // Screenshake and floating text for cosmic temptation
+        if (GameCamera.instance != null) GameCamera.instance.Screenshake = 0.5f;
+        if (WorldManager.instance != null)
+        {
+            WorldManager.instance.CreateFloatingText(this.MyGameCard, false, 0, "☠️ Thiên đạo chú ý đến ngươi...", "", false, 0, 2f, true);
+        }
+
         string title = "⚠️ CÁM DỖ TÂM MA / TÀ THẦN PHẪN NỘ";
         string text = "Một khe nứt hư không đen tối mở ra từ Miệng Thần Mèo! Tà linh cổ xưa thì thầm đầy phẫn nộ vì những cống phẩm rác rưởi mà ngươi dâng hiến:\n\n" +
                       "<i>\"Phàm nhân ngu muội! Ngươi dám sỉ nhục tôn nghiêm của thần linh bằng đống phế phẩm này sao? Hãy hiến tế sinh cơ hoặc gánh chịu nghiệp chướng trừng phạt!\"</i>";
