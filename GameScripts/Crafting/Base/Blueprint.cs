@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -33,6 +33,22 @@ public class Blueprint : CardData, IKnowledge
 	{
 		get
 		{
+			if (this.Subprints != null && this.Subprints.Count > 0)
+			{
+				string result = this.Subprints[0].ResultCard;
+				if (!string.IsNullOrEmpty(result))
+				{
+					string lower = result.ToLower();
+					if (lower.Contains("talisman"))
+					{
+						return ChronicleManager.IsHintUnlocked("item_secret_lore_hint_1");
+					}
+					if (lower == "item_breakthrough_pill")
+					{
+						return ChronicleManager.IsHintUnlocked("item_secret_lore_hint_2");
+					}
+				}
+			}
 			return true;
 		}
 	}
@@ -144,6 +160,15 @@ public class Blueprint : CardData, IKnowledge
 				});
 			}
 		}
+
+		if (!this.CanCurrentlyBeMade)
+		{
+			string lockedMsg = MewtationsLoc.CurrentLang == MewtationsLoc.Language.Vietnamese
+				? "\n\n<color=red><b>✗ KHÓA: Công thức này đang bị phong ấn. Hãy tìm Cổ Bản Kí Sự tương ứng trong Viễn Chinh để giải mã!</b></color>"
+				: "\n\n<color=red><b>✗ LOCKED: This recipe is sealed. Uncover the corresponding Secret Lore Hint in Expedition to decode it!</b></color>";
+			text += lockedMsg;
+		}
+
 		return text;
 	}
 

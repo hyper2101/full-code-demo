@@ -539,17 +539,26 @@ namespace Mewtations.Expedition
             }
             else if (type == NodeType.Lore)
             {
-                title = "Bích Họa Cổ Xưa";
-                text = "Trải rộng trên bức tường đá rêu phong là những bích họa mô tả về thời kỳ 'Thần Mèo Sáng Thế' và cuộc viễn chinh cổ đại.\n\nLinh hồn của toàn đội được gột rửa, giúp gia tăng Speed tạm thời!";
-                choices = new List<string> { "Tiếp thu tinh hoa" };
-                onChoice = (idx) =>
+                // 50% chance to trigger GDD Weary Dog Patrol Officer Dialogue Encounter
+                if (UnityEngine.Random.value <= 0.50f)
                 {
-                    foreach (var cat in ActiveCats)
+                    TriggerWearyDogEncounter();
+                    return; // Return early since TriggerWearyDogEncounter handles dialogue triggering
+                }
+                else
+                {
+                    title = "Bích Họa Cổ Xưa";
+                    text = "Trải rộng trên bức tường đá rêu phong là những bích họa mô tả về thời kỳ 'Thần Mèo Sáng Thế' và cuộc viễn chinh cổ đại.\n\nLinh hồn của toàn đội được gột rửa, giúp gia tăng Speed tạm thời!";
+                    choices = new List<string> { "Tiếp thu tinh hoa" };
+                    onChoice = (idx) =>
                     {
-                        cat.Speed += 10;
-                    }
-                    CompleteNodeResolution();
-                };
+                        foreach (var cat in ActiveCats)
+                        {
+                            cat.Speed += 10;
+                        }
+                        CompleteNodeResolution();
+                    };
+                }
             }
             else // Ruins
             {
@@ -578,6 +587,93 @@ namespace Mewtations.Expedition
             }
 
             Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices, onChoice);
+        }
+
+        private void TriggerWearyDogEncounter()
+        {
+            string title = MewtationsLoc.Translate("dog_patrol_title", "THE WEARY DOG PATROL OFFICER");
+            string text = MewtationsLoc.Translate("dog_patrol_desc");
+
+            List<Mewtations.Dialogue.DialogueChoice> choices = new List<Mewtations.Dialogue.DialogueChoice>();
+
+            // Option 1: Fight
+            choices.Add(new Mewtations.Dialogue.DialogueChoice(
+                MewtationsLoc.Translate("opt_fight", "⚔️ Force breakthrough (+20 Corruption)"),
+                () =>
+                {
+                    RunState.AddCorruption(20);
+                    DialogueResult(
+                        MewtationsLoc.Translate("dog_fight_res", "Bloody Skirmish!"),
+                        MewtationsLoc.Translate("dog_fight_res_desc", "You fought and defeated the guard. The path is clear, but at a bloody cost (+20 Corruption).")
+                    );
+                }
+            ));
+
+            // Option 2: Stealth
+            choices.Add(new Mewtations.Dialogue.DialogueChoice(
+                MewtationsLoc.Translate("opt_stealth", "🏃 Sneak past silently (Requires Speed > 115)"),
+                () =>
+                {
+                    int avgSpeed = 100;
+                    if (ActiveCats.Count > 0)
+                    {
+                        avgSpeed = (int)ActiveCats.Average(c => c.Speed);
+                    }
+
+                    if (avgSpeed > 115)
+                    {
+                        DialogueResult(
+                            MewtationsLoc.Translate("dog_stealth_success", "Stealth Success!"),
+                            MewtationsLoc.Translate("dog_stealth_success_desc", "Your agile cats slipped by in the shadows without alerting the guard.")
+                        );
+                    }
+                    else
+                    {
+                        foreach (var cat in ActiveCats)
+                        {
+                            cat.HealthPoints = Mathf.Max(1, cat.HealthPoints - 5);
+                        }
+                        DialogueResult(
+                            MewtationsLoc.Translate("dog_stealth_fail", "Stealth Failed!"),
+                            MewtationsLoc.Translate("dog_stealth_fail_desc", "The weary guard noticed you. You had to force your way through and suffered minor injuries (-5 HP).")
+                        );
+                    }
+                }
+            ));
+
+            // Option 3: Comfort (Thiền Đạo Cảm Hóa)
+            choices.Add(new Mewtations.Dialogue.DialogueChoice(
+                MewtationsLoc.Translate("opt_comfort", "☯️ [Zen Dao Comfort] Teach human philosophy & soothe his soul"),
+                () =>
+                {
+                    string hintId = "item_secret_lore_hint_1";
+                    if (ChronicleManager.IsHintUnlocked("item_secret_lore_hint_1"))
+                    {
+                        if (ChronicleManager.IsHintUnlocked("item_secret_lore_hint_2"))
+                        {
+                            hintId = "item_secret_lore_hint_3";
+                        }
+                        else
+                        {
+                            hintId = "item_secret_lore_hint_2";
+                        }
+                    }
+
+                    ChronicleManager.UnlockHint(hintId);
+                    CurrentBackpack.AddItem(hintId);
+
+                    RunState.CorruptionLevel = Mathf.Max(0, RunState.CorruptionLevel - 25);
+
+                    DialogueResult(
+                        MewtationsLoc.Translate("dog_comfort_success", "A Soul Redeemed!"),
+                        MewtationsLoc.Translate("dog_comfort_success_desc", "The officer wept upon hearing your Zen words, realizing both Cats and Dogs are victims of the system. He abandons his post, giving you an Ancient Scroll and purging your sins (-25 Corruption)!")
+                    );
+                },
+                () => ActiveCats.Any(c => c.Specialization == Mewtations.Cards.Cats.DaoSpecialization.ZenDao),
+                MewtationsLoc.Translate("opt_comfort_req", "Cần có Mèo Thiền Đạo / Requires Zen Cat")
+            ));
+
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices);
         }
 
         private void DialogueResult(string title, string text)
@@ -781,6 +877,10 @@ namespace Mewtations.Expedition
         public void SaveToExtraKeyValues(List<SerializedKeyValuePair> list)
         {
             if (list == null) return;
+            
+            // Persist unlocked hints
+            list.SetOrAdd("Mewtations_UnlockedHints", ChronicleManager.Serialize());
+
             list.SetOrAdd("Expedition_IsActive", IsExpeditionActive.ToString());
             if (!IsExpeditionActive) return;
 
@@ -818,8 +918,13 @@ namespace Mewtations.Expedition
             {
                 IsExpeditionActive = false;
                 State = ExpeditionState.Idle;
+                ChronicleManager.Reset();
                 return;
             }
+
+            // Load persisted unlocked hints
+            string unlockedHints = GetValueOrDefault(list, "Mewtations_UnlockedHints", "");
+            ChronicleManager.Deserialize(unlockedHints);
 
             var activePair = list.GetWithKey("Expedition_IsActive");
             if (activePair == null || activePair.Value != "True")

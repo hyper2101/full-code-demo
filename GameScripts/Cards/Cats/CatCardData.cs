@@ -194,6 +194,10 @@ public class CatCardData : Combatable
                 {
                     stats.AttackDamage = Mathf.Max(1, stats.AttackDamage - 5); // giảm 5 ATK
                 }
+                if (HasTrait("talent_true_harmony"))
+                {
+                    stats.MaxHealth = Mathf.RoundToInt(stats.MaxHealth * 1.30f);
+                }
 
                 _cachedCombatStats = stats;
             }
@@ -304,7 +308,24 @@ public class CatCardData : Combatable
     public int CurrentRage = 0;
 
     [ExtraData("speed_stat")]
-    public int Speed = 100;
+    private int _speedField = 100;
+
+    public int Speed
+    {
+        get
+        {
+            int baseSpeed = _speedField;
+            if (HasTrait("talent_true_harmony"))
+            {
+                baseSpeed = Mathf.RoundToInt(baseSpeed * 1.30f);
+            }
+            return baseSpeed;
+        }
+        set
+        {
+            _speedField = value;
+        }
+    }
 
     [Header("Traits and Mutations")]
     [ExtraData("lineage_generation")]

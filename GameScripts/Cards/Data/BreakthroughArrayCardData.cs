@@ -111,6 +111,56 @@ public class BreakthroughArrayCardData : CardData
 		CatCardData cat = GetCatInStack();
 		if (cat == null) return;
 
+		// Check for True Harmony Ceremony (3 hint cards + Breakthrough 4 cat)
+		int hintCount = 0;
+		List<GameCard> hintCards = new List<GameCard>();
+		GameCard currCard = this.MyGameCard.Child;
+		while (currCard != null)
+		{
+			if (currCard.CardData != null && currCard.CardData.Id != null && currCard.CardData.Id.ToLower().Contains("item_secret_lore_hint"))
+			{
+				hintCount++;
+				hintCards.Add(currCard);
+			}
+			currCard = currCard.Child;
+		}
+
+		if (hintCount >= 3 && cat.BreakthroughLevel >= 4)
+		{
+			// Destroy the 3 hints
+			foreach (var hc in hintCards)
+			{
+				if (hc != null && !hc.Destroyed)
+				{
+					hc.DestroyCard(true, true);
+				}
+			}
+
+			// Unlock True Harmony Covenant!
+			cat.ClearMutations();
+			cat.PermanentScarsString = ""; // Clears all permanent scars!
+			cat.AddTrait("talent_true_harmony");
+			
+			// Auto heal to full
+			cat.HealthPoints = cat.ProcessedCombatStats.MaxHealth;
+
+			string title = MewtationsLoc.Translate("talent_true_harmony_name", "True Harmony Covenant");
+			string desc = MewtationsLoc.Translate("talent_true_harmony_desc");
+
+			if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+			{
+				Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(
+					"☯️ " + title + " ☯️",
+					"<b>" + desc + "</b>\n\n" + MewtationsLoc.Translate("hint_3_body"),
+					new List<string> { MewtationsLoc.Translate("btn_close", "Close") },
+					(idx) => {}
+				);
+			}
+
+			Debug.Log($"[TrueHarmony] {cat.Name} has achieved absolute Faction Enlightenment and unlocked True Harmony!");
+			return;
+		}
+
 		// 1. Phân tích các vật phẩm hỗ trợ đột phá trong stack sử dụng thuộc tính generic của CardData
 		float damageReduction = 0f;
 		int healthBonus = 0;

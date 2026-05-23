@@ -33,6 +33,9 @@ namespace Mewtations.Dialogue
 
         private List<DialogueChoice> _branchingChoices = null;
 
+        private bool _isChronicleVisible = false;
+        private Vector2 _chronicleScrollPos = Vector2.zero;
+
         // Visual Styling
         private GUIStyle _panelStyle;
         private GUIStyle _titleStyle;
@@ -117,10 +120,50 @@ namespace Mewtations.Dialogue
 
         private void OnGUI()
         {
-            if (!_isVisible) return;
-
             InitializeStyles();
 
+            // 1. Draw "📖 Chronicle of Truth" button when dialogue is not active
+            if (!_isVisible)
+            {
+                Rect btnRect = new Rect(Screen.width - 240, 15, 220, 45);
+                string btnText = MewtationsLoc.Translate("btn_chronicle", "📖 Chronicle of Truth");
+                
+                if (GUI.Button(btnRect, btnText, _buttonStyle))
+                {
+                    _isChronicleVisible = !_isChronicleVisible;
+                    if (_isChronicleVisible)
+                    {
+                        Time.timeScale = 0f; // Freeze game while viewing Chronicle
+                    }
+                    else
+                    {
+                        bool shouldKeepFrozen = (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.IsExpeditionActive) ||
+                                               (Mewtations.Combat.TurnBasedCombatManager.Instance != null && Mewtations.Combat.TurnBasedCombatManager.Instance.IsCombatActive);
+                        if (!shouldKeepFrozen)
+                        {
+                            Time.timeScale = 1f;
+                        }
+                    }
+                }
+            }
+
+            // 2. Draw dialogue popup if active
+            if (_isVisible)
+            {
+                _isChronicleVisible = false; // Auto hide chronicle if dialogue starts
+                DrawDialogueWindow();
+                return;
+            }
+
+            // 3. Draw Chronicle letter vault if active
+            if (_isChronicleVisible)
+            {
+                DrawChronicleWindow();
+            }
+        }
+
+        private void DrawDialogueWindow()
+        {
             float screenWidth = Screen.width;
             float screenHeight = Screen.height;
 
@@ -223,6 +266,120 @@ namespace Mewtations.Dialogue
                 }
             }
 
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndArea();
+        }
+
+        private void DrawChronicleWindow()
+        {
+            float screenWidth = Screen.width;
+            float screenHeight = Screen.height;
+
+            // Centered panel: 800x500
+            float winWidth = Mathf.Min(800, screenWidth * 0.9f);
+            float winHeight = Mathf.Min(500, screenHeight * 0.8f);
+            float posX = (screenWidth - winWidth) / 2;
+            float posY = (screenHeight - winHeight) / 2;
+
+            Rect winRect = new Rect(posX, posY, winWidth, winHeight);
+
+            GUILayout.BeginArea(winRect, _panelStyle);
+
+            // Title & Header
+            GUILayout.Label(MewtationsLoc.Translate("win_chronicle_title", "📖 CHRONICLE OF TRUTH"), _titleStyle);
+            GUILayout.Space(5);
+            
+            GUIStyle descStyle = new GUIStyle(_bodyStyle);
+            descStyle.alignment = TextAnchor.MiddleCenter;
+            descStyle.fontSize = 13;
+            descStyle.normal.textColor = new Color(0.7f, 0.7f, 0.8f);
+            GUILayout.Label(MewtationsLoc.Translate("win_chronicle_desc"), descStyle);
+            GUILayout.Space(15);
+
+            // Scrollview of fragments
+            _chronicleScrollPos = GUILayout.BeginScrollView(_chronicleScrollPos, GUILayout.Height(winHeight - 160));
+
+            for (int i = 1; i <= 3; i++)
+            {
+                string hintId = $"item_secret_lore_hint_{i}";
+                bool unlocked = ChronicleManager.IsHintUnlocked(hintId);
+
+                GUILayout.BeginVertical(GUI.skin.box);
+                
+                GUILayout.BeginHorizontal();
+                if (unlocked)
+                {
+                    string hintTitle = MewtationsLoc.Translate($"hint_{i}_title", $"Fragment {i}");
+                    GUILayout.Label($"<b><color=#ffcc00>{hintTitle}</color></b>", _bodyStyle);
+                    
+                    GUILayout.FlexibleSpace();
+                    
+                    if (GUILayout.Button(MewtationsLoc.Translate("btn_read", "Read"), _buttonStyle, GUILayout.Width(120), GUILayout.Height(30)))
+                    {
+                        // Open dialogue to read
+                        _isChronicleVisible = false;
+                        string title = MewtationsLoc.Translate($"hint_{i}_title");
+                        string body = MewtationsLoc.Translate($"hint_{i}_body");
+                        StartDialogue(title, body, new List<string> { MewtationsLoc.Translate("btn_close", "Close") }, (choiceIdx) => {
+                            // Re-open chronicle when closed
+                            _isChronicleVisible = true;
+                            Time.timeScale = 0f;
+                        });
+                    }
+                }
+                else
+                {
+                    string lockedText = MewtationsLoc.Translate("lbl_lost_fragment");
+                    GUILayout.Label($"<color=grey>{lockedText} (Mảnh {i})</color>", _bodyStyle);
+                }
+                GUILayout.EndHorizontal();
+
+                // Recipe Status
+                GUILayout.Space(5);
+                GUILayout.BeginHorizontal();
+                GUILayout.Label($"<size=12>{MewtationsLoc.Translate("lbl_recipe")}</size>", _bodyStyle, GUILayout.Width(140));
+                if (unlocked)
+                {
+                    GUILayout.Label($"<b><color=green>{MewtationsLoc.Translate("lbl_unlocked")}</color></b>", _bodyStyle);
+                }
+                else
+                {
+                    GUILayout.Label($"<color=red>{MewtationsLoc.Translate("lbl_locked")}</color>", _bodyStyle);
+                }
+                GUILayout.EndHorizontal();
+
+                if (unlocked)
+                {
+                    GUILayout.Space(4);
+                    string details = MewtationsLoc.Translate($"recipe_{i}_details");
+                    GUIStyle recipeDetailsStyle = new GUIStyle(_bodyStyle);
+                    recipeDetailsStyle.fontSize = 13;
+                    recipeDetailsStyle.normal.textColor = new Color(0.6f, 0.9f, 0.6f); // Soft green
+                    GUILayout.Label(details, recipeDetailsStyle);
+                }
+
+                GUILayout.EndVertical();
+                GUILayout.Space(10);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.Space(10);
+
+            // Close button
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(MewtationsLoc.Translate("btn_close", "Close"), _buttonStyle, GUILayout.Width(150), GUILayout.Height(40)))
+            {
+                _isChronicleVisible = false;
+                bool shouldKeepFrozen = (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.IsExpeditionActive) ||
+                                       (Mewtations.Combat.TurnBasedCombatManager.Instance != null && Mewtations.Combat.TurnBasedCombatManager.Instance.IsCombatActive);
+                if (!shouldKeepFrozen)
+                {
+                    Time.timeScale = 1f;
+                }
+            }
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
