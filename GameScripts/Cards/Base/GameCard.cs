@@ -9,6 +9,9 @@ using UnityEngine.Rendering;
 
 public class GameCard : Draggable, IGameCardOrCardData
 {
+	public ICardContainer MainContainer { get; private set; }
+	public ICardContainer InventoryContainer { get; private set; }
+
 	protected override bool HasPhysics
 	{
 		get
@@ -114,6 +117,8 @@ public class GameCard : Draggable, IGameCardOrCardData
 
 	protected override void Awake()
 	{
+		this.MainContainer = new VerticalStackContainer(this);
+		this.InventoryContainer = new HiddenInventoryContainer(this);
 		this.Combat = new CardCombat(this);
 		this.Stacking = new CardStacking(this);
 		this.Visuals = new CardVisuals(this);
@@ -703,18 +708,20 @@ public class GameCard : Draggable, IGameCardOrCardData
 	public void Equip(Equipable equipable)
 	{
 		GameCard myGameCard = equipable.MyGameCard;
-		this.EquipmentChildren.Add(myGameCard);
-		myGameCard.EquipmentHolder = this;
-		myGameCard.IsEquipped = true;
-		myGameCard.RemoveFromStack();
-		this.CardData.OnEquipItem(equipable);
+		var context = new ContainerInsertContext { SourceCard = this, ContextSource = "Equip" };
+		var result = ContainerTransactionSystem.Instance.RequestInsert(myGameCard, this.InventoryContainer, context);
+		if (result.Success)
+		{
+			myGameCard.IsEquipped = true;
+			myGameCard.RemoveFromStack();
+			this.CardData.OnEquipItem(equipable);
+		}
 	}
 
 	public void Unequip(Equipable equipable)
 	{
 		GameCard myGameCard = equipable.MyGameCard;
-		this.EquipmentChildren.Remove(myGameCard);
-		myGameCard.EquipmentHolder = null;
+		ContainerTransactionSystem.Instance.RequestRemove(myGameCard, this.InventoryContainer);
 		myGameCard.IsEquipped = false;
 		this.CardData.OnUnequipItem(equipable);
 		if (this.Combatable != null && this.Combatable.HealthPoints > this.Combatable.ProcessedCombatStats.MaxHealth)
@@ -727,18 +734,20 @@ public class GameCard : Draggable, IGameCardOrCardData
 	{
 		GameCard myGameCard = worker.MyGameCard;
 		worker.WorkerIndex = index;
-		this.WorkerChildren.Add(myGameCard);
-		myGameCard.WorkerHolder = this;
-		myGameCard.IsWorking = true;
-		myGameCard.RemoveFromStack();
-		this.CardData.OnEquipItem(null);
+		var context = new ContainerInsertContext { SourceCard = this, ContextSource = "EquipWorker" };
+		var result = ContainerTransactionSystem.Instance.RequestInsert(myGameCard, this.InventoryContainer, context);
+		if (result.Success)
+		{
+			myGameCard.IsWorking = true;
+			myGameCard.RemoveFromStack();
+			this.CardData.OnEquipItem(null);
+		}
 	}
 
 	public void UnequipWorker(GameCard worker)
 	{
-		this.WorkerChildren.Remove(worker);
+		ContainerTransactionSystem.Instance.RequestRemove(worker, this.InventoryContainer);
 		worker.CardData.WorkerIndex = -1;
-		worker.WorkerHolder = null;
 		worker.IsWorking = false;
 		this.GetRootCard().StackUpdate = true;
 		CardData cardData = this.CardData;
@@ -2349,13 +2358,40 @@ public class GameCard : Draggable, IGameCardOrCardData
 
 	public bool ShowInventory;
 
-	public GameCard EquipmentHolder;
+	[HideInInspector]
+	public GameCard EquipmentHolder 
+	{
+		get 
+		{
+			if (CardData.RuntimeState != null && !string.IsNullOrEmpty(CardData.RuntimeState.ContainerId))
+				return RuntimeCardRegistry.Instance.GetView(CardData.RuntimeState.ContainerId);
+			return null;
+		}
+		set 
+		{
+			if (CardData.RuntimeState != null) 
+				CardData.RuntimeState.ContainerId = value != null ? value.CardData.UniqueId : "";
+		}
+	}
 
-	public List<GameCard> EquipmentChildren;
+	[HideInInspector]
+	public List<GameCard> EquipmentChildren 
+	{
+		get => InventoryContainer != null ? new List<GameCard>(InventoryContainer.GetChildren()) : new List<GameCard>();
+	}
 
-	public GameCard WorkerHolder;
+	[HideInInspector]
+	public GameCard WorkerHolder 
+	{
+		get => EquipmentHolder;
+		set => EquipmentHolder = value;
+	}
 
-	public List<GameCard> WorkerChildren = new List<GameCard>();
+	[HideInInspector]
+	public List<GameCard> WorkerChildren 
+	{
+		get => EquipmentChildren;
+	}
 
 	public GameObject EnergyConnectorPrefab;
 

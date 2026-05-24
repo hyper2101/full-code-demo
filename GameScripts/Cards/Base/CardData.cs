@@ -1828,19 +1828,52 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 	public AudioClip PickupSound;
 
 	[HideInInspector]
-	public string UniqueId = "";
+	public string RuntimeId = "";
+
+	public CardRuntimeState RuntimeState 
+	{
+		get 
+		{
+			if (RuntimeCardRegistry.Instance != null && !string.IsNullOrEmpty(RuntimeId))
+				return RuntimeCardRegistry.Instance.GetState(RuntimeId);
+			return null;
+		}
+	}
 
 	[HideInInspector]
-	public string ParentUniqueId = "";
+	public string UniqueId 
+	{ 
+		get => RuntimeId; 
+		set => RuntimeId = value; 
+	}
 
 	[HideInInspector]
-	public string EquipmentHolderUniqueId = "";
+	public string ParentUniqueId 
+	{ 
+		get => RuntimeState?.ContainerId ?? ""; 
+		set { if (RuntimeState != null) RuntimeState.ContainerId = value; } 
+	}
 
 	[HideInInspector]
-	public string WorkerHolderUniqueId = "";
+	public string EquipmentHolderUniqueId 
+	{ 
+		get => RuntimeState?.ContainerId ?? ""; 
+		set { if (RuntimeState != null) RuntimeState.ContainerId = value; } 
+	}
 
 	[HideInInspector]
-	public int WorkerIndex = -1;
+	public string WorkerHolderUniqueId 
+	{ 
+		get => RuntimeState?.ContainerId ?? ""; 
+		set { if (RuntimeState != null) RuntimeState.ContainerId = value; } 
+	}
+
+	[HideInInspector]
+	public int WorkerIndex 
+	{ 
+		get => RuntimeState?.WorkerIndex ?? -1; 
+		set { if (RuntimeState != null) RuntimeState.WorkerIndex = value; } 
+	}
 
 	public int Value = 1;
 
@@ -1850,9 +1883,17 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 	public GameCard MyGameCard;
 
 	[HideInInspector]
-	public bool IsFoil;
+	public bool IsFoil 
+	{ 
+		get => RuntimeState?.IsFoil ?? false; 
+		set { if (RuntimeState != null) RuntimeState.IsFoil = value; } 
+	}
 
-	public bool IsShiny;
+	public bool IsShiny 
+	{ 
+		get => RuntimeState?.IsShiny ?? false; 
+		set { if (RuntimeState != null) RuntimeState.IsShiny = value; } 
+	}
 
 	public CardType MyCardType;
 
@@ -1863,11 +1904,19 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 	public bool HideFromCardopedia;
 
 	[HideInInspector]
-	public List<StatusEffect> StatusEffects = new List<StatusEffect>();
+	public List<StatusEffect> StatusEffects 
+	{ 
+		get => RuntimeState?.StatusEffects ?? new List<StatusEffect>(); 
+		set { if (RuntimeState != null) RuntimeState.StatusEffects = value; } 
+	}
 
 	[HideInInspector]
 	[ExtraData("creation_month")]
-	public int CreationMonth;
+	public int CreationMonth 
+	{ 
+		get => RuntimeState?.CreationMonth ?? 0; 
+		set { if (RuntimeState != null) RuntimeState.CreationMonth = value; } 
+	}
 
 	[HideInInspector]
 	public CardUpdateType CardUpdateType;
@@ -1904,14 +1953,26 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 	public MonthlyRequirementResult MonthlyRequirementResult;
 
 	[HideInInspector]
-	public bool IsDamaged;
+	public bool IsDamaged 
+	{ 
+		get => RuntimeState?.IsDamaged ?? false; 
+		set { if (RuntimeState != null) RuntimeState.IsDamaged = value; } 
+	}
 
 	[HideInInspector]
-	public CardDamageType DamageType;
+	public CardDamageType DamageType 
+	{ 
+		get => RuntimeState?.DamageType ?? CardDamageType.None; 
+		set { if (RuntimeState != null) RuntimeState.DamageType = value; } 
+	}
 
 	[HideInInspector]
 	[ExtraData("is_on")]
-	public bool IsOn = true;
+	public bool IsOn 
+	{ 
+		get => RuntimeState?.IsOn ?? true; 
+		set { if (RuntimeState != null) RuntimeState.IsOn = value; } 
+	}
 
 	[Header("Energy options")]
 	public List<CardConnectorData> EnergyConnectors = new List<CardConnectorData>();

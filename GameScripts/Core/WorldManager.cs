@@ -4110,7 +4110,11 @@ public class WorldManager : MonoBehaviour
 				GameCard cardWithUniqueId2 = this.GetCardWithUniqueId(gameCard3.CardData.EquipmentHolderUniqueId);
 				if (cardWithUniqueId2 != null)
 				{
-					cardWithUniqueId2.EquipmentChildren.Add(gameCard3);
+					if (cardWithUniqueId2.InventoryContainer != null)
+					{
+						var context = new ContainerInsertContext { SourceCard = gameCard3, ContextSource = "SaveReconstruction" };
+						ContainerTransactionSystem.Instance.RequestInsert(gameCard3, cardWithUniqueId2.InventoryContainer, context);
+					}
 					gameCard3.EquipmentHolder = cardWithUniqueId2;
 					gameCard3.IsEquipped = true;
 				}
@@ -4129,7 +4133,11 @@ public class WorldManager : MonoBehaviour
 				{
 					if (cardWithUniqueId3.WorkerChildren.Count < cardWithUniqueId3.CardData.WorkerAmount)
 					{
-						cardWithUniqueId3.WorkerChildren.Add(gameCard4);
+						if (cardWithUniqueId3.InventoryContainer != null)
+						{
+							var context = new ContainerInsertContext { SourceCard = gameCard4, ContextSource = "SaveReconstruction" };
+							ContainerTransactionSystem.Instance.RequestInsert(gameCard4, cardWithUniqueId3.InventoryContainer, context);
+						}
 						gameCard4.WorkerHolder = cardWithUniqueId3;
 						gameCard4.IsWorking = true;
 					}
