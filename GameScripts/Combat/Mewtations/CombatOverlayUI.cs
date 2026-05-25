@@ -20,6 +20,7 @@ namespace Mewtations.Combat
         private GUIStyle _hpBarFillStyle;
         private GUIStyle _rageBarFillStyle;
         private GUIStyle _shieldBarFillStyle;
+        private GUIStyle _staminaBarFillStyle;
         private GUIStyle _unitCardStyle;
 
         private void Awake()
@@ -88,6 +89,10 @@ namespace Mewtations.Combat
 
             _rageBarFillStyle = new GUIStyle();
             _rageBarFillStyle.normal.background = rageFillTexture;
+
+            Texture2D staminaFillTexture = CreateColorTexture(new Color(0.1f, 0.75f, 0.85f, 1f));
+            _staminaBarFillStyle = new GUIStyle();
+            _staminaBarFillStyle.normal.background = staminaFillTexture;
         }
 
         private Texture2D CreateColorTexture(Color col)
@@ -129,7 +134,11 @@ namespace Mewtations.Combat
 
             // ================== CENTER SIDE: LOG & CONTROL ==================
             GUILayout.BeginVertical(GUILayout.Width(screenWidth * 0.22f));
-            GUILayout.Label("<color=#ccc>LOG BÀI</color>", _headerStyle);
+            GUILayout.Label($"<b>VÒNG ĐẤU: {TurnBasedCombatManager.Instance.CurrentRound}</b>", _headerStyle);
+            if (TurnBasedCombatManager.Instance.CurrentRound > 10)
+            {
+                GUILayout.Label("<color=#ff4444><b>⚠️ LINH KHÍ SUY KIỆT\n(-50% Trị Liệu & Giáp!)</b></color>", _headerStyle);
+            }
             GUILayout.Space(10);
 
             // Scroll view for Combat Logs
@@ -284,6 +293,34 @@ namespace Mewtations.Combat
                 GUI.Box(rageBarRect, "", _rageBarFillStyle);
 
                 GUILayout.Space(10);
+
+                // Draw Stamina bar (Player only)
+                if (unit.IsPlayer)
+                {
+                    float staminaPercent = (float)unit.Stamina / unit.MaxStamina;
+                    GUILayout.Label($"Thể Lực: {unit.Stamina}/{unit.MaxStamina}", _logStyle);
+                    Rect staminaBarRect = GUILayoutGetLastRect();
+                    staminaBarRect.y += 18;
+                    staminaBarRect.height = 5;
+                    GUI.Box(staminaBarRect, "", _hpBarBackgroundStyle);
+                    staminaBarRect.width *= staminaPercent;
+                    GUI.Box(staminaBarRect, "", _staminaBarFillStyle);
+                    GUILayout.Space(8);
+                }
+
+                // Exhaustion and Hồi Quang Phản Chiếu indicators
+                if (unit.IsExhausted)
+                {
+                    string penaltyText = $"-{20 + (unit.ExhaustionDuration / 3) * 10}%";
+                    GUILayout.Label($"<color=#aaaaaa><b>💀 KIỆT SỨC ({penaltyText} chỉ số)</b></color>", _logStyle);
+                }
+
+                if (unit.HoiQuangPhanChieuTriggered && unit.Source is CatCardData catData && catData.Constitution == CatConstitution.BaoLinhThienKieu)
+                {
+                    GUILayout.Label("<color=#ff9900><b>🔥 HỒI QUANG PHẢN CHIẾU</b></color>", _logStyle);
+                }
+
+                GUILayout.Space(5);
 
                 // Debuffs
                 if (unit.ActiveDebuffs.Count > 0)

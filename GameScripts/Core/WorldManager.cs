@@ -279,6 +279,7 @@ public class WorldManager : MonoBehaviour
 		base.gameObject.AddComponent<Mewtations.Expedition.ExpeditionManager>();
 		base.gameObject.AddComponent<Mewtations.Expedition.ExpeditionMapUI>();
 		base.gameObject.AddComponent<Mewtations.Dialogue.DialogueSystem>();
+		base.gameObject.AddComponent<ResourceCompressionSystem>();
 		this.AllCards = new List<GameCard>();
 		this.Boards = Object.FindObjectsOfType<GameBoard>().ToList<GameBoard>();
 		this.CurrentGameState = WorldManager.GameState.InMenu;
@@ -2969,6 +2970,10 @@ public class WorldManager : MonoBehaviour
 
 	public int GetRequiredFoodCount()
 	{
+		if (!this.EnableGlobalUpkeep)
+		{
+			return 0;
+		}
 		if (this.DebugNoFoodEnabled)
 		{
 			return 0;
@@ -3020,6 +3025,10 @@ public class WorldManager : MonoBehaviour
 
 	public int GetRequiredHappinessCount()
 	{
+		if (!this.EnableGlobalUpkeep)
+		{
+			return 0;
+		}
 		if (this.DebugNoFoodEnabled)
 		{
 			return 0;
@@ -3167,7 +3176,7 @@ public class WorldManager : MonoBehaviour
 		{
 			this.CutsceneTitle = param.CutsceneTitle;
 		}
-		if (!this.DebugNoFoodEnabled)
+		if (!this.DebugNoFoodEnabled && this.EnableGlobalUpkeep)
 		{
 			this.VillagersStarvedAtEndOfMoon = false;
 			yield return EndOfMonthCutscenes.FeedVillagers();
@@ -4755,6 +4764,8 @@ public class WorldManager : MonoBehaviour
 
 	[HideInInspector]
 	public bool DebugNoFoodEnabled;
+
+	public bool EnableGlobalUpkeep = false;
 
 	[HideInInspector]
 	public bool ForestMoonEnabled;

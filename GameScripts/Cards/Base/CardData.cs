@@ -1805,6 +1805,85 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 	public virtual bool IsCultivationPill => this.Id != null && (this.Id.ToLower() == "item_pill" || this.Id.ToLower().Contains("pill"));
 	public virtual bool IsPassiveTalisman => this.Id != null && (this.Id.ToLower().StartsWith("item_passive_") || this.Id.ToLower().Contains("passive") || (this is Equipable eq && eq.EquipableType == EquipableType.Talisman));
 
+	// Recovery Item Properties & Tag System
+	public virtual bool IsRecoveryItem
+	{
+		get
+		{
+			if (this.Id == null) return false;
+			string lower = this.Id.ToLower();
+			return lower.Contains("linh_thuc") || lower.Contains("linh_duoc") || lower == "item_healing_potion" || lower == "item_revive_pill" || this is Food;
+		}
+	}
+
+	public virtual int StaminaRecoveryAmount
+	{
+		get
+		{
+			if (this.Id == null) return 0;
+			string lower = this.Id.ToLower();
+			if (lower.Contains("_pham")) return 30;
+			if (lower.Contains("_dia")) return 60;
+			if (lower.Contains("_thien")) return 100;
+			if (lower.Contains("_tien")) return 100;
+			if (lower == "item_healing_potion") return 30;
+			if (lower == "item_revive_pill") return 100;
+			if (this is Food) return 15;
+			return 0;
+		}
+	}
+
+	public virtual int HpRecoveryAmount
+	{
+		get
+		{
+			if (this.Id == null) return 0;
+			string lower = this.Id.ToLower();
+			if (lower.Contains("_pham")) return 20;
+			if (lower.Contains("_dia")) return 50;
+			if (lower.Contains("_thien")) return 100;
+			if (lower.Contains("_tien")) return 9999;
+			if (lower == "item_healing_potion") return 30;
+			if (lower == "item_revive_pill") return 100;
+			if (this is Food) return 15;
+			return 0;
+		}
+	}
+
+	public virtual bool CleansesExhaustion
+	{
+		get
+		{
+			if (this.Id == null) return false;
+			string lower = this.Id.ToLower();
+			return lower.Contains("_thien") || lower.Contains("_tien") || lower == "item_revive_pill";
+		}
+	}
+
+	public virtual bool ResetsHoiQuang
+	{
+		get
+		{
+			if (this.Id == null) return false;
+			string lower = this.Id.ToLower();
+			return lower.Contains("_tien") || lower == "item_revive_pill";
+		}
+	}
+
+	public virtual float RecoveryDurationModifier
+	{
+		get
+		{
+			if (this.Id == null) return 1.0f;
+			string lower = this.Id.ToLower();
+			float val = 1.0f;
+			if (lower.Contains("_tien")) val = 0.33f; // 1s
+			else if (lower.Contains("_thien")) val = 0.66f; // 2s
+			else if (lower.Contains("_dia")) val = 0.83f; // 2.5s
+			return Mathf.Clamp(val, 0.1f, 2.0f);
+		}
+	}
+
 	[ExtraData("custom_name")]
 	[HideInInspector]
 	public string CustomName;

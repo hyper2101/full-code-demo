@@ -56,7 +56,42 @@ namespace Mewtations.Combat
         public int MaxHP;
         public int CurrentHP;
         public int CurrentRage;
-        public int Speed;
+        
+        public int Stamina = 100;
+        public int MaxStamina = 100;
+        public bool IsExhausted = false;
+        public bool HoiQuangPhanChieuTriggered = false;
+        public int ExhaustionLevel = 0;
+
+        private int _speed;
+        public int Speed
+        {
+            get
+            {
+                int val = _speed;
+                if (IsExhausted)
+                {
+                    float penalty = 0.20f + (ExhaustionLevel / 3) * 0.10f;
+                    penalty = Mathf.Min(0.50f, penalty);
+                    val = Mathf.RoundToInt(val * (1f - penalty));
+                }
+                return val;
+            }
+            set => _speed = value;
+        }
+
+        public int GetAttackDamage()
+        {
+            int baseDamage = Source != null ? Source.ProcessedCombatStats.AttackDamage : 10;
+            if (IsExhausted)
+            {
+                float penalty = 0.20f + (ExhaustionLevel / 3) * 0.10f;
+                penalty = Mathf.Min(0.50f, penalty);
+                baseDamage = Mathf.RoundToInt(baseDamage * (1f - penalty));
+            }
+            return baseDamage;
+        }
+
         public bool IsPlayer;
         public int SlotIndex; // 0-2 Front, 3-5 Back
         public List<CombatStatusEffect> ActiveDebuffs = new List<CombatStatusEffect>();
@@ -148,6 +183,12 @@ namespace Mewtations.Combat
                 Role = cat.Role;
                 Element = cat.Element;
 
+                Stamina = cat.Stamina;
+                MaxStamina = cat.MaxStamina;
+                IsExhausted = cat.IsExhausted;
+                HoiQuangPhanChieuTriggered = cat.HoiQuangPhanChieuTriggered;
+                ExhaustionLevel = cat.ExhaustionLevel;
+
                 // Load all dynamic components
                 var activeComps = new List<IMewtationsComponent>();
 
@@ -224,10 +265,33 @@ namespace Mewtations.Combat
 
             CurrentHP = Mathf.Max(0, CurrentHP - damage);
             Source.HealthPoints = CurrentHP; // Sync back to CardData
+
+            // Hồi Quang Phản Chiếu: Khi mèo Thiên Kiêu kiệt sức tàn huyết <= 30% HP
+            if (IsPlayer && IsExhausted && !HoiQuangPhanChieuTriggered && CurrentHP > 0 && CurrentHP <= MaxHP * 0.30f)
+            {
+                if (Source is CatCardData cat && cat.Constitution == CatConstitution.BaoLinhThienKieu)
+                {
+                    HoiQuangPhanChieuTriggered = true;
+                    cat.HoiQuangPhanChieuTriggered = true;
+                    CurrentRage = 100;
+                    if (TurnBasedCombatManager.Instance != null)
+                    {
+                        TurnBasedCombatManager.Instance.AddLog($"🔥 [HỒI QUANG PHẢN CHIẾU] Thiên kiêu {Name} tàn huyết bùng nổ! Hồi phục 100 NỘ KHÍ chuẩn bị phản kích cực hạn!");
+                    }
+                }
+            }
         }
 
         public void Heal(int healAmount)
         {
+            if (IsExhausted)
+            {
+                healAmount = Mathf.RoundToInt(healAmount * 0.50f);
+            }
+            if (TurnBasedCombatManager.Instance != null && TurnBasedCombatManager.Instance.CurrentRound > TurnBasedCombatManager.Instance.AntiStallRound)
+            {
+                healAmount = Mathf.RoundToInt(healAmount * (1f - TurnBasedCombatManager.Instance.AntiStallHealPenalty));
+            }
             CurrentHP = Mathf.Min(MaxHP, CurrentHP + healAmount);
             Source.HealthPoints = CurrentHP;
         }
@@ -237,6 +301,10 @@ namespace Mewtations.Combat
             if (HasMutation(Mewtations.Expedition.UnstableMutation.CursedFur))
             {
                 return; // Locks ability to gain shield!
+            }
+            if (TurnBasedCombatManager.Instance != null && TurnBasedCombatManager.Instance.CurrentRound > TurnBasedCombatManager.Instance.AntiStallRound)
+            {
+                shieldAmount = Mathf.RoundToInt(shieldAmount * (1f - TurnBasedCombatManager.Instance.AntiStallHealPenalty));
             }
             Shield += shieldAmount;
         }
@@ -362,7 +430,7 @@ namespace Mewtations.Combat
                 pattern = WeaponAttackPattern.Cleave;
             }
 
-            int baseDamage = attacker.Source.ProcessedCombatStats.AttackDamage;
+            int baseDamage = attacker.GetAttackDamage();
 
             // Apply Role damage multiplier
             float roleDmgMultiplier = 1.0f;
@@ -727,7 +795,7 @@ namespace Mewtations.Combat
 
             var type = GetUltimateType(cat);
 
-            int baseAttack = attacker.Source.ProcessedCombatStats.AttackDamage;
+            int baseAttack = attacker.GetAttackDamage();
 
             // Apply Role damage multiplier to Ultimate damage as well!
             float roleDmgMultiplier = 1.0f;

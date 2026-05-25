@@ -307,6 +307,21 @@ public class CatCardData : Combatable
     [ExtraData("current_rage")]
     public int CurrentRage = 0;
 
+    [ExtraData("stamina")]
+    public int Stamina = 100;
+
+    [ExtraData("max_stamina")]
+    public int MaxStamina = 100;
+
+    [ExtraData("is_exhausted")]
+    public bool IsExhausted = false;
+
+    [ExtraData("hoi_quang_triggered")]
+    public bool HoiQuangPhanChieuTriggered = false;
+
+    [ExtraData("exhaustion_level")]
+    public int ExhaustionLevel = 0;
+
     [ExtraData("speed_stat")]
     private int _speedField = 100;
 
@@ -514,6 +529,16 @@ public class CatCardData : Combatable
                 }
             }
         }
+        if (IsExhausted)
+        {
+            baseText += $"\n<color=red>⚠️ [KIỆT SỨC - Cấp {ExhaustionLevel}] Giảm mạnh chỉ số, cần được tĩnh dưỡng dưỡng thương!</color>";
+        }
+
+        if (HoiQuangPhanChieuTriggered && Constitution == Mewtations.Combat.CatConstitution.BaoLinhThienKieu)
+        {
+            baseText += "\n<color=#ff9900>⚠️ [HAOTHỂN TIỀM NĂNG - Đã Bộc Phát] Đã đốt thiên phú Hồi Quang Phản Chiếu, cần dùng Tiên dược khôi phục cốt tủy!</color>";
+        }
+
         return baseText;
     }
 
@@ -562,6 +587,65 @@ public class CatCardData : Combatable
                 }
             }
         }
+
+        // Tĩnh dưỡng dưỡng thương / Hồi phục Stamina & HP trên Mainland
+        if (this.MyGameCard != null && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.IsRecoveryItem)
+        {
+            if (!this.MyGameCard.TimerRunning)
+            {
+                float duration = 3f * this.MyGameCard.Child.CardData.RecoveryDurationModifier;
+                this.MyGameCard.StartTimer(duration, new TimerAction(ConsumeRecoveryItem), "Đang tĩnh dưỡng hồi phục...", "consume_recovery_item");
+            }
+        }
+        else
+        {
+            if (this.MyGameCard != null && this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "consume_recovery_item")
+            {
+                this.MyGameCard.CancelTimer("consume_recovery_item");
+                WorldManager.instance.CreateFloatingText(this.MyGameCard, false, 0, "⚠️ [TĨNH DƯỠNG BỊ GIÁN ĐOẠN] Di chuyển thẻ làm gián đoạn phục hồi!", "", false, 0, 2f, true);
+            }
+        }
+    }
+
+    public void ConsumeRecoveryItem()
+    {
+        if (this.MyGameCard != null && this.MyGameCard.HasChild)
+        {
+            GameCard itemCard = this.MyGameCard.Child;
+            CardData itemData = itemCard.CardData;
+
+            int hpRestore = itemData.HpRecoveryAmount;
+            int staminaRestore = itemData.StaminaRecoveryAmount;
+            bool cleanExhaust = itemData.CleansesExhaustion;
+            bool resetHoiQuang = itemData.ResetsHoiQuang;
+
+            this.HealthPoints = Mathf.Min(this.HealthPoints + hpRestore, this.ProcessedCombatStats.MaxHealth);
+            this.Stamina = Mathf.Min(this.Stamina + staminaRestore, this.MaxStamina);
+
+            if (cleanExhaust || this.Stamina >= 50)
+            {
+                this.IsExhausted = false;
+                this.ExhaustionLevel = 0;
+            }
+            else
+            {
+                this.ExhaustionLevel = Mathf.Max(0, this.ExhaustionLevel - 2);
+            }
+
+            if (resetHoiQuang)
+            {
+                this.HoiQuangPhanChieuTriggered = false;
+            }
+
+            itemCard.DestroyCard(true, true); // Consume recovery item
+
+            string msg = $"🍲 {Name} đã phục hồi! +{hpRestore} HP, +{staminaRestore} Thể Lực.";
+            if (IsExhausted == false && cleanExhaust) msg += " Hết kiệt sức!";
+            if (resetHoiQuang) msg += " Khôi phục Hồi Quang Phản Chiếu!";
+
+            WorldManager.instance.CreateFloatingText(this.MyGameCard, true, hpRestore, msg, "", true, 0, 3f, true);
+        }
+        UpdateCardText();
     }
 
     public void ResolveCursedMeridians()

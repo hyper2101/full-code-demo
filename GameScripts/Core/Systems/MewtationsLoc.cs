@@ -74,10 +74,28 @@ public static class MewtationsLoc
         
         // Talents
         Add("talent_true_harmony_name", "True Harmony Covenant", "Bản Mệnh Thái Hòa", "大和谐契约", "大調和の盟約", "대조화의 계약");
-        Add("talent_true_harmony_desc", "Attained supreme enlightenment: +30% Max HP, +30% Speed, removes all scars/mutations, and immune to future scars.", "Đạt tới ngộ đạo tối thượng: Tăng vĩnh viễn 30% HP, 30% Tốc độ, loại bỏ hoàn toàn vết sẹo/dị biến và miễn nhiễm thiên lôi kiếp số.", "获得无上顿悟：最大生命值+30%，速度+30%，移除所有伤疤/异变，并对未来的伤疤免疫。", "至高の悟りに達しました：最大HP+30％、速度+30％、すべての傷跡/異変を取り除き、将来의傷跡を免疫します。", "지고의 깨달음에 도달했습니다: 최대 체력 +30%, 속도 +30%, 모든 흉터/이변 제거 및 미래의 흉터에 면역됩니다.");
+        Add("talent_true_harmony_desc", "Attained supreme enlightenment: +30% Max HP, +30% Speed, removes all scars/mutations, and immune to future scars.", "Đạt tới ngộ đạo tối thượng: Tăng vĩnh viễn 30% HP, 30% Tốc độ, loại bỏ hoàn toàn vết sẹo/dị biến và miễn nhiễm thiên lôi kiếp số.", "获得无上顿悟：最大生命值+30%，速度+30%，移除所有伤疤/异变，并对未来的伤疤免疫。", "至高の悟りに達しました：最大HP+30％、速度+30％、すべての傷跡/異変を取り除き、将来の傷跡を免疫します。", "지고의 깨달음에 도달했습니다: 최대 체력 +30%, 속도 +30%, 모든 흉터/이변 제거 및 미래의 흉터에 면역됩니다.");
 
         // Dialog Weary Dog Guard Encounter
         Add("dog_patrol_title", "🐕 THE WEARY DOG PATROL OFFICER", "🐕 LÍNH GÁC CHÓ TRĨU NẶNG ĐẠO TÂM", "🐕 疲惫的的犬卫兵", "🐕 疲れ果てた犬の衛兵", "🐕 피로에 지친 개 경비병");
+
+        // Shrine System & Cat God Fallbacks
+        Add("shrine_desc_format", 
+            "Cat God Shrine Formation. Attune ancient Relics here to awaken passive automation power and optimize your build.\n\n• <b>Max Relic Slots:</b> <color=#ffdd22>{0}</color>\n• Place a <b>Resonance Trophy</b> here to expand slots permanently.", 
+            "Trận Pháp Điện Thờ Thần Mèo. Nơi an vị Cổ Vật cổ đại để kích hoạt Trận Pháp Tự Động Hóa và cộng hưởng Đạo Pháp.\n\n• <b>Số vị trí an vị Cổ Vật tối đa:</b> <color=#ffdd22>{0}</color>\n• Đặt <b>Linh Bảo Cộng Hưởng</b> vào để khai mở vị trí hiển thị Cổ Vật vĩnh viễn.");
+        Add("shrine_upgrading", "Harmonizing Shrine energy...", "Đang cộng hưởng năng lượng Điện Thờ...");
+        Add("shrine_upgraded_title", "☯️ FORMATION EXPANDED!", "☯️ TRẬN PHÁP KHAI MỞ!");
+        Add("shrine_upgraded_desc", 
+            "The Resonance Trophy has successfully attuned! Pure spiritual energy surges, expanding the Shrine's formation.\n🌟 <b>Max Relic display slots increased to:</b> <color=#ffdd22>{0} slots</color>!", 
+            "Linh Bảo khai quang thành công! Luồng linh khí tinh khiết bùng phát từ Điện Thờ, mở rộng phạm vi Trận Pháp.\n🌟 <b>Số vị trí an vị Cổ Vật tăng lên:</b> <color=#ffdd22>{0} ô</color>!");
+        Add("catgod_desc_format",
+            "Feed cards into the gluttonous Cat God's Mouth to consume unwanted items, discard trash, and gamble for chaotic cosmic rewards.\n\n<b>Items Swallowed:</b> <color=#ffdd22>{0}</color>\n<b>Sacrificial Appetite:</b>\n• Appeased Greed: {1} points\n• Appeased Pollution: {2} points",
+            "Ném vật phẩm vào Miệng Thần Mèo háu đói để xả rác, giải phóng vật phẩm thừa và đánh cược nhận báu vật hư không ngẫu nhiên.\n\n<b>Lượng vật phẩm đã nuốt:</b> <color=#ffdd22>{0}</color>\n<b>Mức độ nuốt chửng hiện tại:</b>\n• Xoa dịu Tham Lam: {1} điểm\n• Xoa dịu Ô Nhiễm: {2} điểm");
+
+        // Stamina, Exhausted & Attrition System Fallbacks
+        Add("stamina_name", "Stamina", "Thể Lực", "体力", "スタミナ", "스태미나");
+        Add("exhausted_name", "Exhausted", "Kiệt Sức", "力竭", "疲弊状態", "탈진");
+        Add("hoi_quang_burst", "🔥 HỒI QUANG PHẢN CHIẾU!", "🔥 HỒI QUANG PHẢN CHIẾU!", "🔥 回光返照！", "🔥 回光返照！", "🔥 회광반조!");
 
         // Load external CSV/TSV table if available to support dynamically updated translations
         LoadExternalLocTable();

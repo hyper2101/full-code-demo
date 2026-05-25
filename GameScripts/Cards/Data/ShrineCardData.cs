@@ -67,21 +67,21 @@ public class ShrineCardData : CardData
 
 			// 2. Cập nhật mô tả thẻ theo số slot hiện tại
 			this.descriptionOverride = MewtationsLoc.TranslateFormat("shrine_desc_format", 
-				"Đền Thờ Thần Mèo cổ kính. Nơi trang bị Cổ Vật và hiến tế Cống Phẩm để mở khóa sức mạnh tự động hóa.\n\n• <b>Số ô Cổ Vật tối đa:</b> <color=#ffdd22>{0}</color>\n• Đặt thẻ <b>Cống Phẩm</b> vào ô để mở rộng thêm ô Đền Thờ vĩnh viễn.", 
+				"Trận Pháp Điện Thờ Thần Mèo. Nơi an vị Cổ Vật cổ đại để kích hoạt Trận Pháp Tự Động Hóa và cộng hưởng Đạo Pháp.\n\n• <b>Số vị trí an vị Cổ Vật tối đa:</b> <color=#ffdd22>{0}</color>\n• Đặt <b>Linh Bảo Cộng Hưởng</b> vào để khai mở vị trí hiển thị Cổ Vật vĩnh viễn.", 
 				MaxSlots);
-
-			// 3. Quản lý timer dâng nạp Cống Phẩm
+ 
+			// 3. Quản lý timer dâng nạp Linh Bảo Cộng Hưởng (Resonance Trophy)
 			if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "upgrade_shrine")
 			{
-				if (!HasOfferingInStack())
+				if (!HasResonanceTrophyInStack())
 				{
 					this.MyGameCard.CancelTimer("upgrade_shrine");
 				}
 			}
-			else if (!this.MyGameCard.TimerRunning && HasOfferingInStack())
+			else if (!this.MyGameCard.TimerRunning && HasResonanceTrophyInStack())
 			{
-				// Chạy tiến trình tiêu thụ cống phẩm để tăng slot
-				this.MyGameCard.StartTimer(15.0f, new TimerAction(this.UpgradeShrineSlots), MewtationsLoc.Translate("shrine_upgrading", "Đang dâng nạp Cống Phẩm lên Đền Thờ..."), "upgrade_shrine", true, false, false);
+				// Chạy tiến trình cộng hưởng Linh Bảo để tăng slot
+				this.MyGameCard.StartTimer(15.0f, new TimerAction(this.UpgradeShrineSlots), MewtationsLoc.Translate("shrine_upgrading", "Đang cộng hưởng năng lượng Điện Thờ..."), "upgrade_shrine", true, false, false);
 			}
 		}
 	}
@@ -102,7 +102,7 @@ public class ShrineCardData : CardData
 		return hash;
 	}
 
-	private bool HasOfferingInStack()
+	private bool HasResonanceTrophyInStack()
 	{
 		if (this.MyGameCard == null) return false;
 		GameCard curr = this.MyGameCard.Child;
@@ -121,8 +121,8 @@ public class ShrineCardData : CardData
 	public void UpgradeShrineSlots()
 	{
 		if (this.MyGameCard == null) return;
-
-		// Tiêu hủy 1 thẻ cống phẩm trong stack
+ 
+		// Tiêu hủy 1 thẻ Linh Bảo Cộng Hưởng trong stack
 		GameCard curr = this.MyGameCard.Child;
 		bool foundAndDestroyed = false;
 		while (curr != null)
@@ -135,20 +135,20 @@ public class ShrineCardData : CardData
 			}
 			curr = curr.Child;
 		}
-
+ 
 		if (foundAndDestroyed)
 		{
 			// Tăng slot đền thờ
 			MaxSlots++;
-
+ 
 			// Bắn sự kiện thay đổi stack để tự động cập nhật registry
 			EventBus.Publish(new OnShrineStackChangedEvent(this));
-
-			string title = MewtationsLoc.Translate("shrine_upgraded_title", "☯️ ĐỀN THỜ THĂNG CẤP!");
+ 
+			string title = MewtationsLoc.Translate("shrine_upgraded_title", "☯️ TRẬN PHÁP KHAI MỞ!");
 			string text = MewtationsLoc.TranslateFormat("shrine_upgraded_desc", 
-				"Thần Mèo đã tiếp nhận Cống Phẩm thành kính của bạn!\n\nLinh quang rực rỡ bùng phát từ đền thờ, mở rộng không gian trận pháp.\n🌟 <b>Số ô Cổ Vật tối đa tăng lên:</b> <color=#ffdd22>{0} ô</color>!", 
+				"Linh Bảo khai quang thành công! Luồng linh khí tinh khiết bùng phát từ Điện Thờ, mở rộng phạm vi Trận Pháp.\n🌟 <b>Số vị trí an vị Cổ Vật tăng lên:</b> <color=#ffdd22>{0} ô</color>!", 
 				MaxSlots);
-
+ 
 			if (Mewtations.Dialogue.DialogueSystem.Instance != null)
 			{
 				Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { MewtationsLoc.Translate("btn_wonderful", "Tuyệt vời!") }, (cIdx) => {});

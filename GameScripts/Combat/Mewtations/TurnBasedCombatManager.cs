@@ -26,6 +26,9 @@ namespace Mewtations.Combat
         public int CurrentRound = 1;
         public List<ICombatHazard> ActiveHazards = new List<ICombatHazard>();
 
+        public int AntiStallRound = 10;
+        public float AntiStallHealPenalty = 0.50f;
+
         private Coroutine _combatCoroutine;
         private Action<CombatResult> _onCombatEnd;
 
@@ -227,7 +230,30 @@ namespace Mewtations.Combat
                     }
 
                     CheckCombatEndConditions();
-                    if (Result != CombatResult.Ongoing) break;
+                // --- END OF ROUND: STAMINA DRAIN & EXHAUSTION ESCALATION ---
+                int staminaCost = 5 + round * 1;
+                foreach (var unit in Formation.PlayerUnits.FindAll(u => u.IsAlive))
+                {
+                    if (unit.IsExhausted)
+                    {
+                        unit.ExhaustionLevel++;
+                    }
+                    else
+                    {
+                        unit.Stamina = Mathf.Max(0, unit.Stamina - staminaCost);
+                        if (unit.Stamina <= 0)
+                        {
+                            unit.IsExhausted = true;
+                            unit.ExhaustionLevel = 1;
+                            AddLog($"💤 {unit.Name} đã cạn kiệt Thể Lực và rơi vào trạng thái Kiệt Sức!");
+                        }
+                    }
+                }
+
+                // Anti-stall warning & check
+                if (round == AntiStallRound)
+                {
+                    AddLog($"⚠️ [CẠN KIỆT LINH KHÍ] Trận chiến kéo dài quá lâu! Từ nay, toàn bộ hiệu quả hồi máu và hồi giáp bị giảm {Mathf.RoundToInt(AntiStallHealPenalty * 100)}%!");
                 }
 
                 round++;
@@ -364,6 +390,10 @@ namespace Mewtations.Combat
                     if (unit.Source is CatCardData cat)
                     {
                         cat.CurrentRage = unit.CurrentRage;
+                        cat.Stamina = unit.Stamina;
+                        cat.IsExhausted = unit.IsExhausted;
+                        cat.HoiQuangPhanChieuTriggered = unit.HoiQuangPhanChieuTriggered;
+                        cat.ExhaustionLevel = unit.IsExhausted ? unit.ExhaustionLevel : 0;
                     }
                 }
             }
@@ -384,7 +414,7 @@ namespace Mewtations.Combat
             _onCombatEnd?.Invoke(Result);
         }
 
-        private void AddLog(string message)
+        public void AddLog(string message)
         {
             CombatLog.Add(message);
             if (CombatLog.Count > 100)
