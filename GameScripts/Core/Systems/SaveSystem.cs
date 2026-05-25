@@ -16,10 +16,16 @@ public class SaveSystem
 
     public void LoadSaveRound(SaveRound saveRound)
     {
+        GameState.IsLoadingSave = true;
         IsLoadingSaveRound = true;
         _world.ClearRound();
         _world.AllCards.Clear();
         _world.UniqueIdToCard.Clear();
+        if (RuntimeCardRegistry.Instance != null)
+        {
+            RuntimeCardRegistry.Instance.ClearAll();
+        }
+
         if (Application.isEditor)
         {
             Debug.Log(string.Format("Loading Run with {0} moon length and peaceful mode: {1}", saveRound.RunOptions.MoonLength, saveRound.RunOptions.IsPeacefulMode));
@@ -44,18 +50,44 @@ public class SaveSystem
         {
             _world.CurrentRunVariables.ActiveDemand = null;
         }
+
+        // ==========================================
+        // PHASE A: CARD INSTANTIATION & REGISTRY
+        // ==========================================
+        List<CardData> loadedCards = new List<CardData>();
+        Dictionary<string, SavedCard> idToSavedCard = new Dictionary<string, SavedCard>();
+
         foreach (SavedCard savedCard in saveRound.SavedCards)
         {
             CardData cardData = _world.CreateCard(savedCard.CardPosition, savedCard.CardPrefabId, savedCard.FaceUp, false, false);
-            if (!(cardData == null))
+            if (cardData != null)
             {
                 cardData.MyGameCard.MyBoard = _world.GetBoardWithId(savedCard.BoardId);
-                cardData.UniqueId = savedCard.UniqueId;
-                _world.UniqueIdToCard[cardData.UniqueId] = cardData.MyGameCard;
-                cardData.ParentUniqueId = savedCard.ParentUniqueId;
-                cardData.EquipmentHolderUniqueId = savedCard.EquipmentHolderUniqueId;
-                cardData.WorkerHolderUniqueId = savedCard.WorkerHolderUniqueId;
-                cardData.WorkerIndex = savedCard.WorkerIndex;
+                
+                string oldId = cardData.UniqueId;
+                string newId = savedCard.UniqueId;
+                cardData.UniqueId = newId;
+
+                // Sync persistent UniqueId with the global RuntimeCardRegistry
+                if (RuntimeCardRegistry.Instance != null)
+                {
+                    CardRuntimeState state = RuntimeCardRegistry.Instance.GetState(oldId);
+                    if (state != null)
+                    {
+                        RuntimeCardRegistry.Instance.UnregisterCard(oldId);
+                        state.RuntimeId = newId;
+                        RuntimeCardRegistry.Instance.RegisterCard(state, cardData.MyGameCard);
+                    }
+                    else
+                    {
+                        state = new CardRuntimeState();
+                        state.RuntimeId = newId;
+                        state.InitFromCardData(cardData);
+                        RuntimeCardRegistry.Instance.RegisterCard(state, cardData.MyGameCard);
+                    }
+                }
+
+                _world.UniqueIdToCard[newId] = cardData.MyGameCard;
                 cardData.SetExtraCardData(savedCard.ExtraCardData);
                 if (savedCard.IsFoil)
                 {
@@ -63,82 +95,120 @@ public class SaveSystem
                 }
                 cardData.IsDamaged = savedCard.IsDamaged;
                 cardData.DamageType = savedCard.DamageType;
-                if (savedCard.StatusEffects != null && savedCard.StatusEffects.Count > 0)
+
+                // Temporarily cache relationship links to avoid resolving before all cards are instantiated
+                cardData.ParentUniqueId = savedCard.ParentUniqueId;
+                cardData.EquipmentHolderUniqueId = savedCard.EquipmentHolderUniqueId;
+                cardData.WorkerHolderUniqueId = savedCard.WorkerHolderUniqueId;
+                cardData.WorkerIndex = savedCard.WorkerIndex;
+
+                loadedCards.Add(cardData);
+                idToSavedCard[newId] = savedCard;
+            }
+        }
+
+        // ==========================================
+        // PHASE B: RECONNECTING RELATIONSHIPS & STATES
+        // ==========================================
+
+        // 1. Restore Connectors configurations
+        foreach (CardData cardData in loadedCards)
+        {
+            if (!idToSavedCard.TryGetValue(cardData.UniqueId, out SavedCard savedCard)) continue;
+
+            if (savedCard.StatusEffects != null && savedCard.StatusEffects.Count > 0)
+            {
+                List<StatusEffect> list = savedCard.StatusEffects.Select<SavedStatusEffect, StatusEffect>((SavedStatusEffect x) => StatusEffect.FromSavedStatusEffect(x)).ToList<StatusEffect>();
+                list.RemoveAll((StatusEffect x) => x == null);
+                foreach (StatusEffect statusEffect in list)
                 {
-                    List<StatusEffect> list = savedCard.StatusEffects.Select<SavedStatusEffect, StatusEffect>((SavedStatusEffect x) => StatusEffect.FromSavedStatusEffect(x)).ToList<StatusEffect>();
-                    list.RemoveAll((StatusEffect x) => x == null);
-                    foreach (StatusEffect statusEffect in list)
-                    {
-                        statusEffect.ParentCard = cardData;
-                    }
-                    cardData.StatusEffects = list;
-                    cardData.MyGameCard.StatusEffectsChanged();
+                    statusEffect.ParentCard = cardData;
                 }
-                else
+                cardData.StatusEffects = list;
+            }
+            else
+            {
+                cardData.StatusEffects = new List<StatusEffect>();
+            }
+
+            if (savedCard.CardConnectors != null && savedCard.CardConnectors.Count > 0)
+            {
+                List<SavedCardConnector> cardConnectors = savedCard.CardConnectors;
+                cardConnectors.RemoveAll((SavedCardConnector x) => x == null || string.IsNullOrEmpty(x.ConnectedNodeUniqueId));
+                for (int i = 0; i < cardData.MyGameCard.CardConnectorChildren.Count; i++)
                 {
-                    cardData.StatusEffects = new List<StatusEffect>();
-                }
-                if (savedCard.CardConnectors != null && savedCard.CardConnectors.Count > 0)
-                {
-                    List<SavedCardConnector> cardConnectors = savedCard.CardConnectors;
-                    cardConnectors.RemoveAll((SavedCardConnector x) => x == null || string.IsNullOrEmpty(x.ConnectedNodeUniqueId));
-                    for (int i = 0; i < cardData.MyGameCard.CardConnectorChildren.Count; i++)
+                    CardConnector cardConnector = cardData.MyGameCard.CardConnectorChildren[i];
+                    string myUniqueId = cardConnector.GetConnectorUniqueId();
+                    SavedCardConnector savedCardConnector = cardConnectors.Find((SavedCardConnector x) => x.UniqueId == myUniqueId);
+                    if (savedCardConnector != null)
                     {
-                        CardConnector cardConnector = cardData.MyGameCard.CardConnectorChildren[i];
-                        string myUniqueId = cardConnector.GetConnectorUniqueId();
-                        SavedCardConnector savedCardConnector = cardConnectors.Find((SavedCardConnector x) => x.UniqueId == myUniqueId);
-                        if (savedCardConnector != null)
-                        {
-                            cardConnector.UniqueId = savedCardConnector.UniqueId;
-                            cardConnector.ConnectedNodeUniqueId = savedCardConnector.ConnectedNodeUniqueId;
-                        }
-                    }
-                }
-                if (savedCard.TimerRunning)
-                {
-                    TimerAction delegateForActionId = cardData.GetDelegateForActionId(savedCard.TimerActionId);
-                    if (delegateForActionId != null)
-                    {
-                        cardData.MyGameCard.StartTimer(savedCard.TargetTimerTime, delegateForActionId, savedCard.Status, savedCard.TimerActionId, savedCard.WithStatusBar, true, false);
-                        cardData.MyGameCard.CurrentTimerTime = savedCard.CurrentTimerTime;
-                        cardData.MyGameCard.TimerBlueprintId = savedCard.TimerBlueprintId;
-                        cardData.MyGameCard.TimerSubprintIndex = savedCard.SubprintIndex;
-                        cardData.MyGameCard.SkipCitiesChecks = savedCard.SkipCitiesChecks;
+                        cardConnector.UniqueId = savedCardConnector.UniqueId;
+                        cardConnector.ConnectedNodeUniqueId = savedCardConnector.ConnectedNodeUniqueId;
                     }
                 }
             }
         }
+
+        // 2. Reconnect physical connector links
         foreach (GameCard gameCard in _world.AllCards)
         {
-            using (List<CardConnector>.Enumerator enumerator4 = gameCard.CardConnectorChildren.GetEnumerator())
+            foreach (CardConnector connector in gameCard.CardConnectorChildren)
             {
-                while (enumerator4.MoveNext())
+                if (!string.IsNullOrEmpty(connector.ConnectedNodeUniqueId))
                 {
-                    CardConnector connector = enumerator4.Current;
-                    if (!string.IsNullOrEmpty(connector.ConnectedNodeUniqueId))
+                    CardConnector cardConnector2 = (from x in _world.AllCards.SelectMany<GameCard, CardConnector>((GameCard x) => x.CardConnectorChildren)
+                        where x.UniqueId == connector.ConnectedNodeUniqueId
+                        select x).FirstOrDefault<CardConnector>();
+                    if (cardConnector2 != null)
                     {
-                        CardConnector cardConnector2 = (from x in _world.AllCards.SelectMany<GameCard, CardConnector>((GameCard x) => x.CardConnectorChildren)
-                            where x.UniqueId == connector.ConnectedNodeUniqueId
-                            select x).FirstOrDefault<CardConnector>();
-                        if (cardConnector2 != null)
-                        {
-                            connector.ConnectedNode = cardConnector2;
-                        }
+                        connector.ConnectedNode = cardConnector2;
                     }
                 }
             }
         }
+
+        // 3. Reconnect parents (preventing circular parenting loops and deep hierarchies)
         foreach (GameCard gameCard2 in _world.AllCards)
         {
             if (!string.IsNullOrEmpty(gameCard2.CardData.ParentUniqueId))
             {
+                if (gameCard2.CardData.ParentUniqueId == gameCard2.UniqueId)
+                {
+                    Debug.LogWarning($"Circular parenting reference skipped: Card {gameCard2.UniqueId} referenced itself.");
+                    gameCard2.CardData.ParentUniqueId = null;
+                    continue;
+                }
+
                 GameCard cardWithUniqueId = _world.GetCardWithUniqueId(gameCard2.CardData.ParentUniqueId);
                 if (cardWithUniqueId != null)
                 {
-                    gameCard2.SetParent(cardWithUniqueId);
+                    // Recursively verify if loading this parent introduces a circular reference
+                    GameCard currentParent = cardWithUniqueId;
+                    bool isCircular = false;
+                    while (currentParent != null)
+                    {
+                        if (currentParent == gameCard2)
+                        {
+                            isCircular = true;
+                            break;
+                        }
+                        currentParent = currentParent.Parent;
+                    }
+
+                    if (!isCircular)
+                    {
+                        gameCard2.SetParent(cardWithUniqueId);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Circular parenting chain detected for card {gameCard2.UniqueId}. Safe cleanup performed.");
+                        gameCard2.CardData.ParentUniqueId = null;
+                    }
                 }
             }
         }
+
+        // 4. Reconnect equipment
         foreach (GameCard gameCard3 in _world.AllCards)
         {
             if (!string.IsNullOrEmpty(gameCard3.CardData.EquipmentHolderUniqueId))
@@ -152,6 +222,8 @@ public class SaveSystem
                 }
             }
         }
+
+        // 5. Reconnect workers
         foreach (GameCard gameCard4 in _world.AllCards)
         {
             if (gameCard4.CardData.WorkerAmount > 0)
@@ -177,14 +249,20 @@ public class SaveSystem
                 }
             }
         }
+
+        // 6. Notify status effects changed safely
         foreach (GameCard gameCard5 in _world.AllCards)
         {
             gameCard5.StatusEffectsChanged();
         }
+
+        // 7. Reconnect active combat conflicts
         foreach (SavedConflict savedConflict in saveRound.SavedConflicts)
         {
             Conflict.CreateFromSavedConflict(savedConflict);
         }
+
+        // 8. Reconnect boosters
         foreach (SavedBooster savedBooster2 in saveRound.SavedBoosters)
         {
             Boosterpack boosterpack = _world.CreateBoosterpack(savedBooster2.Position, savedBooster2.BoosterId);
@@ -206,18 +284,36 @@ public class SaveSystem
                 }
             }
         }
-        using (List<SavedBoosterBox>.Enumerator enumerator7 = saveRound.SavedBoosterBoxes.GetEnumerator())
+
+        // 9. Reconnect booster boxes
+        foreach (SavedBoosterBox savedBooster in saveRound.SavedBoosterBoxes)
         {
-            while (enumerator7.MoveNext())
+            BuyBoosterBox buyBoosterBox = _world.AllBoosterBoxes.Find((BuyBoosterBox x) => x.BoosterId == savedBooster.BoosterId);
+            if (buyBoosterBox != null)
             {
-                SavedBoosterBox savedBooster = enumerator7.Current;
-                BuyBoosterBox buyBoosterBox = _world.AllBoosterBoxes.Find((BuyBoosterBox x) => x.BoosterId == savedBooster.BoosterId);
-                if (buyBoosterBox != null)
+                buyBoosterBox.StoredCostAmount = savedBooster.StoredCostAmount;
+            }
+        }
+
+        // 10. Start running timers in Phase B where environment details are fully reconnected
+        foreach (CardData cardData in loadedCards)
+        {
+            if (!idToSavedCard.TryGetValue(cardData.UniqueId, out SavedCard savedCard)) continue;
+
+            if (savedCard.TimerRunning)
+            {
+                TimerAction delegateForActionId = cardData.GetDelegateForActionId(savedCard.TimerActionId);
+                if (delegateForActionId != null)
                 {
-                    buyBoosterBox.StoredCostAmount = savedBooster.StoredCostAmount;
+                    cardData.MyGameCard.StartTimer(savedCard.TargetTimerTime, delegateForActionId, savedCard.Status, savedCard.TimerActionId, savedCard.WithStatusBar, true, false);
+                    cardData.MyGameCard.CurrentTimerTime = savedCard.CurrentTimerTime;
+                    cardData.MyGameCard.TimerBlueprintId = savedCard.TimerBlueprintId;
+                    cardData.MyGameCard.TimerSubprintIndex = savedCard.SubprintIndex;
+                    cardData.MyGameCard.SkipCitiesChecks = savedCard.SkipCitiesChecks;
                 }
             }
         }
+
         if (saveRound.SaveVersion != 3)
         {
             PerformSaveRoundMigration(saveRound.SaveVersion, 3);
@@ -226,6 +322,8 @@ public class SaveSystem
         {
             Mewtations.Expedition.ExpeditionManager.Instance.LoadFromExtraKeyValues(_world.RoundExtraKeyValues);
         }
+
+        GameState.IsLoadingSave = false;
         IsLoadingSaveRound = false;
     }
 

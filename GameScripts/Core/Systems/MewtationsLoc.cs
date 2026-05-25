@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public static class MewtationsLoc
 {
-    public enum Language { English, Vietnamese }
+    public enum Language { English, Vietnamese, Chinese, Japanese, Korean }
 
     public static Language CurrentLang
     {
@@ -17,6 +18,18 @@ public static class MewtationsLoc
                 {
                     return Language.Vietnamese;
                 }
+                if (lang.Contains("chinese") || lang.Contains("zh") || lang.Contains("cn"))
+                {
+                    return Language.Chinese;
+                }
+                if (lang.Contains("japanese") || lang.Contains("ja") || lang.Contains("jp"))
+                {
+                    return Language.Japanese;
+                }
+                if (lang.Contains("korean") || lang.Contains("ko") || lang.Contains("kr"))
+                {
+                    return Language.Korean;
+                }
             }
             return Language.English;
         }
@@ -26,74 +39,119 @@ public static class MewtationsLoc
 
     static MewtationsLoc()
     {
+        // ----------------- STATIC FALLBACKS (In case TSV is missing) -----------------
         // UI - Chronicle Button & Window
-        Add("btn_chronicle", "📖 Chronicle of Truth", "📖 Kí Sự Sự Thật");
-        Add("win_chronicle_title", "📖 CHRONICLE OF TRUTH", "📖 KÍ SỰ SỰ THẬT TÔNG MÔN");
-        Add("win_chronicle_desc", "Contains ancient scrolls and letter archives that resolve the tragic Cat-Dog conflict.", "Kho lưu trữ thư tịch cổ khơi thông sự thật về đại kiếp mâu thuẫn phe phái Mèo - Chó.");
-        Add("btn_close", "Close", "Đóng");
-        Add("btn_read", "Read Fragment", "Đọc Bản Thư");
-        Add("lbl_recipe", "Recipe Status:", "Trạng Thái Công Thức:");
-        Add("lbl_unlocked", "✓ Unlocked", "✓ Đã Mở Khóa");
-        Add("lbl_locked", "✗ Locked (Find in Expedition to open)", "✗ Khóa (Tìm manh mối cổ bản trong Viễn Chinh)");
-        Add("lbl_lost_fragment", "🔒 Lost Scroll Fragment", "🔒 Mảnh Cổ Bản Bị Thất Lạc");
+        Add("btn_chronicle", "📖 Chronicle of Truth", "📖 Kí Sự Sự Thật", "📖 真相纪事", "📖 真実の年代記", "📖 진실의 연대기");
+        Add("win_chronicle_title", "📖 CHRONICLE OF TRUTH", "📖 KÍ SỰ SỰ THẬT TÔNG MÔN", "📖 真相纪事宗门", "📖 真実の年代記宗門", "📖 진실의 연대기 문파");
+        Add("win_chronicle_desc", "Contains ancient scrolls and letter archives that resolve the tragic Cat-Dog conflict.", "Kho lưu trữ thư tịch cổ khơi thông sự thật về đại kiếp mâu thuẫn phe phái Mèo - Chó.", "包含解开猫狗悲剧冲突的古老卷轴和信件档案。", "猫と犬の悲劇的な衝突を解決する古代の巻物と手紙のアーカイブが含まれています。", "고양이와 개의 비극적인 갈등을 해결하는 고대 두루마리와 편지 아카이브가 포함되어 있습니다.");
+        Add("btn_close", "Close", "Đóng", "关闭", "閉じる", "닫기");
+        Add("btn_read", "Read Fragment", "Đọc Bản Thư", "阅读残卷", "残片を読む", "잔해 읽기");
+        Add("lbl_recipe", "Recipe Status:", "Trạng Thái Công Thức:", "配方状态：", "レシピステータス：", "제작법 상태:");
+        Add("lbl_unlocked", "✓ Unlocked", "✓ Đã Mở Khóa", "✓ 已解锁", "✓ 解放済み", "✓ 해제됨");
+        Add("lbl_locked", "✗ Locked (Find in Expedition to open)", "✗ Khóa (Tìm manh mối cổ bản trong Viễn Chinh)", "✗ 已锁定（在远征中寻找线索解锁）", "✗ ロック（遠征で手がかりを見つけて解放）", "✗ 잠김 (원정에서 단서를 찾아 잠금 해제)");
+        Add("lbl_lost_fragment", "🔒 Lost Scroll Fragment", "🔒 Mảnh Cổ Bản Bị Thất Lạc", "🔒 遗失的残卷碎片", "🔒 失われた巻物の断片", "🔒 잃어버린 두루마리 조각");
 
         // Recipe Details
         Add("recipe_1_details", "💡 Talisman Fusion: Breakthrough Qi Refining + Divine Stone + Any Equipment", 
-                               "💡 Dung Hợp Bùa Chú: Đột Phá Luyện Khí Trận + Hóa Thần Thạch + Trang Bị Bất Kỳ");
+                               "💡 Dung Hợp Bùa Chú: Đột Phá Luyện Khí Trận + Hóa Thần Thạch + Trang Bị Bất Kỳ",
+                               "💡 护符融合：突破炼气阵 + 化神石 + 任意装备",
+                               "💡 護符融合：突破練気陣 + 化神石 + 任意の装備",
+                               "💡 부적 융합: 돌파 연기진 + 화신석 + 임의의 장비");
         Add("recipe_2_details", "💡 Advanced Breakthrough Pill: Stove + 2x Rare Food Items", 
-                               "💡 Linh Dược Đột Phá: Bếp + 2x Thức Ăn Quý Hiếm");
+                               "💡 Linh Dược Đột Phá: Bếp + 2x Thức Ăn Quý Hiếm",
+                               "💡 高级突破丹：炉灶 + 2x 稀有食物",
+                               "💡 高級突破丹：炉灶 + 2x レアフード",
+                               "💡 상급 돌파단: 화로 + 2x 희귀 음식");
         Add("recipe_3_details", "💡 True Harmony Covenant: Breakthrough Array + Level 4 Cat + 3 Clue Fragments", 
-                               "💡 Nghi Thức Thái Hòa: Đột Phá Trận + Mèo Cảnh Giới 4 + 3 Mảnh Cổ Bản Kí Sự");
+                               "💡 Nghi Thức Thái Hòa: Đột Phá Trận + Mèo Cảnh Giới 4 + 3 Mảnh Cổ Bản Kí Sự",
+                               "💡 大和谐契约：突破阵 + 4级猫 + 3个线索残卷",
+                               "💡 大調和の盟約：突破陣 + レベル4의貓 + 3개의 단서 조각",
+                               "💡 대조화의 계약: 돌파진 + 4레벨 고양이 + 3개의 단서 조각");
 
         // Hints & Lore Cards
-        Add("hint_1_title", "Ancient Chronicle - Fragment I", "Cổ Bản Kí Sự - Mảnh I");
-        Add("hint_1_desc", "Double-click to read the ancient records of Faction Order.", "Nhấp đúp chuột để đọc sử sách xưa kia của Đế chế Trật tự Chó.");
-        Add("hint_1_body", "In the beginning, Dogs and Cats walked together under the spiritual sky. Dogs forged tools and rules; Cats opened their spirits for harmony. But as spiritual energy waned, Greed rose, and the Dogs established a rigid Iron Order, pushing Cats to the bottom of society to scavenge trash...\n\n💡 [Secret Recipe]: Breakthrough Qi Refining can fuse Talismans using Divine Stones.", 
-                          "Thuở hồng hoang, loài Chó và Mèo cùng bước đi dưới vòm trời linh khí. Loài Chó chế tạo công cụ và giữ luật lệ, loài Mèo mở ra linh căn cảm ngộ thái hòa. Nhưng khi linh khí cạn kiệt, lòng Tham Lam trỗi dậy, loài Chó đã thiết lập Đế chế Trật tự sắt đá, đày đọa loài Mèo xuống đáy xã hội làm nô dịch bới rác...\n\n💡 [Công Thức Bí Truyền]: Đột Phá Luyện Khí có thể dung hợp Talisman bằng cách đặt Hóa Thần Thạch.");
-
-        Add("hint_2_title", "Cat God's Memoir - Fragment II", "Kí Sự Thần Mèo - Mảnh II");
-        Add("hint_2_desc", "Double-click to read the origin of the Cat God's sacrifice.", "Nhấp đúp chuột để đọc về nguồn gốc sự hiến tế của Thần Mèo.");
-        Add("hint_2_body", "The Cat God is not an evil cosmic horror, but the Will of Chaos born to balance the suffocating Order of the Dogs. With each sacrifice, the Cat God absorbs spiritual energy and grants destiny. But if the player grows too greedy without appeasing, the heavens will strike...\n\n💡 [Secret Recipe]: Brew High Breakthrough Pills by cooking 2 rare Food items.", 
-                          "Thần Mèo thực ra không phải là thực thể tà ác, ngài chính là Ý Chí Hỗn Loạn được sinh ra để cân bằng lại Trật Tự ngột ngạt của loài Chó. Mỗi lần dâng hiến hiến tế, Thần Mèo sẽ hấp thụ linh lực tích tụ và phản hồi cơ duyên. Nhưng nếu người chơi quá tham lam nhận phần thưởng cao mà không xoa dịu, thiên đạo sẽ phẫn nộ giáng họa...\n\n💡 [Công Thức Bí Truyền]: Luyện chế Linh Dược Đột Phá cấp cao bằng cách đun 2 Thức ăn quý hiếm.");
-
-        Add("hint_3_title", "True Harmony Covenant - Fragment III", "Hiệp Ước Thái Hòa - Mảnh III");
-        Add("hint_3_desc", "Double-click to read the ultimate pathway to peace.", "Nhấp đúp chuột để đọc về con đường Đạo Pháp Thái Hòa.");
-        Add("hint_3_body", "Freedom and Order cannot destroy each other; the world always oscillates between both. Only when this is understood, can Cats and Dogs break the cycle of hatred. Place these 3 fragments with a Nascent Soul Cat (Breakthrough 4) in the Breakthrough Array to achieve eternal True Harmony.\n\n💡 [Covenant Ritual]: Place 3 Fragments and a Nascent Soul Cat in the Breakthrough Array to unlock True Harmony.", 
-                          "Tự Do và Trật Tự không thể triệt tiêu lẫn nhau, thế giới luôn dao động giữa hai thái cực. Chỉ khi hiểu được điều này, Mèo và Chó mới thoát khỏi vòng lặp thù hận. Hãy đặt 3 mảnh Cổ Bản này cùng một Mèo Nguyên Anh Cảnh (Breakthrough 4) tại Đột Phá Trận để khai mở Bản Mệnh Thái Hòa vĩnh cửu.\n\n💡 [Nghi Thức Bản Mệnh]: Đặt 3 Cổ Bản và Mèo Nguyên Anh Cảnh vào Đột Phá Trận để đạt Thiên Đạo Thái Hòa.");
-
+        Add("hint_1_title", "Ancient Chronicle - Fragment I", "Cổ Bản Kí Sự - Mảnh I", "古代纪事 - 残卷 I", "古代の年代記 - 断片 I", "고대 연대기 - 조각 I");
+        Add("hint_1_desc", "Double-click to read the ancient records of Faction Order.", "Nhấp đúp chuột để đọc sử sách xưa kia của Đế chế Trật tự Chó.", "双击阅读犬帝国的古老秩序记录。", "ダブルクリックして犬の帝国の古代の秩序の記録を読みます。", "더블 클릭하여 개 제국의 고대 질서 기록을 읽습니다.");
+        
         // Talents
-        Add("talent_true_harmony_name", "True Harmony Covenant", "Bản Mệnh Thái Hòa");
-        Add("talent_true_harmony_desc", "Attained supreme enlightenment: +30% Max HP, +30% Speed, removes all scars/mutations, and immune to future scars.", "Đạt tới ngộ đạo tối thượng: Tăng vĩnh viễn 30% HP, 30% Tốc độ, loại bỏ hoàn toàn vết sẹo/dị biến và miễn nhiễm thiên lôi kiếp số.");
+        Add("talent_true_harmony_name", "True Harmony Covenant", "Bản Mệnh Thái Hòa", "大和谐契约", "大調和の盟約", "대조화의 계약");
+        Add("talent_true_harmony_desc", "Attained supreme enlightenment: +30% Max HP, +30% Speed, removes all scars/mutations, and immune to future scars.", "Đạt tới ngộ đạo tối thượng: Tăng vĩnh viễn 30% HP, 30% Tốc độ, loại bỏ hoàn toàn vết sẹo/dị biến và miễn nhiễm thiên lôi kiếp số.", "获得无上顿悟：最大生命值+30%，速度+30%，移除所有伤疤/异变，并对未来的伤疤免疫。", "至高の悟りに達しました：最大HP+30％、速度+30％、すべての傷跡/異変を取り除き、将来의傷跡を免疫します。", "지고의 깨달음에 도달했습니다: 최대 체력 +30%, 속도 +30%, 모든 흉터/이변 제거 및 미래의 흉터에 면역됩니다.");
 
         // Dialog Weary Dog Guard Encounter
-        Add("dog_patrol_title", "🐕 THE WEARY DOG PATROL OFFICER", "🐕 LÍNH GÁC CHÓ TRĨU NẶNG ĐẠO TÂM");
-        Add("dog_patrol_desc", "A heavily armored Dog patrol officer sits under a street lamp, looking incredibly exhausted from enforcing the rigid laws of the Dog Empire. He blocks your path to the ancient ruins.\n\nHe sighs heavily: 'Why must we fight? Why must we enforce order on those who just want to live? I am so tired...'", 
-                               "Một lính gác Chó tuần tra bọc giáp sắt đang ngồi dưới đèn đường, trông cực kỳ kiệt quệ và mệt mỏi vì phải thực thi những đạo luật gò bó cứng nhắc của Đế chế Chó. Chú gác cửa chặn lối vào cổ cung phế tích.\n\nChú thở dài trĩu nặng: 'Tại sao chúng ta phải chiến đấu? Tại sao phải cưỡng ép trật tự lên những kẻ chỉ muốn sinh tồn? Ta mệt mỏi quá rồi...'");
-        Add("opt_fight", "⚔️ Force breakthrough (+20 Corruption)", "⚔️ Quyết chiến đột phá (+20 Corruption)");
-        Add("opt_stealth", "🏃 Sneak past silently (Requires Speed > 115)", "🏃 Lén lút lẻn qua (Yêu cầu Tốc độ > 115)");
-        Add("opt_comfort", "☯️ [Zen Dao Comfort] Teach human philosophy & soothe his soul", "☯️ [Thiền Đạo Cảm Hóa] Thuyết giảng Đạo lý Nhân sinh & An ủi");
-        Add("opt_comfort_req", "Requires Zen Cat", "Cần có Mèo Thiền Đạo");
+        Add("dog_patrol_title", "🐕 THE WEARY DOG PATROL OFFICER", "🐕 LÍNH GÁC CHÓ TRĨU NẶNG ĐẠO TÂM", "🐕 疲惫的的犬卫兵", "🐕 疲れ果てた犬の衛兵", "🐕 피로에 지친 개 경비병");
 
-        Add("dog_fight_res", "Bloody Skirmish!", "Huyết Chiến Đẫm Máu!");
-        Add("dog_fight_res_desc", "You fought and defeated the guard. The path is clear, but at a bloody cost (+20 Corruption).", "Toàn đội tuốt kiếm huyết chiến đánh bại lính gác. Lối đi đã mở, nhưng sát nghiệp tích tụ cực nặng (+20 Corruption)!");
-
-        Add("dog_stealth_success", "Stealth Success!", "Lẻn Qua Thành Công!");
-        Add("dog_stealth_success_desc", "Your agile cats slipped by in the shadows without alerting the guard.", "Bằng bước di chuyển thần tốc, toàn đội đã lướt qua trạm canh gác trót lọt mà lính chó không hề hay biết!");
-
-        Add("dog_stealth_fail", "Stealth Failed!", "Lẻn Qua Thất Bại!");
-        Add("dog_stealth_fail_desc", "The weary guard noticed you. You had to force your way through and suffered minor injuries (-5 HP).", "Bị phát hiện! Do tốc độ quá chậm, lính gác giật mình báo động buộc phải đánh giáp lá cà, toàn đội bị thương nhẹ (-5 HP)!");
-
-        Add("dog_comfort_success", "A Soul Redeemed!", "Giác Ngộ Đạo Tâm!");
-        Add("dog_comfort_success_desc", "The officer wept upon hearing your Zen words, realizing both Cats and Dogs are victims of the system. He abandons his post, giving you an Ancient Scroll and purging your sins (-25 Corruption)!", 
-                                  "Lính tuần tra Chó cảm kích rơi lệ khi nghe lời thuyết pháp thiền đạo đầy triết lý, giác ngộ rằng cả Chó và Mèo đều là nạn nhân bị hệ thống trật tự nghiền nát. Chú cởi bỏ giáp sắt từ chức, tặng bạn một mảnh Cổ Bản Kí Sự cực hiếm và giải thoát tà khí cho toàn đội (-25 Corruption)!");
+        // Load external CSV/TSV table if available to support dynamically updated translations
+        LoadExternalLocTable();
     }
 
-    private static void Add(string key, string en, string vi)
+    private static void Add(string key, string en, string vi, string zh = "", string ja = "", string ko = "")
     {
-        _dict[key.ToLower()] = new Dictionary<Language, string> {
+        string k = key.ToLower();
+        _dict[k] = new Dictionary<Language, string> {
             { Language.English, en },
-            { Language.Vietnamese, vi }
+            { Language.Vietnamese, vi },
+            { Language.Chinese, string.IsNullOrEmpty(zh) ? en : zh },
+            { Language.Japanese, string.IsNullOrEmpty(ja) ? en : ja },
+            { Language.Korean, string.IsNullOrEmpty(ko) ? en : ko }
         };
+    }
+
+    private static void LoadExternalLocTable()
+    {
+        try
+        {
+            // Search locations: StreamingAssets, GameScripts dir, or current directory
+            string path = Path.Combine(Application.streamingAssetsPath, "MewtationsLocTable.tsv");
+            if (!File.Exists(path))
+            {
+                path = Path.Combine(Application.dataPath, "Core/Systems/MewtationsLocTable.tsv");
+            }
+            if (!File.Exists(path))
+            {
+                path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GameScripts/Core/Systems/MewtationsLocTable.tsv");
+            }
+            if (!File.Exists(path))
+            {
+                path = Path.Combine(Directory.GetCurrentDirectory(), "GameScripts/Core/Systems/MewtationsLocTable.tsv");
+            }
+
+            if (File.Exists(path))
+            {
+                string[] lines = File.ReadAllLines(path);
+                if (lines.Length > 1)
+                {
+                    // Only clear dynamic keys to preserve hardcoded structures
+                    for (int i = 1; i < lines.Length; i++)
+                    {
+                        string line = lines[i];
+                        if (string.IsNullOrWhiteSpace(line)) continue;
+
+                        string[] cols = line.Split('\t');
+                        if (cols.Length >= 3)
+                        {
+                            string key = cols[0].Trim().ToLower();
+                            string en = cols[1].Replace("\\n", "\n").Trim();
+                            string vi = cols[2].Replace("\\n", "\n").Trim();
+                            string zh = cols.Length >= 4 ? cols[3].Replace("\\n", "\n").Trim() : en;
+                            string ja = cols.Length >= 5 ? cols[4].Replace("\\n", "\n").Trim() : en;
+                            string ko = cols.Length >= 6 ? cols[5].Replace("\\n", "\n").Trim() : en;
+
+                            _dict[key] = new Dictionary<Language, string> {
+                                { Language.English, en },
+                                { Language.Vietnamese, vi },
+                                { Language.Chinese, zh },
+                                { Language.Japanese, ja },
+                                { Language.Korean, ko }
+                            };
+                        }
+                    }
+                    Debug.Log($"[MewtationsLoc] Successfully loaded {lines.Length - 1} translation keys from: {path}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[MewtationsLoc] Error loading external TSV translation table: {ex}");
+        }
     }
 
     public static string Translate(string key, string defaultText = "")
@@ -105,5 +163,19 @@ public static class MewtationsLoc
             return langs[CurrentLang];
         }
         return defaultText;
+    }
+
+    // Support parameterized formatting directly in translation lookup
+    public static string TranslateFormat(string key, string defaultText, params object[] args)
+    {
+        string text = Translate(key, defaultText);
+        try
+        {
+            return string.Format(text, args);
+        }
+        catch
+        {
+            return text;
+        }
     }
 }
