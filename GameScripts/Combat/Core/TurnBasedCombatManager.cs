@@ -209,8 +209,8 @@ namespace Mewtations.Combat.Core
                 allUnits.AddRange(Formation.PlayerUnits.FindAll(u => u.IsAlive));
                 allUnits.AddRange(Formation.EnemyUnits.FindAll(u => u.IsAlive));
 
-                // Sort by Speed descending
-                allUnits = allUnits.OrderByDescending(u => u.Speed).ToList();
+                // Sort by speed and slot index deterministically using the InitiativeResolver
+                allUnits = Mewtations.Combat.TurnOrder.InitiativeResolver.BuildTurnQueue(allUnits);
 
                 foreach (var unit in allUnits)
                 {
@@ -252,7 +252,7 @@ namespace Mewtations.Combat.Core
                     else
                     {
                         // Cast Basic Attack
-                        var target = MewtationsUltimateRegistry.GetPrimaryTarget(opponents, unit);
+                        var target = CombatTargetResolver.GetPrimaryTarget(opponents, unit);
                         if (target != null)
                         {
                             MewtationsWeaponRegistry.ExecuteBasicAttack(unit, target, allies, opponents, msg => AddLog(msg));
@@ -261,6 +261,7 @@ namespace Mewtations.Combat.Core
 
                     // 4. Rage Accumulation
                     unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 20); // +20 Rage per action
+
 
                     // Trigger Turn End Event Hooks!
                     MewtationsEventPipeline.TriggerOnTurnEnd(unit, msg => AddLog(msg));

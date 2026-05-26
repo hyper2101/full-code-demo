@@ -553,21 +553,8 @@ namespace Mewtations.Combat
                 rageOnHit = weaponCard.RageOnHit;
             }
 
-            // Tank redirection check! If target is back row (indices 3-5), check for alive front-row Tanks
-            if (target.SlotIndex >= 3 && opponents != null)
-            {
-                var defenderTanks = opponents.FindAll(u => u.IsAlive && u.Role == CatRole.Tank && u.SlotIndex < 3);
-                if (defenderTanks.Count > 0)
-                {
-                    if (UnityEngine.Random.value <= 0.30f)
-                    {
-                        var tank = defenderTanks[UnityEngine.Random.Range(0, defenderTanks.Count)];
-                        logCallback?.Invoke($"🛡️ [ĐỠ ĐÒN] Tank {tank.Name} dũng cảm lao ra đỡ đòn thay cho đồng đội {target.Name}! (Nhận +5 Khiên)");
-                        target = tank;
-                        target.AddShield(5);
-                    }
-                }
-            }
+            // Tank redirection check resolved via CombatTargetResolver!
+            target = CombatTargetResolver.ResolveRedirectedTarget(attacker, target, opponents, logCallback);
 
             if (archetype == WeaponArchetype.Rally)
             {
@@ -687,55 +674,43 @@ namespace Mewtations.Combat
                     break;
 
                 case WeaponAttackPattern.ColumnAttack:
-                    // Hits target and the unit behind/in front of it
-                    int targetCol = target.SlotIndex % 3;
+                    var colTargets = CombatTargetResolver.ResolvePatternTargets(pattern, target, opponents);
                     bool isRagePierce = (archetype == WeaponArchetype.RagePierce);
-                    foreach (var unit in opponents)
+                    foreach (var unit in colTargets)
                     {
-                        if (unit.IsAlive && (unit.SlotIndex % 3 == targetCol))
+                        unit.TakeDamage(baseDamage);
+                        logCallback?.Invoke($"{attacker.Name} đâm thương hàng dọc vào {unit.Name} gây {baseDamage} sát thương.");
+                        if (isRagePierce)
                         {
-                            unit.TakeDamage(baseDamage);
-                            logCallback?.Invoke($"{attacker.Name} đâm thương hàng dọc vào {unit.Name} gây {baseDamage} sát thương.");
-                            if (isRagePierce)
-                            {
-                                unit.CurrentRage = Mathf.Max(0, unit.CurrentRage - 20);
-                                logCallback?.Invoke($"  ↳ 📉 [GIẢM NỘ] Xuyên Nộ Thương giảm 20 Nộ khí của {unit.Name}!");
-                            }
-                            if (isStun && unit.IsAlive && unit == target)
-                            {
-                                if (UnityEngine.Random.value <= 0.35f)
-                                {
-                                    unit.AddDebuff(MewtationsDebuff.Frozen, 1);
-                                    logCallback?.Invoke($"❄️ [ĐẬP CHOÁNG] Đòn đánh của {attacker.Name} gây Choáng lên {unit.Name} (1 lượt)!");
-                                }
-                            }
-                            if (isVuln && unit.IsAlive && unit == target)
-                            {
-                                unit.AddDebuff(MewtationsDebuff.Shocked, 2);
-                                logCallback?.Invoke($"⚡ [TRỌNG THƯƠNG] {attacker.Name} gây Trọng Thương lên {unit.Name} (Nhận +30% sát thương trong 2 lượt)!");
-                            }
-                            unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 10);
+                            unit.CurrentRage = Mathf.Max(0, unit.CurrentRage - 20);
+                            logCallback?.Invoke($"  ↳ 📉 [GIẢM NỘ] Xuyên Nộ Thương giảm 20 Nộ khí của {unit.Name}!");
                         }
+                        if (isStun && unit.IsAlive && unit == target)
+                        {
+                            if (UnityEngine.Random.value <= 0.35f)
+                            {
+                                unit.AddDebuff(MewtationsDebuff.Frozen, 1);
+                                logCallback?.Invoke($"❄️ [ĐẬP CHOÁNG] Đòn đánh của {attacker.Name} gây Choáng lên {unit.Name} (1 lượt)!");
+                            }
+                        }
+                        if (isVuln && unit.IsAlive && unit == target)
+                        {
+                            unit.AddDebuff(MewtationsDebuff.Shocked, 2);
+                            logCallback?.Invoke($"⚡ [TRỌNG THƯƠNG] {attacker.Name} gây Trọng Thương lên {unit.Name} (Nhận +30% sát thương trong 2 lượt)!");
+                        }
+                        unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 10);
                     }
                     break;
 
                 case WeaponAttackPattern.Cleave:
-                    // Hits target and adjacent horizontal units
-                    int rowStart = (target.SlotIndex / 3) * 3;
-                    int col = target.SlotIndex % 3;
-                    foreach (var unit in opponents)
+                    var cleaveTargets = CombatTargetResolver.ResolvePatternTargets(pattern, target, opponents);
+                    foreach (var unit in cleaveTargets)
                     {
-                        if (unit.IsAlive && (unit.SlotIndex >= rowStart && unit.SlotIndex < rowStart + 3))
-                        {
-                            int diff = Mathf.Abs((unit.SlotIndex % 3) - col);
-                            if (diff <= 1)
-                            {
-                                int dmg = diff == 0 ? baseDamage : Mathf.Max(1, baseDamage / 2);
-                                unit.TakeDamage(dmg);
-                                logCallback?.Invoke($"{attacker.Name} quẹt búa lan trúng {unit.Name} gây {dmg} sát thương.");
-                                unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 10);
-                            }
-                        }
+                        int diff = Mathf.Abs(CombatBattlefieldHelper.GetLane(unit.SlotIndex) - CombatBattlefieldHelper.GetLane(target.SlotIndex));
+                        int dmg = diff == 0 ? baseDamage : Mathf.Max(1, baseDamage / 2);
+                        unit.TakeDamage(dmg);
+                        logCallback?.Invoke($"{attacker.Name} quẹt búa lan trúng {unit.Name} gây {dmg} sát thương.");
+                        unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 10);
                     }
                     break;
 
@@ -763,16 +738,12 @@ namespace Mewtations.Combat
                     break;
 
                 case WeaponAttackPattern.Row:
-                    // Hits entire row (front, mid, or back)
-                    int targetRowStart = (target.SlotIndex / 3) * 3;
-                    foreach (var unit in opponents)
+                    var rowTargets = CombatTargetResolver.ResolvePatternTargets(pattern, target, opponents);
+                    foreach (var unit in rowTargets)
                     {
-                        if (unit.IsAlive && (unit.SlotIndex >= targetRowStart && unit.SlotIndex < targetRowStart + 3))
-                        {
-                            unit.TakeDamage(baseDamage);
-                            logCallback?.Invoke($"{attacker.Name} gọi sét quét hàng ngang trúng {unit.Name} gây {baseDamage} sát thương.");
-                            unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 10);
-                        }
+                        unit.TakeDamage(baseDamage);
+                        logCallback?.Invoke($"{attacker.Name} gọi sét quét hàng ngang trúng {unit.Name} gây {baseDamage} sát thương.");
+                        unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 10);
                     }
                     break;
             }
@@ -987,7 +958,7 @@ namespace Mewtations.Combat
             {
                 logCallback?.Invoke($"[KHÓA KỸ NĂNG] Kỹ năng Nộ của {attacker.Name} đã bị khóa do bị nguyền rủa hoặc phế ấn! Thi triển Ultimate thất bại!");
                 attacker.CurrentRage = 0; // Consume the Rage as backfire/dissipated energy
-                var target = GetPrimaryTarget(enemies);
+                var target = CombatTargetResolver.GetPrimaryTarget(enemies, attacker);
                 if (target != null)
                 {
                     MewtationsWeaponRegistry.ExecuteBasicAttack(attacker, target, allies, enemies, logCallback);
@@ -1007,7 +978,7 @@ namespace Mewtations.Combat
             if (attacker.Role == CatRole.DPS)
             {
                 roleDmgMultiplier += 0.20f;
-                var target = GetPrimaryTarget(enemies);
+                var target = CombatTargetResolver.GetPrimaryTarget(enemies, attacker);
                 if (target != null && target.ActiveDebuffs.Exists(d => d.Duration > 0))
                 {
                     roleDmgMultiplier += 0.25f;
@@ -1066,7 +1037,7 @@ namespace Mewtations.Combat
             {
                 case UltimateType.DefaultBasicBoost:
                     // Attack single target with heavy damage
-                    var target = GetPrimaryTarget(enemies);
+                    var target = CombatTargetResolver.GetPrimaryTarget(enemies, attacker);
                     if (target != null)
                     {
                         int finalUltDmg = ultDamage;
@@ -1141,7 +1112,7 @@ namespace Mewtations.Combat
 
                 case UltimateType.DisruptStun:
                     // Disrupt enemy speed and freeze them
-                    var priTarget = GetPrimaryTarget(enemies);
+                    var priTarget = CombatTargetResolver.GetPrimaryTarget(enemies, attacker);
                     if (priTarget != null)
                     {
                         int finalUltDmg = ultDamage;
@@ -1305,85 +1276,6 @@ namespace Mewtations.Combat
             }
         }
 
-        public static CombatUnit GetPrimaryTarget(List<CombatUnit> enemies)
-        {
-            return GetPrimaryTarget(enemies, null);
-        }
-
-        private static CombatUnit GetFrontmostUnit(List<CombatUnit> units)
-        {
-            if (units == null || units.Count == 0) return null;
-            CombatUnit best = units[0];
-            int minCol = best.SlotIndex % 3;
-            for (int i = 1; i < units.Count; i++)
-            {
-                int col = units[i].SlotIndex % 3;
-                if (col < minCol)
-                {
-                    minCol = col;
-                    best = units[i];
-                }
-            }
-            return best;
-        }
-
-        public static CombatUnit GetPrimaryTarget(List<CombatUnit> enemies, CombatUnit attacker)
-        {
-            int attackerRow = 0;
-            if (attacker != null)
-            {
-                attackerRow = attacker.SlotIndex / 3;
-            }
-
-            // Priority 1: Distance = 0
-            // Attacker in Row X targets Row X
-            int targetRow0 = attackerRow;
-            var target0 = GetAliveUnitsInRow(enemies, targetRow0);
-            if (target0.Count > 0) return GetFrontmostUnit(target0);
-
-            // Priority 2: Distance = 1
-            // If attacker in Row 1 (Mid): nearest remaining row. We prioritize Front row (0) first, then Back row (2)
-            // If attacker in Row 0 (Front): targets Row 1
-            // If attacker in Row 2 (Back): targets Row 1
-            if (attackerRow == 1)
-            {
-                var target1_front = GetAliveUnitsInRow(enemies, 0);
-                if (target1_front.Count > 0) return GetFrontmostUnit(target1_front);
-
-                var target1_back = GetAliveUnitsInRow(enemies, 2);
-                if (target1_back.Count > 0) return GetFrontmostUnit(target1_back);
-            }
-            else
-            {
-                var target1 = GetAliveUnitsInRow(enemies, 1);
-                if (target1.Count > 0) return GetFrontmostUnit(target1);
-            }
-
-            // Priority 3: Distance = 2
-            // Attacker in Row 0 targets Row 2, attacker in Row 2 targets Row 0
-            int targetRow2 = (attackerRow == 0) ? 2 : 0;
-            var target2 = GetAliveUnitsInRow(enemies, targetRow2);
-            if (target2.Count > 0) return GetFrontmostUnit(target2);
-
-            // Fallback
-            var aliveEnemies = new List<CombatUnit>();
-            foreach (var u in enemies) { if (u.IsAlive) aliveEnemies.Add(u); }
-            return GetFrontmostUnit(aliveEnemies);
-        }
-
-        private static List<CombatUnit> GetAliveUnitsInRow(List<CombatUnit> units, int row)
-        {
-            List<CombatUnit> inRow = new List<CombatUnit>();
-            int minSlot = row * 3;
-            int maxSlot = minSlot + 3;
-            foreach (var u in units)
-            {
-                if (u.IsAlive && u.SlotIndex >= minSlot && u.SlotIndex < maxSlot)
-                {
-                    inRow.Add(u);
-                }
-            }
-            return inRow;
         }
     }
 }
