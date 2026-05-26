@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -203,6 +203,18 @@ public class Equipable : CardData
 
 	[ExtraData("level")]
 	public int Level;
+
+	[Header("Mewtations Tactical Weapon Properties")]
+	public Mewtations.Combat.WeaponAttackPattern MewtationsAttackPattern = Mewtations.Combat.WeaponAttackPattern.Single;
+	public float OutputEfficiency = 1.0f;
+	public float DamageResistance = 0.0f;
+	public Mewtations.Combat.WeaponArchetype WeaponArchetype = Mewtations.Combat.WeaponArchetype.None;
+	public List<Mewtations.Combat.WeaponPassiveEffect> PassiveEffects = new List<Mewtations.Combat.WeaponPassiveEffect>();
+
+	[Header("Mewtations Dynamic Cân Bằng Dữ Liệu")]
+	public int ShieldOnAttack = 0;
+	public int RageOnHit = 0;
+	public int MaxRowReach = 1;
 
 	private string _equipableInfo;
 }

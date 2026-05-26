@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Mewtations.Combat.Core;
+using Mewtations.Combat.Battlefield;
 
 public class Combatable : CardData
 {
@@ -152,9 +154,9 @@ public class Combatable : CardData
 		base.OnLanguageChange();
 	}
 
-	protected virtual float GetHitChance()
+	public virtual float GetAccuracyScore()
 	{
-		float num = this.ProcessedCombatStats.HitChance;
+		float num = this.ProcessedCombatStats.Accuracy;
 		if (base.HasStatusEffectOfType<StatusEffect_Drunk>())
 		{
 			num *= 0.6f;
@@ -166,23 +168,29 @@ public class Combatable : CardData
 		return num;
 	}
 
-	protected virtual float GetAttackTime()
+	public virtual float GetInitiativeScore()
 	{
-		float baseTime = this.ProcessedCombatStats.AttackSpeed;
+		float baseInitiative = this.ProcessedCombatStats.Initiative;
 		if (base.HasStatusEffectOfType<StatusEffect_Frenzy>())
 		{
-			baseTime = CombatStats.IncrementAttackSpeed(baseTime, 1);
+			baseInitiative = CombatStats.IncrementAttackSpeed(baseInitiative, 1);
 		}
 		if (_statusEffectPipeline != null)
 		{
 			int slowPercent = _statusEffectPipeline.GetSlowPercent();
 			if (slowPercent > 0)
 			{
-				baseTime *= (1f + slowPercent / 100f);
+				baseInitiative *= (1f + slowPercent / 100f);
 			}
 		}
-		return baseTime;
+		return baseInitiative;
 	}
+
+	[Obsolete("Legacy realtime method. Use GetAccuracyScore instead.")]
+	protected virtual float GetHitChance() => GetAccuracyScore();
+
+	[Obsolete("Legacy realtime method. Use GetInitiativeScore instead.")]
+	protected virtual float GetAttackTime() => GetInitiativeScore();
 
 	public float DamageMultiplier
 	{
@@ -303,7 +311,7 @@ public class Combatable : CardData
 		{
 			return;
 		}
-		Conflict conflictInStack = this.GetConflictInStack();
+		BattlefieldContext conflictInStack = this.GetConflictInStack();
 		if (conflictInStack != null)
 		{
 			conflictInStack.JoinConflict(this);
@@ -311,76 +319,60 @@ public class Combatable : CardData
 		}
 		List<CardData> list = base.CardsInStackMatchingPredicate((CardData x) => x is Combatable && x != this);
 
-		// MEWTATIONS INTERCEPT: Check if a Cat is involved in the combat stack
-		bool containsCat = this is CatCardData || list.Exists(x => x is CatCardData);
-		if (containsCat)
+		// Turn-based is the SINGLE SOURCE OF TRUTH for all battles
+		List<Combatable> players = new List<Combatable>();
+		List<Combatable> enemies = new List<Combatable>();
+
+		if (this.HealthPoints > 0)
 		{
-			List<Combatable> playerCats = new List<Combatable>();
-			if (this is CatCardData && this.HealthPoints > 0) playerCats.Add(this);
-			foreach (var card in list)
-			{
-				if (card is CatCardData cat && cat.HealthPoints > 0)
-				{
-					playerCats.Add(cat);
-				}
-			}
+			if (this.Team == Team.Player) players.Add(this);
+			else enemies.Add(this);
+		}
 
-			List<Combatable> enemies = new List<Combatable>();
-			if (!(this is CatCardData) && this.HealthPoints > 0)
+		foreach (var card in list)
+		{
+			if (card is Combatable comb && comb.HealthPoints > 0)
 			{
-				enemies.Add(this);
-			}
-			foreach (var card in list)
-			{
-				if (card is Combatable comb && !(comb is CatCardData) && comb.HealthPoints > 0)
-				{
-					enemies.Add(comb);
-				}
-			}
-
-			if (playerCats.Count > 0 && enemies.Count > 0)
-			{
-				Mewtations.Combat.TurnBasedCombatManager.Instance.StartCombat(playerCats, enemies, (result) =>
-				{
-					if (result == Mewtations.Combat.CombatResult.Victory)
-					{
-						foreach (var enemy in enemies)
-						{
-							if (enemy != null && enemy.MyGameCard != null)
-							{
-								enemy.MyGameCard.DestroyCard(true, true);
-							}
-						}
-					}
-					else
-					{
-						// Separate player cats and enemies so they don't immediately re-trigger combat
-						foreach (var cat in playerCats)
-						{
-							if (cat != null && cat.MyGameCard != null)
-							{
-								cat.MyGameCard.RemoveFromStack();
-								cat.MyGameCard.TargetPosition = cat.MyGameCard.transform.position + new Vector3(UnityEngine.Random.Range(-2.5f, -1.5f), 0f, UnityEngine.Random.Range(-2.5f, -1.5f));
-							}
-						}
-						foreach (var enemy in enemies)
-						{
-							if (enemy != null && enemy.MyGameCard != null)
-							{
-								enemy.MyGameCard.RemoveFromStack();
-								enemy.MyGameCard.TargetPosition = enemy.MyGameCard.transform.position + new Vector3(UnityEngine.Random.Range(1.5f, 2.5f), 0f, UnityEngine.Random.Range(1.5f, 2.5f));
-							}
-						}
-					}
-				});
-				return;
+				if (comb.Team == Team.Player) players.Add(comb);
+				else enemies.Add(comb);
 			}
 		}
 
-		Conflict conflict = Conflict.StartConflict(this);
-		foreach (CardData cardData in list)
+		if (players.Count > 0 && enemies.Count > 0)
 		{
-			conflict.JoinConflict(cardData as Combatable);
+			Mewtations.Combat.TurnBasedCombatManager.Instance.StartCombat(players, enemies, (result) =>
+			{
+				if (result == Mewtations.Combat.CombatResult.Victory)
+				{
+					foreach (var enemy in enemies)
+					{
+						if (enemy != null && enemy.MyGameCard != null)
+						{
+							enemy.MyGameCard.DestroyCard(true, true);
+						}
+					}
+				}
+				else
+				{
+					// Separate players and enemies to avoid instant re-trigger
+					foreach (var player in players)
+					{
+						if (player != null && player.MyGameCard != null)
+						{
+							player.MyGameCard.RemoveFromStack();
+							player.MyGameCard.TargetPosition = player.MyGameCard.transform.position + new Vector3(UnityEngine.Random.Range(-2.5f, -1.5f), 0f, UnityEngine.Random.Range(-2.5f, -1.5f));
+						}
+					}
+					foreach (var enemy in enemies)
+					{
+						if (enemy != null && enemy.MyGameCard != null)
+						{
+							enemy.MyGameCard.RemoveFromStack();
+							enemy.MyGameCard.TargetPosition = enemy.MyGameCard.transform.position + new Vector3(UnityEngine.Random.Range(1.5f, 2.5f), 0f, UnityEngine.Random.Range(1.5f, 2.5f));
+						}
+					}
+				}
+			});
 		}
 	}
 
@@ -389,7 +381,7 @@ public class Combatable : CardData
 		this._combatableDescription = null;
 	}
 
-	private Conflict GetConflictInStack()
+	private BattlefieldContext GetConflictInStack()
 	{
 		foreach (GameCard gameCard in this.MyGameCard.GetAllCardsInStack())
 		{
@@ -430,24 +422,7 @@ public class Combatable : CardData
 		{
 			this.MyConflict.UpdateConflict();
 		}
-		if (this.InConflict)
-		{
-			bool flag = this.MyConflict.TimeSinceLastAttack <= 0.3f;
-			if (this.CanAttack && !this.InAttack && !flag && !this.MyGameCard.BeingDragged)
-			{
-				this.AttackTimer += Time.deltaTime * WorldManager.instance.TimeScale;
-			}
-			bool flag2 = base.HasStatusEffectOfType<StatusEffect_Stunned>();
-			if (!this.InAttack && this.StunTimer <= 0f && this.CanAttack && !flag2 && !flag && !this.BeingAttacked && this.AttackTimer >= this.GetAttackTime())
-			{
-				this.StartAttack();
-			}
-			if (this.InAttack)
-			{
-				this.UpdateAttackAnimations();
-			}
-		}
-		this.StunTimer -= Time.deltaTime * WorldManager.instance.TimeScale;
+		// Legacy realtime combat loop disabled. Combat execution controlled exclusively by CombatV2.
 		if (this.MyGameCard.BeingHovered && this.InConflict)
 		{
 			this.DrawConflictArrows(false);
@@ -467,135 +442,14 @@ public class Combatable : CardData
 		base.UpdateCardText();
 	}
 
-	private void UpdateAttackAnimations()
-	{
-		for (int i = 0; i < this.AttackAnimations.Count; i++)
-		{
-			AttackAnimation attackAnimation = this.AttackAnimations[i];
-			if (!attackAnimation.HasStarted)
-			{
-				attackAnimation.Start();
-			}
-			attackAnimation.Update();
-			if (attackAnimation.IsDone)
-			{
-				this.AttackAnimations.RemoveAt(i);
-				i--;
-			}
-			else if (attackAnimation.IsBlocking)
-			{
-				break;
-			}
-		}
-		if (this.AttackAnimations.Count == 0)
-		{
-			this.CompleteAttack();
-		}
-	}
+	[Obsolete("Legacy realtime method. Controlled by CombatV2.")]
+	private void UpdateAttackAnimations() {}
 
-	private void StartAttack()
-	{
-		if (this.InAttack)
-		{
-			Debug.LogError("Already in attack!");
-		}
-		this.MyConflict.TimeSinceLastAttack = 0f;
-		this.InAttack = true;
-		this.InAttackTimer = 0f;
-		this.Attacked = false;
-		this.AttackTimer = 0f;
-		Combatable target = this.MyConflict.GetTarget(this);
-		this.AttackIsHit = Random.value <= this.GetHitChance();
-		this.CurrentAttackType = this.ProcessedAttackType;
-		if (!this.AttackIsHit)
-		{
-			this.AttackSpecialHit = null;
-			this.AttackTargets = target.AsList<Combatable>();
-		}
-		else
-		{
-			this.AttackSpecialHit = this.DetermineSpecialHit();
-			if (this.AttackSpecialHit == null || this.AttackSpecialHit.HitType == SpecialHitType.None)
-			{
-				this.AttackTargets = target.AsList<Combatable>();
-			}
-			else
-			{
-				Debug.Log(string.Format("Special hit by {0}: {1}", base.Name, this.AttackSpecialHit.HitType));
-				this.AttackTargets = this.GetSpecialHitTargets(this.AttackSpecialHit, target);
-			}
-		}
-		foreach (Combatable combatable in this.AttackTargets)
-		{
-			combatable.BeingAttacked = true;
-		}
-		foreach (Combatable combatable2 in this.AttackTargets)
-		{
-			Vector3 vector;
-			if (this.AttackIsHit)
-			{
-				vector = combatable2.transform.position;
-			}
-			else
-			{
-				Vector2 vector2 = Random.insideUnitCircle.normalized * WorldManager.instance.CombatMissOffset;
-				vector = combatable2.transform.position + new Vector3(vector2.x, 0f, vector2.y);
-			}
-			AttackAnimation attackAnimation;
-			if (this.CurrentAttackType == AttackType.Ranged)
-			{
-				attackAnimation = new AttackAnimationRanged();
-			}
-			else if (this.CurrentAttackType == AttackType.Magic)
-			{
-				attackAnimation = new AttackAnimationMagic();
-			}
-			else if (this.CurrentAttackType == AttackType.Armour)
-			{
-				attackAnimation = new AttackAnimationBullet();
-			}
-			else if (this.CurrentAttackType == AttackType.Foot)
-			{
-				attackAnimation = new AttackAnimationBullet();
-			}
-			else if (this.CurrentAttackType == AttackType.Air)
-			{
-				attackAnimation = new AttackAnimationBullet();
-			}
-			else
-			{
-				attackAnimation = new AttackAnimationMelee();
-			}
-			attackAnimation.Origin = this;
-			attackAnimation.Target = combatable2;
-			attackAnimation.AttackStartPosition = this.MyGameCard.transform.position;
-			attackAnimation.AttackTargetPosition = vector;
-			this.AttackAnimations.Add(attackAnimation);
-		}
-	}
+	[Obsolete("Legacy realtime method. Controlled by CombatV2.")]
+	private void StartAttack() {}
 
 	public virtual void NotifyParticipantUpdate(Combatable oldParticipant, Combatable newParticipant)
 	{
-		if (this.AttackTargets != null)
-		{
-			for (int i = 0; i < this.AttackTargets.Count; i++)
-			{
-				if (this.AttackTargets[i] == oldParticipant)
-				{
-					this.AttackTargets[i] = newParticipant;
-				}
-			}
-		}
-		if (this.AttackAnimations.Count > 0)
-		{
-			foreach (AttackAnimation attackAnimation in this.AttackAnimations)
-			{
-				if (attackAnimation.Target == oldParticipant)
-				{
-					attackAnimation.Target = newParticipant;
-				}
-			}
-		}
 	}
 
 	public Projectile CreateProjectile(Projectile projectilePrefab, Combatable target, AttackAnimation originAnimation)
@@ -609,16 +463,8 @@ public class Combatable : CardData
 		return projectile;
 	}
 
-	public void CompleteAttack()
-	{
-		foreach (Combatable combatable in this.AttackTargets)
-		{
-			combatable.BeingAttacked = false;
-		}
-		this.AttackTargets = null;
-		this.InAttack = false;
-		this.Attacked = false;
-	}
+	[Obsolete("Legacy realtime method. Controlled by CombatV2.")]
+	public void CompleteAttack() {}
 
 	public void DrawConflictArrows(bool onlyVeryEffective)
 	{
@@ -680,7 +526,7 @@ public class Combatable : CardData
 				this.MyGameCard.RemoveFromStack();
 				return;
 			}
-			Conflict overlappingConflict = this.MyGameCard.GetOverlappingConflict();
+			BattlefieldContext overlappingConflict = this.MyGameCard.GetOverlappingConflict();
 			if (overlappingConflict != null && overlappingConflict != this.MyConflict)
 			{
 				this.MyConflict.LeaveConflict(this);
@@ -699,7 +545,7 @@ public class Combatable : CardData
 				this.MyGameCard.transform.position = combatable.transform.position;
 				this.StartOrJoinConflictInStack();
 			}
-			Conflict overlappingConflict2 = this.MyGameCard.GetOverlappingConflict();
+			BattlefieldContext overlappingConflict2 = this.MyGameCard.GetOverlappingConflict();
 			if (overlappingConflict2 != null && !this.InConflict)
 			{
 				overlappingConflict2.JoinConflict(this);
@@ -851,36 +697,9 @@ public class Combatable : CardData
 		}
 	}
 
+	[Obsolete("Legacy realtime method. Controlled by CombatV2.")]
 	public virtual void PerformAttack(Combatable target, Vector3 attackPos)
 	{
-		if (target == null)
-		{
-			return;
-		}
-		target.StunTimer = 0.05f;
-		if (!this.AttackIsHit)
-		{
-			this.ShowHitText(this, target, attackPos, this.AttackIsHit, -1, null);
-			return;
-		}
-		int num = Mathf.Clamp(this.GetDamage(target), 0, 100);
-		if (this.AttackSpecialHit != null && this.AttackSpecialHit.HitType != SpecialHitType.None)
-		{
-			if (!target.HasStatusEffectOfType<StatusEffect_Invulnerable>())
-			{
-				this.PerformSpecialHit(this.AttackSpecialHit, target, num);
-			}
-			else
-			{
-				target.Damage(num);
-			}
-			this.ApplyElementalAttackEffect(target, num);
-			this.ShowHitText(this, target, attackPos, this.AttackIsHit, num, new SpecialHitType?(this.AttackSpecialHit.HitType));
-			return;
-		}
-		target.Damage(num);
-		this.ApplyElementalAttackEffect(target, num);
-		this.ShowHitText(this, target, attackPos, this.AttackIsHit, num, null);
 	}
 
 	private void PerformSpecialHit(SpecialHit specialHit, Combatable target, int dmg)
@@ -1254,6 +1073,7 @@ public class Combatable : CardData
 
 	[ExtraData("attack_timer")]
 	[HideInInspector]
+	[Obsolete("Legacy realtime combat field. Controlled by CombatV2.")]
 	public float AttackTimer;
 
 	[HideInInspector]
@@ -1265,6 +1085,7 @@ public class Combatable : CardData
 	protected List<Combatable> combatableTargets = new List<Combatable>();
 
 	[HideInInspector]
+	[Obsolete("Legacy realtime combat field. Controlled by CombatV2.")]
 	public bool InAttack;
 
 	[HideInInspector]
@@ -1274,18 +1095,22 @@ public class Combatable : CardData
 	public bool Attacked;
 
 	[HideInInspector]
+	[Obsolete("Legacy realtime combat field. Controlled by CombatV2.")]
 	public List<Combatable> AttackTargets;
 
 	[HideInInspector]
+	[Obsolete("Legacy realtime combat field. Controlled by CombatV2.")]
 	public float InAttackTimer;
 
 	[HideInInspector]
+	[Obsolete("Legacy realtime combat field. Controlled by CombatV2.")]
 	public bool AttackIsHit;
 
-	public Conflict MyConflict;
+	public BattlefieldContext MyConflict;
 
 	private SpecialHit AttackSpecialHit;
 
+	[Obsolete("Legacy realtime combat field. Controlled by CombatV2.")]
 	public List<AttackAnimation> AttackAnimations = new List<AttackAnimation>();
 
 	[HideInInspector]
@@ -1312,3 +1137,4 @@ public class Combatable : CardData
 		StatusEffects.ApplyEffect(effect);
 	}
 }
+

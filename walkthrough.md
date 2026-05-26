@@ -143,3 +143,108 @@ Player collects all 3 fragments
   - `GameScripts/Crafting/Base/Blueprint.cs` ✅
 - Commit `7026047` pushed to `origin/main` (branch `main`) ✅
 - `git status`: clean working tree ✅
+
+---
+
+## Lore Atmosphere & Social Infiltration Update (26 May 2026)
+
+To fully differentiate the mod from a simple "Stacklands clone", we have added thick mainland atmosphere, social class tension, dynamic NPC reaction, and infiltration danger.
+
+### 1. Dynamic NPC Dialogue & Social Stratification Check
+- Modified the **Weary Dog Patrol** encounter in [`GameScripts/Expedition/ExpeditionManager.cs`](GameScripts/Expedition/ExpeditionManager.cs):
+  - Dynamically queries `ActiveCats.Max(c => c.BreakthroughLevel)` to evaluate the player's current cultivation tier.
+  - **Low-Rank Dialogue** (Breakthrough < 2): Guard glares at you with absolute disdain: *"Có giấy phép chưa? Loại tạp mèo như ngươi mà cũng muốn mò vào đây sao?..."*
+  - **High-Rank Dialogue** (Breakthrough $\ge$ 2): Guard immediately straightens up and bows respectfully: *"À, ngài đã đột phá rồi sao. Xin lỗi vì lúc trước tiểu nhân thất lễ... Khu vực giới nghiêm này giờ đã mở cho những người cấp cao của ngài."*
+
+### 2. Immersive Card Descriptions (Dogma Propaganda & Mainland Life)
+Overrode several generic card descriptions in `MewtationsLocTable.tsv` with rich, world-building lore:
+- **`card_house_description` (House):** Crowded lower districts where cats gather to share warmth and whisper about rebellion.
+- **`card_quarry_description` (Quarry):** State-regulated mines where Overseers closely monitor and tax spiritual energy extraction.
+- **`card_garden_description` (Garden):** Tiny patch where growing simple food requires a localized permit from the Dogma.
+- **`card_sawmill_description` (Sawmill):** Heavy industrial mill filled with smoke and screaming saws that echo the Dogma's harsh order.
+
+### 3. Expedition Rebranded to "Infiltration / Trespassing"
+- **Breach Portals:** Rebranded portals to **Unstable Breach** (*Kẽ Nứt Vô Chủ*) and **Stabilized Breach** (*Cổng Xâm Nhập Ổn Định*) with descriptions emphasizing planned incursion into Dogma restricted areas.
+- **Recipe Status:** Changed recipe status UI to **Classification Status** (*Trạng Thái Cấp Phép*) and unlock display to **Authorized** (*Đã Cấp Phép*) / **Sealed** (*Bị Niêm Phong*).
+
+### 4. Raw & Refined Item Flavor Text
+Mapped hyper-detailed lore strings to resource cards in `MewtationsLocTable.tsv`:
+- **Spirit Ore:** *"Quặng linh thạch cấp thấp. Tầng dưới thường phải đổi cả tuần lương để mua một mảnh."*
+- **Spirit Fuel:** *"Nhiên liệu tinh luyện bị kiểm soát chặt bởi Dogma."*
+- **Black Market Refiner:** *"Máy luyện lậu tự chế. Không được cấp phép sử dụng trong khu dân cư."*
+
+These updates ground the game strongly in survival, class struggle, and atmosphere, completely separating its identity from Stacklands.
+
+### 5. Ambient Pressure Warnings & System Alerts
+We have integrated high-tension **Dogma security notifications** directly into card tooltips using colored rich text (`<color>` tags):
+- **Class-C Operator (`card_villager_description`):** Appends `[CITIZEN DOSSIER: Low-grade resident. Restricted movement. Unauthorized travel outside residential zones is strictly prohibited.]` in dark red.
+- **Overseer (`card_militia_description`):** Appends `[ENFORCEMENT MANDATE: Constant surveillance of the Spirit Quota. Report any signs of mental deviation or physical mutation immediately.]` in gold.
+- **Sovereign (`card_swordsman_description`):** Appends `[PROPAGANDA BROADCAST: Absolute obedience to the Dogma is the only path to safety. Resistance will result in immediate cleansing.]` in dark red.
+- **Spirit Ore (`card_iron_ore_description`):** Appends `[SECURITY NOTICE: Unauthorized mining or possession of Spirit Ore is illegal. Violators will be detained by the Security Enforcers.]` in dark red.
+- **Spirit Fuel (`card_refined_spirit_fuel_description`):** Appends `[SAFETY REGULATION: Authorized personnel only. Unauthorized consumption of Spirit Fuel detected will trigger an immediate local audit.]` in gold.
+- **Black Market Refiner (`card_black_market_refiner_description`):** Appends `[SYSTEM ALERT: Unauthorized Consumption Detected. Location flagged. Inspection Incoming. Restricted zone audit scheduled.]` in dark red.
+
+These alerts constantly pressure the player and reinforce the near-modern industrial-spirituality setting, without bloating the game with unnecessary cosmic lore.
+
+### 6. Dynamic Narrative Events & Loading Screen Tips
+To fully deepen the **"social-industrial spirituality"** vibe, we implemented highly immersive local events and administrative propaganda:
+- **Propaganda Loading Tips:** Overrode `label_death_intro_1` through `label_death_intro_5` in `MewtationsLocTable.tsv` with cold, rigid Dogma laws (e.g., *"Dogma reminds all citizens: instability is the root of suffering."*, *"Spirit Quota violations are punishable by confiscation."*, *"Unregistered Mewtations must report to the nearest Overseer."*).
+- **Dynamic Merchant Encounter (`exp_merchant_encounter_title`):**
+  - **Low-Rank:** Merchant sneers at your primitive cats: *"Biến đi! Loại tạp mèo thấp kém như các ngươi không đủ cấp để xem hàng này..."* and only offers cheap, basic Spirit Ore for 3 Gold.
+  - **High-Rank:** Merchant bows and whispers: *"Nhìn ngài có vẻ là một Hộ Pháp cao cấp... Tiểu nhân có vài món bảo vật giấu riêng, hoàn toàn không ghi trong sổ sách..."* and offers rare pills.
+- **License Check & Confiscation event (`exp_license_check_title`):** Enforcers scan your bags, giving the choice to bribe with gold, accept resource confiscation, or attempt an agile escape.
+- **Low-Grade Beggar event (`exp_beggar_title`):** A mutated scavenger begs for a fragment of Spirit Ore to save their starving child, offering a path to purge accumulated Corruption or gain Greed if rejected.
+
+This tightly couples character rank (cultivation) with tangible social privilege and daily survival in a highly unique, memorable setting.
+
+## Turn-Based RPG Combat Architecture Transition (Phase 5 — Purge & Standardization) — 26 May 2026
+
+We have successfully completed **Phase 5 (Purge & Standardization)** of our combat engine upgrade, completely obsoleting the legacy Stacklands real-time system and establishing a unified, deterministic, state-driven turn-based tactical combat system (**CombatV2**).
+
+### 1. Transitional Serialized Migration (Stats Transformation)
+- **File Modified:** [`GameScripts/Combat/Base/CombatStats.cs`](GameScripts/Combat/Base/CombatStats.cs)
+  - Applied **Transitional Serialized Migration** to preserve existing data in serialized assets (Prefabs, ScriptableObjects, Save files).
+  - Renamed the raw private serialized variables utilizing `[SerializeField]` and `[FormerlySerializedAs]` to maintain Unity's serialization state perfectly.
+  - Wrapped these fields under new clean, tactical RPG public properties:
+    - `AttackSpeed` $\rightarrow$ `Initiative`
+    - `HitChance` $\rightarrow$ `Accuracy`
+    - `AttackSpeedIncrement` $\rightarrow$ `InitiativeIncrement`
+    - `HitChanceIncrement` $\rightarrow$ `AccuracyIncrement`
+  - Kept old properties marked with `[Obsolete]` to guarantee zero compile issues across other game files.
+
+### 2. Purge of Legacy Real-Time Combat Logic
+- **File Modified:** [`GameScripts/Combat/Base/Combatable.cs`](GameScripts/Combat/Base/Combatable.cs)
+  - Added new clean score getters `GetAccuracyScore()` and `GetInitiativeScore()` based on turn-based principles (incorporating status effects like frenzy/drunk/slow percent).
+  - Hard-purged all legacy auto-attack loop updates, real-time timer calculations, and real-time combat execution methods (e.g. `StartAttack()`, `CompleteAttack()`, `PerformAttack()`, `UpdateAttackAnimations()`).
+  - Marked obsolete variables (`AttackTimer`, `InAttack`, `AttackTargets`) safely as obsolete.
+
+### 3. Renamed Class Types and Compatibility Cleanup
+- **File Modified:** [`GameScripts/Combat/Base/BattlefieldContext.cs`](GameScripts/Combat/Base/BattlefieldContext.cs)
+  - Renamed all remaining return types, parameters, and local instance initializers from `Conflict` to `BattlefieldContext`.
+  - Ensured all 5 main files ([`GameCard.cs`](GameScripts/Cards/Base/GameCard.cs), [`Combatable.cs`](GameScripts/Combat/Base/Combatable.cs), [`WorldManager.cs`](GameScripts/Core/WorldManager.cs), [`SaveSystem.cs`](GameScripts/Core/Systems/SaveSystem.cs), [`ForestCombatManager.cs`](GameScripts/Combat/Base/ForestCombatManager.cs)) compile seamlessly with the renamed type.
+
+### 4. Battlefield Tactical Rulespace & Threat Projection
+- **File Modified:** [`GameScripts/Combat/Base/BattlefieldContext.cs`](GameScripts/Combat/Base/BattlefieldContext.cs)
+  - Upgraded `BattlefieldContext` to serve as the **Tactical Rulespace** for turn-based battles.
+  - Implemented **Spatial Occupancy Rules** (`IsCellOccupied`) where cells (slots 0-5) are blocked by active units or dying corpses (until `DeathResolution` finishes) to prevent overlap bugs.
+  - Implemented **Threat Projection Helpers**:
+    - `IsProtectedCell` — Backline (3-5) is protected from direct melee damage if the frontline (0-2) is occupied by an ally.
+    - `IsControlZone` — Active frontlines representing guard threat.
+    - `GetThreatZone` — Visual/logical adjacent cell checking on the 2x3 combat grid.
+
+### 5. Event Stream & Reaction Chain Controls
+- **File Modified:** [`GameScripts/CombatV2/Core/CombatEncounter.cs`](GameScripts/CombatV2/Core/CombatEncounter.cs)
+  - Declared `CombatEventType` and `CombatEvent` structures to support **Event Stream Architecture** (tracking `ActionDeclared`, `SnapshotCreated`, `GuardTriggered`, `DodgeSucceeded`, `HPCommitted`, `UnitDied`).
+  - Integrated deterministic **Reaction Window Priority** limits:
+    - Set up a lock (`ReactionDepth`) to guarantee `Maximum reaction depth = 1` preventing infinite action loops (Reaction Chain Rules).
+  - Implemented **Death Authority Rule**: units are set to `dying` immediately when HP hits 0 during `CheckDeaths`, but physically removed only during `DeathResolution`.
+
+---
+
+## Verification & Compilation Status
+
+- **Code Integrity:** All wrappers, obsoleted methods, and transitional attributes compile flawlessly with Unity's assembly layout.
+- **Save Compatibility:** Verified that the save system still parses combat boundaries cleanly using the upgraded `BattlefieldContext` definitions.
+- **Turn Determinism:** Verified that the stable initiative tie-breaker coupled with the event-driven transition loop guarantees deterministic simulation behavior.
+
+

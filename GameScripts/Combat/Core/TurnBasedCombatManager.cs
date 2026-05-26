@@ -4,8 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Mewtations.Expedition;
+using Mewtations.Combat.Battlefield;
+using Mewtations.Combat.UI;
 
-namespace Mewtations.Combat
+// TURN-BASED CORE SYSTEM
+// DO NOT REMOVE DURING LEGACY COMBAT CLEANUP
+namespace Mewtations.Combat.Core
 {
     public enum CombatResult
     {
@@ -13,6 +17,13 @@ namespace Mewtations.Combat
         Victory,
         Defeat,
         Retreated
+    }
+
+    public enum MewtationsCombatState
+    {
+        Preparation,
+        Active,
+        Idle
     }
 
     public class TurnBasedCombatManager : MonoBehaviour
@@ -23,6 +34,9 @@ namespace Mewtations.Combat
         public List<string> CombatLog = new List<string>();
         public bool IsCombatActive = false;
         public CombatResult Result = CombatResult.Ongoing;
+        public MewtationsCombatState State = MewtationsCombatState.Idle;
+        public List<Combatable> AvailableCats = new List<Combatable>();
+        public List<Combatable> EnemySourceList = new List<Combatable>();
         public int CurrentRound = 1;
         public List<ICombatHazard> ActiveHazards = new List<ICombatHazard>();
 
@@ -43,8 +57,12 @@ namespace Mewtations.Combat
 
             IsCombatActive = true;
             Result = CombatResult.Ongoing;
+            State = MewtationsCombatState.Preparation;
             CombatLog.Clear();
             _onCombatEnd = onCombatEnd;
+
+            AvailableCats = new List<Combatable>(playerCats);
+            EnemySourceList = new List<Combatable>(enemies);
 
             // Clear unified event pipeline before registering units
             MewtationsEventPipeline.Clear();
@@ -56,7 +74,45 @@ namespace Mewtations.Combat
             Formation.SetupPlayerTeam(playerCats);
             Formation.SetupEnemyTeam(enemies);
 
-            AddLog("▶ Trận chiến bắt đầu!");
+            AddLog("▶ Đang chuẩn bị trận hình...");
+
+            // Open Combat Overlay
+            if (CombatOverlayUI.Instance != null)
+            {
+                CombatOverlayUI.Instance.ShowWindow();
+            }
+        }
+
+        public void ConfirmFight()
+        {
+            if (Formation.PlayerUnits.Count == 0)
+            {
+                AddLog("⚠️ Không thể chiến đấu mà không có Mèo nào trên lưới!");
+                return;
+            }
+            if (Formation.PlayerUnits.Count > 5)
+            {
+                AddLog("⚠️ Đội hình tối đa là 5 Mèo!");
+                return;
+            }
+
+            State = MewtationsCombatState.Active;
+            AddLog("⚔️ Đội hình xuất kích! Trận chiến bắt đầu...");
+
+            // Re-instantiate final combat units on final slots to clean the event pipeline and register fresh components!
+            List<CombatUnit> finalPlayerUnits = new List<CombatUnit>();
+            foreach (var unit in Formation.PlayerUnits)
+            {
+                finalPlayerUnits.Add(new CombatUnit(unit.Source, true, unit.SlotIndex));
+            }
+            Formation.PlayerUnits = finalPlayerUnits;
+
+            List<CombatUnit> finalEnemyUnits = new List<CombatUnit>();
+            foreach (var unit in Formation.EnemyUnits)
+            {
+                finalEnemyUnits.Add(new CombatUnit(unit.Source, false, unit.SlotIndex));
+            }
+            Formation.EnemyUnits = finalEnemyUnits;
 
             // Initialize hazards for the current battle
             InitializeHazards();
@@ -71,18 +127,12 @@ namespace Mewtations.Combat
                 );
             }
 
-            // Open Combat Overlay
-            if (CombatOverlayUI.Instance != null)
-            {
-                CombatOverlayUI.Instance.ShowWindow();
-            }
-
             _combatCoroutine = StartCoroutine(CombatLoopRoutine());
         }
 
         public void Retreat()
         {
-            if (!IsCombatActive || Result != CombatResult.Ongoing) return;
+            if (!IsCombatActive) return;
 
             AddLog("🏳 Quân ta quyết định Bỏ Cuộc! Rút lui an toàn...");
             Result = CombatResult.Retreated;
@@ -183,6 +233,8 @@ namespace Mewtations.Combat
                     {
                         AddLog($"❄ {unit.Name} đang bị Đóng Băng và bỏ qua lượt!");
                         unit.ActiveDebuffs.RemoveAll(d => d.Type == MewtationsDebuff.Frozen);
+                        unit.AddBuff(BuffType.CCImmunity, 1);
+                        AddLog($"✨ {unit.Name} thoát khỏi băng phong, nhận trạng thái [Kháng Khống Chế (CC Immunity)] trong 1 lượt!");
                         continue;
                     }
 
@@ -200,7 +252,7 @@ namespace Mewtations.Combat
                     else
                     {
                         // Cast Basic Attack
-                        var target = MewtationsUltimateRegistry.GetPrimaryTarget(opponents);
+                        var target = MewtationsUltimateRegistry.GetPrimaryTarget(opponents, unit);
                         if (target != null)
                         {
                             MewtationsWeaponRegistry.ExecuteBasicAttack(unit, target, allies, opponents, msg => AddLog(msg));
@@ -212,6 +264,9 @@ namespace Mewtations.Combat
 
                     // Trigger Turn End Event Hooks!
                     MewtationsEventPipeline.TriggerOnTurnEnd(unit, msg => AddLog(msg));
+
+                    // Tick buffs của đơn vị sau lượt đi
+                    unit.TickBuffs(msg => AddLog(msg));
 
                     // 5. Post-Action Checks
                     foreach (var opp in opponents)

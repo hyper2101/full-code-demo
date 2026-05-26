@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Mewtations.Combat;
+using Mewtations.Combat.Core;
 
 namespace Mewtations.Expedition
 {

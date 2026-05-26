@@ -1,14 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [Serializable]
 public class CombatStats
 {
 	public void InitStats(CombatStats stats)
 	{
-		this.HitChance = stats.HitChance;
-		this.AttackSpeed = stats.AttackSpeed;
+		this.Accuracy = stats.Accuracy;
+		this.Initiative = stats.Initiative;
 		this.SpecialHits = new List<SpecialHit>(stats.SpecialHits);
 		this.MaxHealth = stats.MaxHealth;
 		this.AttackDamage = stats.AttackDamage;
@@ -17,8 +18,8 @@ public class CombatStats
 
 	public void AddStats(CombatStats equipment)
 	{
-		this.HitChance = CombatStats.IncrementHitChance(this.HitChance, equipment.HitChanceIncrement);
-		this.AttackSpeed = CombatStats.IncrementAttackSpeed(this.AttackSpeed, equipment.AttackSpeedIncrement);
+		this.Accuracy = CombatStats.IncrementHitChance(this.Accuracy, equipment.AccuracyIncrement);
+		this.Initiative = CombatStats.IncrementAttackSpeed(this.Initiative, equipment.InitiativeIncrement);
 		this.SpecialHits = this.AddSpecialHits(equipment.SpecialHits);
 		this.MaxHealth += equipment.MaxHealth;
 		this.AttackDamage = CombatStats.IncrementAttackDefence(this.AttackDamage, equipment.AttackDamageIncrement);
@@ -119,7 +120,7 @@ public class CombatStats
 		get
 		{
 			float num = 0f;
-			num += (float)CombatStats.IncrementAttackDefence(2, this.AttackDamageIncrement) / CombatStats.IncrementAttackSpeed(2.9f, this.AttackSpeedIncrement) * CombatStats.IncrementHitChance(0.68f, this.HitChanceIncrement) * 5f;
+			num += (float)CombatStats.IncrementAttackDefence(2, this.AttackDamageIncrement) / CombatStats.IncrementAttackSpeed(2.9f, this.InitiativeIncrement) * CombatStats.IncrementHitChance(0.68f, this.AccuracyIncrement) * 5f;
 			num += (float)(15 + this.MaxHealth) * 0.5f;
 			num += (float)CombatStats.IncrementAttackDefence(2, this.DefenceIncrement) * 2f;
 			if (this.SpecialHits.Count > 0)
@@ -157,17 +158,17 @@ public class CombatStats
 
 	private float CalculateAverageAttackDamagePerSecond()
 	{
-		return (float)this.AttackDamage / this.AttackSpeed * this.HitChance;
+		return (float)this.AttackDamage / this.Initiative * this.Accuracy;
 	}
 
 	public string GetHitChanceTranslation()
 	{
-		return CombatStats.GetHitChanceEnum(this.HitChance).TranslateEnum<HitChance>();
+		return CombatStats.GetHitChanceEnum(this.Accuracy).TranslateEnum<HitChance>();
 	}
 
 	public string GetAttackSpeedTranslation()
 	{
-		return CombatStats.GetAttackTimeEnum(this.AttackSpeed).TranslateEnum<AttackSpeed>();
+		return CombatStats.GetAttackTimeEnum(this.Initiative).TranslateEnum<AttackSpeed>();
 	}
 
 	public string GetAttackDamageTranslation()
@@ -327,17 +328,81 @@ public class CombatStats
 
 	public int MaxHealth;
 
-	public float AttackSpeed = 3.5f;
+	[SerializeField]
+	[FormerlySerializedAs("AttackSpeed")]
+	[HideInInspector]
+	private float attackSpeed = 3.5f;
 
-	public float HitChance = 0.5f;
+	[Obsolete("Legacy realtime property. Use Initiative instead.")]
+	public float AttackSpeed
+	{
+		get => attackSpeed;
+		set => attackSpeed = value;
+	}
+
+	public float Initiative
+	{
+		get => attackSpeed;
+		set => attackSpeed = value;
+	}
+
+	[SerializeField]
+	[FormerlySerializedAs("HitChance")]
+	[HideInInspector]
+	private float hitChance = 0.5f;
+
+	[Obsolete("Legacy realtime property. Use Accuracy instead.")]
+	public float HitChance
+	{
+		get => hitChance;
+		set => hitChance = value;
+	}
+
+	public float Accuracy
+	{
+		get => hitChance;
+		set => hitChance = value;
+	}
 
 	public int AttackDamage = 1;
 
 	public int Defence = 1;
 
-	public int AttackSpeedIncrement;
+	[SerializeField]
+	[FormerlySerializedAs("AttackSpeedIncrement")]
+	[HideInInspector]
+	private int attackSpeedIncrement;
 
-	public int HitChanceIncrement;
+	[Obsolete("Legacy realtime property. Use InitiativeIncrement instead.")]
+	public int AttackSpeedIncrement
+	{
+		get => attackSpeedIncrement;
+		set => attackSpeedIncrement = value;
+	}
+
+	public int InitiativeIncrement
+	{
+		get => attackSpeedIncrement;
+		set => attackSpeedIncrement = value;
+	}
+
+	[SerializeField]
+	[FormerlySerializedAs("HitChanceIncrement")]
+	[HideInInspector]
+	private int hitChanceIncrement;
+
+	[Obsolete("Legacy realtime property. Use AccuracyIncrement instead.")]
+	public int HitChanceIncrement
+	{
+		get => hitChanceIncrement;
+		set => hitChanceIncrement = value;
+	}
+
+	public int AccuracyIncrement
+	{
+		get => hitChanceIncrement;
+		set => hitChanceIncrement = value;
+	}
 
 	public int AttackDamageIncrement;
 

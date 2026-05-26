@@ -138,7 +138,7 @@ namespace Mewtations.Dialogue
                     else
                     {
                         bool shouldKeepFrozen = (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.IsExpeditionActive) ||
-                                               (Mewtations.Combat.TurnBasedCombatManager.Instance != null && Mewtations.Combat.TurnBasedCombatManager.Instance.IsCombatActive);
+                                               (Mewtations.Combat.Core.TurnBasedCombatManager.Instance != null && Mewtations.Combat.Core.TurnBasedCombatManager.Instance.IsCombatActive);
                         if (!shouldKeepFrozen)
                         {
                             Time.timeScale = 1f;
@@ -217,7 +217,7 @@ namespace Mewtations.Dialogue
                             _isVisible = false;
                             
                             bool shouldKeepFrozen = (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.IsExpeditionActive) ||
-                                                   (Mewtations.Combat.TurnBasedCombatManager.Instance != null && Mewtations.Combat.TurnBasedCombatManager.Instance.IsCombatActive);
+                                                   (Mewtations.Combat.Core.TurnBasedCombatManager.Instance != null && Mewtations.Combat.Core.TurnBasedCombatManager.Instance.IsCombatActive);
                             if (shouldKeepFrozen)
                             {
                                 Time.timeScale = 0f;
@@ -247,7 +247,7 @@ namespace Mewtations.Dialogue
                         _isVisible = false;
                         
                         bool shouldKeepFrozen = (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.IsExpeditionActive) ||
-                                               (Mewtations.Combat.TurnBasedCombatManager.Instance != null && Mewtations.Combat.TurnBasedCombatManager.Instance.IsCombatActive);
+                                               (Mewtations.Combat.Core.TurnBasedCombatManager.Instance != null && Mewtations.Combat.Core.TurnBasedCombatManager.Instance.IsCombatActive);
                         if (shouldKeepFrozen)
                         {
                             Time.timeScale = 0f;
@@ -374,7 +374,7 @@ namespace Mewtations.Dialogue
             {
                 _isChronicleVisible = false;
                 bool shouldKeepFrozen = (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.IsExpeditionActive) ||
-                                       (Mewtations.Combat.TurnBasedCombatManager.Instance != null && Mewtations.Combat.TurnBasedCombatManager.Instance.IsCombatActive);
+                                       (Mewtations.Combat.Core.TurnBasedCombatManager.Instance != null && Mewtations.Combat.Core.TurnBasedCombatManager.Instance.IsCombatActive);
                 if (!shouldKeepFrozen)
                 {
                     Time.timeScale = 1f;

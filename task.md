@@ -45,6 +45,17 @@
 - [x] **ExpeditionManager.cs** — Extended to support expedition-based lore discovery
   - `IsExpeditionActive` property exposed for time-scale management in DialogueSystem
 
+## Current Phase: Lore Terminology Refinement & Localization Interceptor
+- [x] **Localization Interceptor Pattern** in `CardData.cs`
+  - Intercepted `Name` and `Description` getters to query `MewtationsLoc.Translate()` first
+  - Dynamic fallback to `SokLoc.Translate()` for non-overridden terms
+- [x] **Refined Thematic Terminology** in `MewtationsLocTable.tsv`
+  - Applied the **70% gameplay clarity / 30% lore flavor** balance rule
+  - Cleaned up overly long "hard sci-fi bureaucracy" terms into punchy marketable titles (e.g., *Class-C Operator*, *Overseer*, *Sovereign*, *Spirit Quota*, *Spirit Fuel*)
+  - Replaced cyberpunk drone terminology with *Security Enforcer* (avoided sci-fi automation/holograms)
+  - Balanced boss types by mixing Dogma officials with *Corrupted Beasts*, *Rogue Cultivators*, and *Void Guardians* (rather than rewriting all bosses to bureaucrats)
+  - Added *Black Market Refiner* for crystal clear gameplay recognition
+
 ## Summary
 
-All tasks completed and pushed to `origin/main` (commit `7026047`).
+All core features, dialog systems, and the Localization Interceptor with refined gameplay-clarity-first terminology are successfully implemented!

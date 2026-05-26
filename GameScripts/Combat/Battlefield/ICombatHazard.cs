@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Mewtations.Combat
+using Mewtations.Combat.Core;
+
+namespace Mewtations.Combat.Battlefield
 {
     public interface ICombatHazard
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Mewtations.Combat;
+using Mewtations.Combat.Core;
 
 namespace Mewtations.Expedition
 {
@@ -298,7 +299,7 @@ namespace Mewtations.Expedition
 
             if (type == NodeType.Event)
             {
-                int eventRoll = UnityEngine.Random.Range(0, 4);
+                int eventRoll = UnityEngine.Random.Range(0, 7);
                 if (eventRoll == 0)
                 {
                     // Lôi kiếp thử thách
@@ -485,7 +486,7 @@ namespace Mewtations.Expedition
                         }
                     };
                 }
-                else
+                else if (eventRoll == 3)
                 {
                     // Ma huyệt hiến tế
                     title = "🔴 MA HUYỆT KHẤN NGUYỆN";
@@ -535,6 +536,163 @@ namespace Mewtations.Expedition
                             DialogueResult("Tâm Hồn Thanh Tịnh", "Toàn đội từ bỏ ý chí tham lam, ma chướng linh mạch được tẩy rửa gột sạch (-25 Corruption)!");
                         }
                     };
+                }
+                else if (eventRoll == 4)
+                {
+                    // Kiểm tra giấy phép thông hành lậu
+                    title = MewtationsLoc.Translate("exp_license_check_title", "⚠️ KIỂM TRA GIẤY PHÉP ĐỘT XUẤT");
+                    text = MewtationsLoc.Translate("exp_license_check_desc", "Một toán Lực Lượng Hành Pháp bọc giáp sắt bất ngờ chặn đội mèo của bạn lại tại chốt rẽ. Đèn linh áp quét thẳng qua chiếc balo khả nghi của bạn.\n\n\"Dừng lại! Kiểm tra giấy phép thông hành và quota khai thác linh thạch. Trình diện ngay lập tức!\"");
+                    choices = new List<string> {
+                        "Trình thẻ phép lậu (Đút lót 1 Vàng) / Show Forged Permit (1 Gold)",
+                        "Chấp nhận tịch thu hàng lậu / Accept Confiscation",
+                        "Chạy trốn lập tức (Yêu cầu Tốc độ > 120) / Flee"
+                    };
+                    onChoice = (idx) =>
+                    {
+                        if (idx == 0)
+                        {
+                            int goldIdx = CurrentBackpack.ContainedCardIds.IndexOf("resource_gold");
+                            if (goldIdx >= 0)
+                            {
+                                CurrentBackpack.RemoveItemAt(goldIdx);
+                                DialogueResult("Hối Lộ Thành Công", "Lực Lượng Hành Pháp liếc nhìn đồng Vàng, lờ đi đống quặng bất hợp pháp trong balo: \"Giấy phép hợp lệ. Đi mau!\"");
+                            }
+                            else
+                            {
+                                var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
+                                victim.HealthPoints = Mathf.Max(1, victim.HealthPoints - 10);
+                                RunState.AddCorruption(20);
+                                DialogueResult("Không Có Tiền Đút Lót", $"Bị phát hiện dùng giấy thông hành giả! Chúng lập tức dùng roi điện đánh thương nặng <b>{victim.Name}</b> (-10 HP) và nâng mức tà lực ma đạo (+20 Corruption)!");
+                            }
+                        }
+                        else if (idx == 1)
+                        {
+                            if (CurrentBackpack.ContainedCardIds.Count > 0)
+                            {
+                                int randIdx = UnityEngine.Random.Range(0, CurrentBackpack.ContainedCardIds.Count);
+                                string removed = CurrentBackpack.ContainedCardIds[randIdx];
+                                CurrentBackpack.RemoveItemAt(randIdx);
+                                DialogueResult("Hàng Lậu Bị Tịch Thu", $"Để giữ tính mạng, toàn đội giao nộp <b>{removed.Replace("item_", "").Replace("resource_", "")}</b>. Chúng hừ lạnh thu giữ rồi thả đi.");
+                            }
+                            else
+                            {
+                                DialogueResult("Balo Trống Rỗng", "Chúng khám xét balo nhưng không thấy gì khả nghi. Không có gì để tịch thu, chúng đành đá đít xua đuổi bạn đi.");
+                            }
+                        }
+                        else
+                        {
+                            int avgSpeed = (int)ActiveCats.Average(c => c.Speed);
+                            if (avgSpeed > 120)
+                            {
+                                DialogueResult("Chạy Thoát Thành Công", "Thần tốc! Toàn đội mèo phóng đi trong chớp mắt, cắt đuôi toán tuần tra Dogma một cách hoàn hảo!");
+                            }
+                            else
+                            {
+                                var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
+                                victim.HealthPoints = Mathf.Max(1, victim.HealthPoints - 12);
+                                RunState.AddCorruption(20);
+                                DialogueResult("Chạy Trốn Thất Bại", $"Tốc độ quá chậm! Toán tuần tra vây bắt và đánh trọng thương <b>{victim.Name}</b> (-12 HP), tà pháp giam giữ gia tăng (+20 Corruption)!");
+                            }
+                        }
+                    };
+                }
+                else if (eventRoll == 5)
+                {
+                    // Dân nghèo cầu xin
+                    title = MewtationsLoc.Translate("exp_beggar_title", "🐱 DÂN NGHÈO CẦU XIN LINH KHÍ");
+                    text = MewtationsLoc.Translate("exp_beggar_desc", "Một chú mèo tiều tụy gầy trơ xương, cơ thể dị biến nặng nề đang quỳ bên đống phế thải công nghiệp, run rẩy van xin:\n\n\"Làm ơn... tôi chỉ xin một mẩu Linh Thạch vụn để duy trì linh căn đang héo úa của con tôi... Bọn Dogma đã siết hết quota của khu này rồi...\"");
+                    choices = new List<string> {
+                        "Bố thí 1 Quặng Linh Thạch thô / Give 1 Spirit Ore",
+                        "Từ chối đi thẳng / Refuse"
+                    };
+                    onChoice = (idx) =>
+                    {
+                        if (idx == 0)
+                        {
+                            int oreIdx = CurrentBackpack.ContainedCardIds.FindIndex(id => id == "item_iron_ore" || id.Contains("ore"));
+                            if (oreIdx >= 0)
+                            {
+                                CurrentBackpack.RemoveItemAt(oreIdx);
+                                RunState.CorruptionLevel = Mathf.Max(0, RunState.CorruptionLevel - 30);
+                                DialogueResult("Tích Đức Giải Nghiệp", "Chú mèo mừng rỡ ôm lấy mảnh quặng khóc nấc lên. Linh hồn toàn đội được thanh thản, gột rửa bớt tà khí ma kiếp (-30 Corruption)!");
+                            }
+                            else
+                            {
+                                DialogueResult("Không Có Linh Thạch", "Bạn rất muốn giúp nhưng balo viễn chinh không có bất kỳ mảnh Quặng Linh Thạch nào. Chú mèo nghèo thất vọng quay đi.");
+                            }
+                        }
+                        else
+                        {
+                            RunState.GreedLevel = Mathf.Min(100, RunState.GreedLevel + 15);
+                            DialogueResult("Quay Lưng Bỏ Đi", "Bạn lạnh lùng bước tiếp. Tiếng khóc than uất nghẹn của dân nghèo bám riết đạo tâm của bạn (+15 Greed)!");
+                        }
+                    };
+                }
+                else
+                {
+                    // Gặp Thương nhân lậu (Black Market Merchant)
+                    int maxBreakthrough = ActiveCats.Count > 0 ? ActiveCats.Max(c => c.BreakthroughLevel) : 0;
+                    title = MewtationsLoc.Translate("exp_merchant_encounter_title", "⚖️ THƯƠNG NHÂN CHỢ ĐEN");
+                    if (maxBreakthrough >= 2)
+                    {
+                        text = MewtationsLoc.Translate("exp_merchant_high_rank_desc", "Một gã mèo trùm mũ kín mít hé mở chiếc hòm linh bảo giấu kín. Hắn thì thầm đầy tôn kính:\n\n\"Nhìn ngài có vẻ là một Hộ Pháp cao cấp... Tiểu nhân có vài món bảo vật giấu riêng, hoàn toàn không ghi trong sổ sách kiểm kê của Giáo Điều... Ngài có muốn xem qua?\"");
+                        choices = new List<string> {
+                            "Mua Hóa Thần Thạch / Revive Pill (Tiêu hao 15 Vàng) / 15 Gold",
+                            "Mua Linh Dược Đột Phá / Breakthrough Pill (Tiêu hao 15 Vàng) / 15 Gold",
+                            "Rút lui / Leave"
+                        };
+                        onChoice = (idx) =>
+                        {
+                            if (idx == 0 || idx == 1)
+                            {
+                                int goldIdx = CurrentBackpack.ContainedCardIds.IndexOf("resource_gold");
+                                if (goldIdx >= 0)
+                                {
+                                    CurrentBackpack.RemoveItemAt(goldIdx);
+                                    string itemSpawn = idx == 0 ? "item_revive_pill" : "item_breakthrough_pill";
+                                    CurrentBackpack.AddItem(itemSpawn);
+                                    DialogueResult("Giao Dịch Thành Công", $"Bảo vật bất hợp pháp <b>{itemSpawn.Replace("item_", "")}</b> đã được giao tay bí mật. Thương nhân đóng rương và lủi mất.");
+                                }
+                                else
+                                {
+                                    DialogueResult("Không Đủ Vàng", "Không đủ vàng thanh toán! Hắn lầu bầu đóng rương lại: \"Quay lại khi ngài mang đủ vàng!\"");
+                                }
+                            }
+                            else
+                            {
+                                CompleteNodeResolution();
+                            }
+                        };
+                    }
+                    else
+                    {
+                        text = MewtationsLoc.Translate("exp_merchant_low_rank_desc", "Một gã mèo trùm mũ kín mít liếc nhìn đội mèo sơ cấp của bạn đầy khinh khỉnh, đóng sập hòm bảo vật lại:\n\n\"Biến đi! Loại tạp mèo thấp kém như các ngươi không đủ cấp để xem hàng này của ta. Đừng làm mất thời gian!\"");
+                        choices = new List<string> {
+                            "Mua Quặng Linh Thạch giá rẻ (Tiêu hao 3 Vàng) / 3 Gold",
+                            "Rút lui / Leave"
+                        };
+                        onChoice = (idx) =>
+                        {
+                            if (idx == 0)
+                            {
+                                int goldIdx = CurrentBackpack.ContainedCardIds.IndexOf("resource_gold");
+                                if (goldIdx >= 0)
+                                {
+                                    CurrentBackpack.RemoveItemAt(goldIdx);
+                                    CurrentBackpack.AddItem("item_iron_ore");
+                                    DialogueResult("Giao Dịch Hạng Thấp", "Hắn ném cho bạn một mảnh Quặng Linh Thạch thô rẻ tiền rồi thu tiền vàng đầy thô bạo.");
+                                }
+                                else
+                                {
+                                    DialogueResult("Không Có Vàng", "Không có vàng! Hắn phất tay xua đuổi: \"Không có tiền thì biến đi chỗ khác!\"");
+                                }
+                            }
+                            else
+                            {
+                                CompleteNodeResolution();
+                            }
+                        };
+                    }
                 }
             }
             else if (type == NodeType.Lore)
@@ -592,7 +750,16 @@ namespace Mewtations.Expedition
         private void TriggerWearyDogEncounter()
         {
             string title = MewtationsLoc.Translate("dog_patrol_title", "THE WEARY DOG PATROL OFFICER");
+            int maxBreakthrough = ActiveCats.Count > 0 ? ActiveCats.Max(c => c.BreakthroughLevel) : 0;
             string text = MewtationsLoc.Translate("dog_patrol_desc");
+            if (maxBreakthrough >= 2)
+            {
+                text = MewtationsLoc.Translate("dog_patrol_high_rank_desc", text);
+            }
+            else
+            {
+                text = MewtationsLoc.Translate("dog_patrol_low_rank_desc", text);
+            }
 
             List<Mewtations.Dialogue.DialogueChoice> choices = new List<Mewtations.Dialogue.DialogueChoice>();
 

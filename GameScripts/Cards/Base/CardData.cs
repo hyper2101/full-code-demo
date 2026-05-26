@@ -19,7 +19,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 			{
 				return this._name;
 			}
-			string text = SokLoc.Translate(this.NameTerm);
+			string text = MewtationsLoc.Translate(this.NameTerm, SokLoc.Translate(this.NameTerm));
 			if (this.MyCardType == CardType.Ideas)
 			{
 				Blueprint blueprint = this as Blueprint;
@@ -82,7 +82,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 			{
 				return this.descriptionOverride;
 			}
-			return SokLoc.Translate(this.DescriptionTerm);
+			return MewtationsLoc.Translate(this.DescriptionTerm, SokLoc.Translate(this.DescriptionTerm));
 		}
 	}
 
@@ -2014,6 +2014,9 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 	private string _oldNameTerm;
 
 	private string _cachedConnectorString;
+
+	[Header("Mewtations Combat Settings")]
+	public bool IsBoss = false;
 
 	[Header("Cities options")]
 	public int CitiesValue = 10;

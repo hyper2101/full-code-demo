@@ -12,6 +12,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Mewtations.Combat.Core;
+using Mewtations.Combat.Battlefield;
+using Mewtations.Combat.UI;
 
 public class WorldManager : MonoBehaviour
 {
@@ -187,7 +190,6 @@ public class WorldManager : MonoBehaviour
 			return this.GameDataLoader.BlueprintPrefabs;
 		}
 	}
-
 	public List<BoosterpackData> BoosterPackDatas
 	{
 		get
@@ -250,7 +252,7 @@ public class WorldManager : MonoBehaviour
 		get
 		{
 			bool inExpedition = Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.IsExpeditionActive;
-			bool inCombat = Mewtations.Combat.TurnBasedCombatManager.Instance != null && Mewtations.Combat.TurnBasedCombatManager.Instance.IsCombatActive;
+			bool inCombat = TurnBasedCombatManager.Instance != null && TurnBasedCombatManager.Instance.IsCombatActive;
 			bool dialogueOpen = Mewtations.Dialogue.DialogueSystem.Instance != null && Mewtations.Dialogue.DialogueSystem.Instance.IsVisible;
 			return this.IsPlaying && ((this.currentAnimationRoutine == null && this.currentAnimation == null) || this.RemovingCards) && !GameScreen.instance.ControllerIsInUI && !GameCanvas.instance.ModalIsOpen && !inExpedition && !inCombat && !dialogueOpen;
 		}
@@ -274,8 +276,8 @@ public class WorldManager : MonoBehaviour
 		this.Cutscene = new CutsceneSystem(this);
 		this.Input = new InputSystem(this);
 		this.DayEvent = new DayEventSystem(this);
-		base.gameObject.AddComponent<Mewtations.Combat.TurnBasedCombatManager>();
-		base.gameObject.AddComponent<Mewtations.Combat.CombatOverlayUI>();
+		base.gameObject.AddComponent<TurnBasedCombatManager>();
+		base.gameObject.AddComponent<CombatOverlayUI>();
 		base.gameObject.AddComponent<Mewtations.Expedition.ExpeditionManager>();
 		base.gameObject.AddComponent<Mewtations.Expedition.ExpeditionMapUI>();
 		base.gameObject.AddComponent<Mewtations.Dialogue.DialogueSystem>();
@@ -412,14 +414,14 @@ public class WorldManager : MonoBehaviour
 		saveRound.CitiesWellbeing = CitiesManager.instance.Wellbeing;
 		saveRound.CitiesConflictMonth = CitiesManager.instance.NextConflictMonth;
 		saveRound.CitiesDisaster = CitiesManager.instance.ActiveEvent;
-		foreach (Conflict conflict in this.GetAllConflicts())
+		foreach (BattlefieldContext BattlefieldContext in this.GetAllConflicts())
 		{
 			List<SavedConflict> savedConflicts = saveRound.SavedConflicts;
 			SavedConflict savedConflict = new SavedConflict();
-			savedConflict.Id = conflict.Id;
-			savedConflict.InitiatorCardId = conflict.Initiator.UniqueId;
-			savedConflict.InvolvedCards = conflict.Participants.Select<Combatable, string>((Combatable x) => x.UniqueId).ToList<string>();
-			savedConflict.StartPosition = conflict.ConflictStartPosition;
+			savedConflict.Id = BattlefieldContext.Id;
+			savedConflict.InitiatorCardId = BattlefieldContext.Initiator.UniqueId;
+			savedConflict.InvolvedCards = BattlefieldContext.Participants.Select<Combatable, string>((Combatable x) => x.UniqueId).ToList<string>();
+			savedConflict.StartPosition = BattlefieldContext.ConflictStartPosition;
 			savedConflicts.Add(savedConflict);
 		}
 		return saveRound;
@@ -3974,9 +3976,9 @@ public class WorldManager : MonoBehaviour
 		});
 	}
 
-	public List<Conflict> GetAllConflicts()
+	public List<BattlefieldContext> GetAllConflicts()
 	{
-		List<Conflict> list = new List<Conflict>();
+		List<BattlefieldContext> list = new List<BattlefieldContext>();
 		foreach (GameCard gameCard in this.AllCards)
 		{
 			if (gameCard.InConflict && !list.Contains(gameCard.Combatable.MyConflict))
@@ -4164,7 +4166,7 @@ public class WorldManager : MonoBehaviour
 		}
 		foreach (SavedConflict savedConflict in saveRound.SavedConflicts)
 		{
-			Conflict.CreateFromSavedConflict(savedConflict);
+			BattlefieldContext.CreateFromSavedConflict(savedConflict);
 		}
 		foreach (SavedBooster savedBooster2 in saveRound.SavedBoosters)
 		{
@@ -4871,4 +4873,5 @@ public class WorldManager : MonoBehaviour
 		InMenu
 	}
 }
+
 

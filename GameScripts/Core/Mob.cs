@@ -154,7 +154,7 @@ public class Mob : Combatable
 
 	private bool Filter(string cardId)
 	{
-		return this.AlwaysDrop || ((!(WorldManager.instance.GameDataLoader.GetCardFromId(cardId, true) is Equipable) || WorldManager.instance.CurrentRunVariables.CanDropItem) && (!(WorldManager.instance.CurrentBoard != null) || !(WorldManager.instance.CurrentBoard.Id == "forest") || ForestCombatManager.instance.CanDropCard(cardId)));
+		return this.AlwaysDrop || (!(WorldManager.instance.GameDataLoader.GetCardFromId(cardId, true) is Equipable) || WorldManager.instance.CurrentRunVariables.CanDropItem);
 	}
 
 	public bool TryDropEquipment()

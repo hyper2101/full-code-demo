@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Mewtations.Combat.Battlefield;
 
 public class SaveSystem
 {
@@ -259,7 +260,7 @@ public class SaveSystem
         // 7. Reconnect active combat conflicts
         foreach (SavedConflict savedConflict in saveRound.SavedConflicts)
         {
-            Conflict.CreateFromSavedConflict(savedConflict);
+            BattlefieldContext.CreateFromSavedConflict(savedConflict);
         }
 
         // 8. Reconnect boosters
@@ -433,16 +434,17 @@ public class SaveSystem
         saveRound.CitiesWellbeing = CitiesManager.instance.Wellbeing;
         saveRound.CitiesConflictMonth = CitiesManager.instance.NextConflictMonth;
         saveRound.CitiesDisaster = CitiesManager.instance.ActiveEvent;
-        foreach (Conflict conflict in _world.GetAllConflicts())
+        foreach (BattlefieldContext BattlefieldContext in _world.GetAllConflicts())
         {
             List<SavedConflict> savedConflicts = saveRound.SavedConflicts;
             SavedConflict savedConflict = new SavedConflict();
-            savedConflict.Id = conflict.Id;
-            savedConflict.InitiatorCardId = conflict.Initiator.UniqueId;
-            savedConflict.InvolvedCards = conflict.Participants.Select<Combatable, string>((Combatable x) => x.UniqueId).ToList<string>();
-            savedConflict.StartPosition = conflict.ConflictStartPosition;
+            savedConflict.Id = BattlefieldContext.Id;
+            savedConflict.InitiatorCardId = BattlefieldContext.Initiator.UniqueId;
+            savedConflict.InvolvedCards = BattlefieldContext.Participants.Select<Combatable, string>((Combatable x) => x.UniqueId).ToList<string>();
+            savedConflict.StartPosition = BattlefieldContext.ConflictStartPosition;
             savedConflicts.Add(savedConflict);
         }
         return saveRound;
     }
 }
+

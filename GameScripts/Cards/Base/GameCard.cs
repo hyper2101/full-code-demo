@@ -6,6 +6,7 @@ using Shapes;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Mewtations.Combat.Battlefield;
 
 public class GameCard : Draggable, IGameCardOrCardData
 {
@@ -1650,13 +1651,13 @@ public class GameCard : Draggable, IGameCardOrCardData
 		this.Child.UpdateChildPositions(hardSetPos);
 	}
 
-	public Conflict GetOverlappingConflict()
+	public BattlefieldContext GetOverlappingConflict()
 	{
-		foreach (Conflict conflict in WorldManager.instance.GetAllConflicts())
+		foreach (BattlefieldContext BattlefieldContext in WorldManager.instance.GetAllConflicts())
 		{
-			if (conflict.GetBounds().Intersects(base.DraggableBounds))
+			if (BattlefieldContext.GetBounds().Intersects(base.DraggableBounds))
 			{
-				return conflict;
+				return BattlefieldContext;
 			}
 		}
 		return null;
@@ -2625,3 +2626,4 @@ public class GameCard : Draggable, IGameCardOrCardData
 		IsWorking
 	}
 }
+

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Mewtations.Combat;
+using Mewtations.Combat.Core;
 
 namespace Mewtations.Cards.Cats
 {
