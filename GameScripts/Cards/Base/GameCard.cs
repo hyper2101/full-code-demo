@@ -1838,6 +1838,10 @@ public class GameCard : Draggable, IGameCardOrCardData
 
 	public void UpdateTimer()
 	{
+		if (WorldManager.WorldSimulationPaused)
+		{
+			return;
+		}
 		if (!this.TimerRunning)
 		{
 			return;

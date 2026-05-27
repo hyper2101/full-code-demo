@@ -118,6 +118,7 @@ namespace Mewtations.Legacy.Stacklands
 
 		public virtual int GetRequiredFoodCount()
 		{
+			if (!WorldManager.LegacyFoodTaxEnabled) return 0;
 			if (this.Id == "trained_monkey")
 			{
 				return 0;
@@ -205,6 +206,7 @@ namespace Mewtations.Legacy.Stacklands
 
 		public void UpdateLifeStage()
 		{
+			if (!WorldManager.LegacyFoodTaxEnabled) return;
 			if (!this.ChangesCardOnStage)
 			{
 				return;

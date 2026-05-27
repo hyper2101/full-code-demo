@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 [Serializable]
@@ -69,4 +69,6 @@ public class RunVariables
 	public bool HasCitiesBoard;
 
 	public List<string> BuiltLandmarks = new List<string>();
+
+	public int GlobalEntityCounter = 0;
 }

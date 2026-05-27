@@ -289,10 +289,9 @@ namespace Mewtations.Combat
             }
 
             // Extract base stats
-            var stats = source.ProcessedCombatStats;
-            MaxHP = stats.MaxHealth;
+            MaxHP = source.ProcessedCombatStats.MaxHealth;
             CurrentHP = source.HealthPoints;
-            if (CurrentHP <= 0) CurrentHP = MaxHP; // Fallback
+            // Removed Necromancy fallback: Paralyzed cats (if they somehow get in) will stay at 1 HP, dead enemies stay dead.
             
             // Extract Mewtations-specific stats
             if (source is CatCardData cat)

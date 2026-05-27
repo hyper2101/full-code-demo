@@ -18,6 +18,10 @@ using Mewtations.Combat.UI;
 
 public class WorldManager : MonoBehaviour
 {
+    public static bool WorldSimulationPaused = false;
+    public static bool IsGameplaySimulationRunning => !WorldSimulationPaused;
+	public static bool LegacyFoodTaxEnabled = false;
+
 	public GameCard DraggingCard
 	{
 		get
@@ -291,7 +295,7 @@ public class WorldManager : MonoBehaviour
 		if (Application.isEditor)
 		{
 			this.DebugEndlessMoonEnabled = DebugOptions.Default.EndlessMoonEnabled;
-			this.DebugNoFoodEnabled = DebugOptions.Default.NoFoodEnabled;
+			this.DebugNoFoodEnabled = true; // Hardcoded to remove food tax for Mewtations
 			this.DebugDontNeedVillagers = DebugOptions.Default.DontNeedVillagers;
 			this.DebugNoEnergyEnabled = DebugOptions.Default.NoEnergyEnabled;
 			this.CurrentSave.FinishedDeath = DebugOptions.Default.CursedFinished;
@@ -299,6 +303,8 @@ public class WorldManager : MonoBehaviour
 			this.CurrentSave.FinishedHappiness = DebugOptions.Default.CursedFinished;
 			base.gameObject.AddComponent<Screenshotter>();
 		}
+		this.DebugNoFoodEnabled = true; // Hardcoded to remove food tax for Mewtations
+
 		Shader.SetGlobalFloat("_WorldSizeIncrease", 0f);
 		Shader.SetGlobalFloat("_WorldSizeIncreaseNormalized", 0f);
 		SokLoc.instance.LanguageChanged += this.OnLanguageChange;
@@ -842,6 +848,10 @@ public class WorldManager : MonoBehaviour
 			flag = false;
 		}
 		if (this.ForestMoonEnabled)
+		{
+			flag = false;
+		}
+		if (WorldSimulationPaused)
 		{
 			flag = false;
 		}
@@ -2976,6 +2986,7 @@ public class WorldManager : MonoBehaviour
 
 	public int GetRequiredFoodCount()
 	{
+		if (!LegacyFoodTaxEnabled) return 0;
 		if (!this.EnableGlobalUpkeep)
 		{
 			return 0;
@@ -3031,6 +3042,7 @@ public class WorldManager : MonoBehaviour
 
 	public int GetRequiredHappinessCount()
 	{
+		if (!LegacyFoodTaxEnabled) return 0;
 		if (!this.EnableGlobalUpkeep)
 		{
 			return 0;
@@ -3181,101 +3193,6 @@ public class WorldManager : MonoBehaviour
 		else
 		{
 			this.CutsceneTitle = param.CutsceneTitle;
-		}
-		if (!this.DebugNoFoodEnabled && this.EnableGlobalUpkeep)
-		{
-			this.VillagersStarvedAtEndOfMoon = false;
-			yield return EndOfMonthCutscenes.FeedVillagers();
-			if (this.VillagersStarvedAtEndOfMoon)
-			{
-				yield break;
-			}
-			if (this.CurseIsActive(CurseType.Happiness))
-			{
-				this.VillagersAngryAtEndOfMoon = false;
-				yield return EndOfMonthCutscenes.UseHappiness();
-				if (this.VillagersAngryAtEndOfMoon)
-				{
-					yield break;
-				}
-			}
-			else
-			{
-				this.CurrentRunVariables.VillagersUnhappyMonthCount = 0;
-			}
-		}
-		if (this.CurseIsActive(CurseType.Death))
-		{
-			CardData fountain = this.GetCard("fountain_of_youth");
-			if (fountain != null)
-			{
-				this.CutsceneTitle = SokLoc.Translate("label_fountain_title");
-				this.CutsceneText = SokLoc.Translate("label_fountain_text");
-				yield return new WaitForSeconds(1f);
-				GameCamera.instance.TargetPositionOverride = new Vector3?(fountain.MyGameCard.transform.position);
-				yield return new WaitForSeconds(2f);
-			}
-			else
-			{
-				List<BaseVillager> villagersToAge = EndOfMonthCutscenes.GetVillagersToAge();
-				if (villagersToAge.Any<BaseVillager>((BaseVillager x) => x.DetermineLifeStageFromAge(x.Age) == LifeStage.Elderly))
-				{
-					Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("villager_old", null);
-				}
-				if (EndOfMonthCutscenes.AnyVillagerWillChangeLifeStage(villagersToAge))
-				{
-					yield return EndOfMonthCutscenes.AgeVillagers(villagersToAge);
-				}
-				else
-				{
-					foreach (BaseVillager baseVillager in villagersToAge)
-					{
-						baseVillager.Age++;
-					}
-				}
-				if (!this.VillagersStarvedAtEndOfMoon)
-				{
-					bool flag = false;
-					if (this.CurrentBoard.Id == "death" && this.BoardMonths.DeathMonth >= 6)
-					{
-						flag = true;
-					}
-					else if ((this.CurrentBoard.Id == "main" || this.CurrentBoard.Id == "island") && this.CurrentMonth > 6)
-					{
-						flag = true;
-					}
-					if (flag)
-					{
-						yield return EndOfMonthCutscenes.CheckMakeSick();
-					}
-					if (this.BoardMonths.DeathMonth == 4 && this.CurrentBoard.Id == "death")
-					{
-						yield return EndOfMonthCutscenes.NewVillagerSpawnsInDeath();
-					}
-				}
-			}
-			if (!this.VillagersStarvedAtEndOfMoon)
-			{
-				List<Animal> cards = this.GetCards<Animal>();
-				foreach (Animal animal in cards)
-				{
-					if (this.CurrentMonth - animal.CreationMonth >= 3)
-					{
-						animal.IsOld = true;
-					}
-					else
-					{
-						animal.IsOld = false;
-					}
-				}
-				if (EndOfMonthCutscenes.AnyAnimalWillDie(cards))
-				{
-					yield return EndOfMonthCutscenes.KillAnimals((from x in this.GetCards<Animal>()
-						where this.CurrentMonth - x.CreationMonth >= 5
-						select x).ToList<Animal>());
-				}
-			}
-			fountain = null;
 		}
 		yield return new WaitForSeconds(1.5f);
 		yield return EndOfMonthCutscenes.MaxCardCount();

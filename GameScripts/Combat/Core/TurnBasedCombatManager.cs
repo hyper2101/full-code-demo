@@ -69,7 +69,8 @@ namespace Mewtations.Combat.Core
 
             // Freeze main board
             WorldManager.instance.SetViewType(ViewType.Default);
-            
+            WorldManager.WorldSimulationPaused = true;
+
             // Set up formations (executes CombatUnit constructors, registering components)
             Formation.SetupPlayerTeam(playerCats);
             Formation.SetupEnemyTeam(enemies);
@@ -436,6 +437,7 @@ namespace Mewtations.Combat.Core
         private void EndCombat()
         {
             IsCombatActive = false;
+            WorldManager.WorldSimulationPaused = false;
             
             // Sync final health states back to base units
             foreach (var unit in Formation.PlayerUnits)

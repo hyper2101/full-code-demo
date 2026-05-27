@@ -431,6 +431,7 @@ public class Combatable : CardData
 		}
 		this.previouseHealthPoints = this.HealthPoints;
 		base.UpdateCard();
+		this.CheckDeath();
 	}
 
 	public override void UpdateCardText()

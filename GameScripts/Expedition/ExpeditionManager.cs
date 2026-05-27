@@ -200,8 +200,8 @@ namespace Mewtations.Expedition
                 }
             }
 
-            // Start turn-based combat overlay
-            List<Combatable> playerCombats = ActiveCats.Cast<Combatable>().ToList();
+            // Start turn-based combat overlay (exclude Paralyzed cats)
+            List<Combatable> playerCombats = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Cast<Combatable>(System.Linq.Enumerable.Where(ActiveCats, c => c != null && !c.IsParalyzed)));
             TurnBasedCombatManager.Instance.StartCombat(playerCombats, enemies, (result) =>
             {
                 // Destroy leftover enemy cards if player won

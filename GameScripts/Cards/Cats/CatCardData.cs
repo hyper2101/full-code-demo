@@ -7,14 +7,26 @@ using Mewtations.Systems.Labor;
 
 public enum CatRole { DPS, Tank, ShieldSupport, RageSupport, Debuff, Disruption, Attrition }
 public enum CatElement { None, Fire, Poison, Ice, Lightning }
+public enum CatDomain { Settlement, Expedition, Combat, Dead }
 
 public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
 {
+    [ExtraData("is_paralyzed")]
+    public bool IsParalyzed = false;
+
     // IPrimaryRunEntity Implementation
     public bool CountsForRunSurvival => true;
     public RunEntityState CurrentRunState => (HealthPoints <= 0) ? RunEntityState.Dead : RunEntityState.Alive;
     public bool CanAct => HealthPoints > 0;
     public bool BlocksRunFailure => HealthPoints > 0;
+
+    [ExtraData("runtime_id")]
+    public string RuntimeId { get; private set; }
+
+    [ExtraData("current_domain")]
+    public CatDomain CurrentDomain = CatDomain.Settlement;
+    
+    public bool CanReceiveSettlementTick() => CurrentDomain == CatDomain.Settlement;
 
     [Header("Cat Specifics")]
     [ExtraData("cat_role")]
@@ -216,6 +228,19 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
     public override void OnInitialCreate()
     {
         base.OnInitialCreate();
+        if (string.IsNullOrEmpty(RuntimeId))
+        {
+            if (WorldManager.instance != null && WorldManager.instance.CurrentRunVariables != null)
+            {
+                WorldManager.instance.CurrentRunVariables.GlobalEntityCounter++;
+                RuntimeId = "CAT_" + WorldManager.instance.CurrentRunVariables.GlobalEntityCounter;
+            }
+            else
+            {
+                RuntimeId = "CAT_UNKNOWN_" + UnityEngine.Random.Range(1000, 9999);
+            }
+        }
+
         if (Constitution == Mewtations.Combat.CatConstitution.None)
         {
             if (UnityEngine.Random.value <= 0.60f)
@@ -620,6 +645,17 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
     public override void UpdateCard()
     {
         base.UpdateCard();
+        
+        // --- Domain Drift Assert ---
+        // If simulation is running and we are attached to a settlement board, but our domain is not settlement
+        if (WorldManager.IsGameplaySimulationRunning && MyGameCard != null && MyGameCard.MyBoard != null && MyGameCard.MyBoard.IsCurrent && !CanReceiveSettlementTick())
+        {
+            if (Time.frameCount % 300 == 0) // Log once every 5 seconds to avoid spam
+            {
+                UnityEngine.Debug.LogWarning($"[CatDomain] WARNING: Cat {Name} ({RuntimeId}) is physically active on board but domain is {CurrentDomain}! Domain drift detected.");
+            }
+        }
+
 
         // 4.3: Tooltip Synergy (Talisman hover highlight)
         if (WorldManager.instance.DraggingCard != null && WorldManager.instance.DraggingCard.CardData != null && WorldManager.instance.DraggingCard != this.MyGameCard)
@@ -1236,6 +1272,16 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
             return false;
         }
 
+        // Tê Liệt không thể ra trận
+        if (IsParalyzed && (otherCard.MyCardType == CardType.Mobs || otherCard is Combatable))
+        {
+            if (UnityEngine.Time.frameCount % 60 == 0) // Limit spam
+            {
+                WorldManager.instance.CreateFloatingText(this.MyGameCard, false, 0, "Mèo đang bị tê liệt, không thể ra trận!", "", false, 0, 2f, true);
+            }
+            return false;
+        }
+
         // Chữa sẹo phế ấn bằng thuốc đỏ
         if (otherCard.IsHealingPotion && HasScar(Mewtations.Combat.PermanentScar.CursedMeridians))
         {
@@ -1383,11 +1429,15 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
     }
 
     // TriggerDemonicAscension removed per user request
+
+    public override void CheckDeath()
+    {
+        if (this.isDead) return;
+        if (this.HealthPoints <= 0)
+        {
+            this.HealthPoints = 1;
+            this.IsParalyzed = true;
+            WorldManager.instance.CreateFloatingText(this.MyGameCard, false, 0, "Trọng thương! (Tê liệt)", "", false, 0, 2f, true);
+        }
+    }
 }
-
-
-
-
-
-
-

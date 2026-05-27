@@ -934,14 +934,7 @@ public class GameScreen : SokScreen
 			LocParam.Create("card_count", cardCount.ToString()),
 			LocParam.Create("max_card_count", maxCardCount.ToString())
 		});
-		if (WorldManager.instance.ForestMoonEnabled)
-		{
-			this.FoodCardBox.SetActiveFast(false);
-		}
-		else
-		{
-			this.FoodCardBox.SetActiveFast(true);
-		}
+		this.FoodCardBox.SetActiveFast(false); // Permanently hidden for Mewtations
 		if (foodCount < requiredFoodCount || cardCount > maxCardCount || WorldManager.instance.DebugNoFoodEnabled || WorldManager.instance.DebugNoEnergyEnabled || wellbeing < 40 || (WorldManager.instance.CurseIsActive(CurseType.Happiness) && happinessCount < requiredHappinessCount))
 		{
 			this.redTextBlinkTimer += Time.deltaTime;

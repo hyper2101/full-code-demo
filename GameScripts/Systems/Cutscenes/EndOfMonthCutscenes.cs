@@ -193,6 +193,7 @@ public static class EndOfMonthCutscenes
 
 	public static IEnumerator AgeVillagers(List<BaseVillager> villagersToAge)
 	{
+		if (!WorldManager.LegacyFoodTaxEnabled) yield break;
 		EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_villager_age_birthday");
 		EndOfMonthCutscenes.CutsceneText = "";
 		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_age_villagers"));
@@ -262,6 +263,7 @@ public static class EndOfMonthCutscenes
 
 	public static IEnumerator KillAnimals(List<Animal> AnimalsToAge)
 	{
+		if (!WorldManager.LegacyFoodTaxEnabled) yield break;
 		EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_animal_die");
 		EndOfMonthCutscenes.CutsceneText = "";
 		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
@@ -326,6 +328,7 @@ public static class EndOfMonthCutscenes
 
 	public static IEnumerator FeedVillagers()
 	{
+		if (!WorldManager.LegacyFoodTaxEnabled) yield break;
 		EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_time_to_eat");
 		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_feed_villagers"));
 		WorldManager.instance.InEatingAnimation = true;
@@ -597,6 +600,7 @@ public static class EndOfMonthCutscenes
 
 	public static IEnumerator UseHappiness()
 	{
+		if (!WorldManager.LegacyFoodTaxEnabled) yield break;
 		EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_giving_happiness");
 		List<CardData> list = EndOfMonthCutscenes.CardsThatNeedHappiness();
 		List<GameCard> happinessProviders = EndOfMonthCutscenes.GetHappinessProviders();
