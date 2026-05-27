@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -24,6 +24,7 @@ public class GameDataValidator
 		this.CalculateExpectedValues(validationResult);
 		this.CheckCardDataUsage(validationResult);
 		this.CheckDefaultAudio(validationResult);
+		this.VerifyLegacyPurge(validationResult);
 		return validationResult;
 	}
 
@@ -324,6 +325,41 @@ public class GameDataValidator
 	private bool HasCorrectAudio(CardData card)
 	{
 		return (card.MyCardType != CardType.Structures || card.PickupSoundGroup == PickupSoundGroup.Heavy || card.PickupSoundGroup == PickupSoundGroup.Medium) && (card.MyCardType != CardType.Food || card.PickupSoundGroup == PickupSoundGroup.Medium) && (card.MyCardType != CardType.Resources || card.PickupSoundGroup == PickupSoundGroup.Heavy || card.PickupSoundGroup == PickupSoundGroup.Medium) && (card.MyCardType != CardType.Mobs || card.PickupSoundGroup == PickupSoundGroup.Default) && (card.MyCardType != CardType.Ideas || card.PickupSoundGroup == PickupSoundGroup.Default) && (card.MyCardType != CardType.Equipable || card.PickupSoundGroup == PickupSoundGroup.Default) && (card.MyCardType != CardType.Locations || card.PickupSoundGroup == PickupSoundGroup.Heavy);
+	}
+
+	private void VerifyLegacyPurge(ValidationResult validationResult)
+	{
+		foreach (CardData cardData in this.GameDataLoader.CardDataPrefabs)
+		{
+			if (cardData != null)
+			{
+				var attribute = System.Attribute.GetCustomAttribute(cardData.GetType(), typeof(Mewtations.Core.LegacySystemAttribute)) as Mewtations.Core.LegacySystemAttribute;
+				if (attribute != null || cardData is Mewtations.Core.ILegacySystemMarker)
+				{
+					string category = attribute != null ? attribute.Category.ToString() : "Unknown";
+					validationResult.AddError(cardData, $"Card '{cardData.Id}' uses legacy quarantined class '{cardData.GetType().Name}' (Category: {category})!", ValidationCategory.CardClasses);
+				}
+			}
+		}
+
+		foreach (BoosterpackData boosterpackData in this.GameDataLoader.BoosterpackDatas)
+		{
+			for (int i = 0; i < boosterpackData.CardBags.Count; i++)
+			{
+				foreach (string cardId in boosterpackData.CardBags[i].GetCardsInBag(this.GameDataLoader))
+				{
+					CardData cardPrefab = this.GameDataLoader.GetCardFromId(cardId, false);
+					if (cardPrefab != null)
+					{
+						var attribute = System.Attribute.GetCustomAttribute(cardPrefab.GetType(), typeof(Mewtations.Core.LegacySystemAttribute)) as Mewtations.Core.LegacySystemAttribute;
+						if (attribute != null || cardPrefab is Mewtations.Core.ILegacySystemMarker)
+						{
+							validationResult.AddError(null, $"Booster '{boosterpackData.BoosterId}' bag {i} references legacy quarantined card '{cardId}'!", ValidationCategory.BoosterPacks);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public GameDataLoader GameDataLoader;

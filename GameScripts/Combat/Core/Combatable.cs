@@ -108,6 +108,8 @@ public class Combatable : CardData
 		}
 	}
 
+	public bool IsPassiveCombatant => !Mewtations.Core.LegacyRuntimeFlags.EnableRealtimeCombat;
+
 	public bool CanLeaveConflict
 	{
 		get
@@ -423,7 +425,7 @@ public class Combatable : CardData
 			this.MyConflict.UpdateConflict();
 		}
 		// Legacy realtime combat loop disabled. Combat execution controlled exclusively by CombatV2.
-		if (this.MyGameCard.BeingHovered && this.InConflict)
+		if (this.MyGameCard.BeingHovered && this.InConflict && !this.IsPassiveCombatant)
 		{
 			this.DrawConflictArrows(false);
 		}

@@ -3,11 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+using Mewtations.Systems.Labor;
+
 public enum CatRole { DPS, Tank, ShieldSupport, RageSupport, Debuff, Disruption, Attrition }
 public enum CatElement { None, Fire, Poison, Ice, Lightning }
 
-public class CatCardData : Combatable
+public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
 {
+    // IPrimaryRunEntity Implementation
+    public bool CountsForRunSurvival => true;
+    public RunEntityState CurrentRunState => (HealthPoints <= 0) ? RunEntityState.Dead : RunEntityState.Alive;
+    public bool CanAct => HealthPoints > 0;
+    public bool BlocksRunFailure => HealthPoints > 0;
+
     [Header("Cat Specifics")]
     [ExtraData("cat_role")]
     public CatRole Role;
@@ -334,12 +342,79 @@ public class CatCardData : Combatable
             {
                 baseSpeed = Mathf.RoundToInt(baseSpeed * 1.30f);
             }
+            
+            // Phase 2: Survival Pacing - Combat penalty when tired/exhausted
+            if (IsExhausted) 
+            {
+                baseSpeed = Mathf.Max(1, Mathf.RoundToInt(baseSpeed * 0.1f)); // Initiative cực thấp
+            }
+            else if (Stamina < 30)
+            {
+                baseSpeed = Mathf.Max(1, Mathf.RoundToInt(baseSpeed * 0.7f)); // Giảm nhẹ
+            }
+            
             return baseSpeed;
         }
         set
         {
             _speedField = value;
         }
+    }
+
+    [Header("Labor & Stamina Systems")]
+    public LaborReadinessState CurrentLaborState 
+    {
+        get 
+        {
+            if (this.MyGameCard != null && this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "consume_recovery_item")
+                return LaborReadinessState.Recovering;
+            if (IsExhausted)
+                return LaborReadinessState.Exhausted;
+            if (Stamina < 30)
+                return LaborReadinessState.Tired;
+            return LaborReadinessState.Ready;
+        }
+    }
+
+    public bool CanPerformLabor()
+    {
+        // Labor Must Be Explicitly Active: This interface checks if it is CAPABLE of labor.
+        // It does not trigger auto-labor.
+        return !IsExhausted && HealthPoints > 0;
+    }
+
+    public float GetLaborEfficiency()
+    {
+        if (IsExhausted) return 0.2f; // Extremely slow if pushed (though CanPerformLabor is false)
+        if (Stamina < 30) return 0.7f; // Tired
+        return 1.0f;
+    }
+
+        public void ConsumeLaborStamina(float amount)
+    {
+        // Phase 3: Wrath burns stamina faster
+        if (MajorSin == Mewtations.Cards.Cats.SinTendency.Wrath)
+        {
+            amount *= 1.5f;
+        }
+        Stamina = Mathf.Max(0, Stamina - Mathf.CeilToInt(amount));
+        if (Stamina == 0 && !IsExhausted)
+        {
+            IsExhausted = true;
+            ExhaustionLevel = 1;
+            if (WorldManager.instance != null && this.MyGameCard != null)
+            {
+                WorldManager.instance.CreateFloatingText(this.MyGameCard, false, 0, "⚠️ [KIỆT SỨC] Cần nghỉ ngơi!", "", false, 0, 2f, true);
+            }
+        }
+        else if (Stamina > 0 && Stamina < 30)
+        {
+            if (WorldManager.instance != null && this.MyGameCard != null)
+            {
+                WorldManager.instance.CreateFloatingText(this.MyGameCard, false, 0, "⚠️ Bắt đầu thấy mệt...", "", false, 0, 2f, true);
+            }
+        }
+        UpdateCardText();
     }
 
     [Header("Traits and Mutations")]
@@ -607,25 +682,43 @@ public class CatCardData : Combatable
         }
     }
 
-    public void ConsumeRecoveryItem()
+        public void ConsumeRecoveryItem()
     {
         if (this.MyGameCard != null && this.MyGameCard.HasChild)
         {
             GameCard itemCard = this.MyGameCard.Child;
             CardData itemData = itemCard.CardData;
 
-            int hpRestore = itemData.HpRecoveryAmount;
+                        int hpRestore = itemData.HpRecoveryAmount;
             int staminaRestore = itemData.StaminaRecoveryAmount;
             bool cleanExhaust = itemData.CleansesExhaustion;
             bool resetHoiQuang = itemData.ResetsHoiQuang;
 
+            // Phase 3: Gluttony Sin hook (Food is less effective for Stamina, increasing pressure)
+            if (MajorSin == Mewtations.Cards.Cats.SinTendency.Gluttony)
+            {
+                staminaRestore = Mathf.RoundToInt(staminaRestore * 0.5f);
+            }
+
             this.HealthPoints = Mathf.Min(this.HealthPoints + hpRestore, this.ProcessedCombatStats.MaxHealth);
-            this.Stamina = Mathf.Min(this.Stamina + staminaRestore, this.MaxStamina);
+            
+            if (IsExhausted) 
+            {
+                // Has spent 60s resting (downtime). Exhaustion is cleared.
+                // Food supports recovery but doesn't max it unless it's a special pill.
+                IsExhausted = false;
+                ExhaustionLevel = 0;
+                this.Stamina = Mathf.Min(this.Stamina + staminaRestore + 30, this.MaxStamina); // Base rest + food
+            }
+            else 
+            {
+                this.Stamina = Mathf.Min(this.Stamina + staminaRestore, this.MaxStamina);
+            }
 
             if (cleanExhaust || this.Stamina >= 50)
             {
-                this.IsExhausted = false;
-                this.ExhaustionLevel = 0;
+                IsExhausted = false;
+                ExhaustionLevel = 0;
             }
             else
             {
@@ -1291,3 +1384,10 @@ public class CatCardData : Combatable
 
     // TriggerDemonicAscension removed per user request
 }
+
+
+
+
+
+
+

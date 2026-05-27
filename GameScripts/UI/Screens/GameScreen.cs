@@ -849,7 +849,7 @@ public class GameScreen : SokScreen
 			this.ShowInfoBoxMoney.gameObject.SetActiveFast(false);
 			this.ShowInfoBoxDollar.gameObject.SetActiveFast(true);
 			this.ShowInfoBoxWorker.gameObject.SetActiveFast(true);
-			this.ShowInfoBoxWellbeing.gameObject.SetActiveFast(true);
+			this.ShowInfoBoxWellbeing.gameObject.SetActiveFast(Mewtations.Core.LegacyRuntimeFlags.EnableCitiesSystem);
 		}
 		else
 		{
@@ -904,8 +904,8 @@ public class GameScreen : SokScreen
 		int maxCardCount = WorldManager.instance.GetMaxCardCount();
 		int happinessCount = WorldManager.instance.GetHappinessCount(true, true);
 		int requiredHappinessCount = WorldManager.instance.GetRequiredHappinessCount();
-		int wellbeing = CitiesManager.instance.Wellbeing;
-		CityState cityState = CitiesManager.instance.CityState;
+		int wellbeing = Mewtations.Core.LegacyRuntimeFlags.EnableCitiesSystem ? CitiesManager.instance.Wellbeing : 50;
+		CityState cityState = Mewtations.Core.LegacyRuntimeFlags.EnableCitiesSystem ? CitiesManager.instance.CityState : CityState.Happy;
 		string text = GameCanvas.FormatTime(WorldManager.instance.MonthTime - WorldManager.instance.Time.MonthTimer);
 		this.ShowInfoBoxTime.InfoBoxTitle = SokLoc.Translate("label_time");
 		this.ShowInfoBoxTime.InfoBoxText = SokLoc.Translate("label_time_infobox", new LocParam[]
@@ -1014,7 +1014,7 @@ public class GameScreen : SokScreen
 		}
 		if (this.WorkerText.isActiveAndEnabled)
 		{
-			int num = CitiesManager.instance.HousingConsumers.Sum<HousingConsumer>((HousingConsumer x) => x.GetHousingSpaceRequired());
+			int num = (!Mewtations.Core.LegacyRuntimeFlags.EnableCitiesSystem) ? 0 : CitiesManager.instance.HousingConsumers.Sum<HousingConsumer>((HousingConsumer x) => x.GetHousingSpaceRequired());
 			int num2 = WorldManager.instance.CardQuery.GetCards<Apartment>().Sum<Apartment>((Apartment x) => x.HousingSpace);
 			this.WorkerText.text = string.Format("{0}/{1}{2}", num, num2, Icons.Housing);
 			this.ShowInfoBoxWorker.InfoBoxTitle = SokLoc.Translate("label_info_worker_space_title");
@@ -1650,3 +1650,5 @@ public class GameScreen : SokScreen
 
 	public Image GameSpeedIcon;
 }
+
+

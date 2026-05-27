@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using Mewtations.Systems.Labor;
 
 public class CardData : MonoBehaviour, IGameCardOrCardData
 {
@@ -539,6 +540,15 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 		return this.HasCardOnTop<T>(out t);
 	}
 
+	public bool HasLaborCapableOnTop()
+	{
+		if (!this.MyGameCard.HasChild)
+		{
+			return false;
+		}
+		return LaborUtility.IsLaborCapable(this.MyGameCard.Child.CardData);
+	}
+
 	public bool HasCardOnTop(string id)
 	{
 		return this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.Id == id;
@@ -786,24 +796,20 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 			Subprint subprint = this.FindMatchingPrint();
 			if (subprint != null)
 			{
-				string id = subprint.ParentBlueprint.Id;
+								string id = subprint.ParentBlueprint.Id;
 				int subprintIndex = subprint.SubprintIndex;
-				BaseVillager baseVillager = (from BaseVillager x in this.CardsInStackMatchingPredicate((CardData x) => x is BaseVillager)
-					orderby x.GetActionTimeModifier("finish_blueprint", this)
-					select x).Reverse<BaseVillager>().FirstOrDefault<BaseVillager>();
-				Worker worker = (from Worker x in this.CardsInStackMatchingPredicate((CardData x) => x is Worker)
-					orderby x.GetActionTimeModifier()
-					select x).Reverse<Worker>().FirstOrDefault<Worker>();
+
+                // Grab the first labor capable card to determine action time modifier
+                ILaborCapable laborActor = (from CardData x in this.CardsInStackMatchingPredicate((CardData x) => LaborUtility.IsLaborCapable(x))
+                    select x as ILaborCapable).FirstOrDefault(x => x != null);
+
 				if (!subprint.ParentBlueprint.IsInvention || (subprint.ParentBlueprint.IsInvention && WorldManager.instance.HasFoundCard(id)))
 				{
 					CardData cardData = this.CardsInStackMatchingPredicate((CardData x) => x is IEnergyConsumer).FirstOrDefault<CardData>();
-					if (baseVillager != null)
+					if (laborActor != null)
 					{
-						this.MyGameCard.StartBlueprintTimer(baseVillager.GetActionTimeModifier("finish_blueprint", this) * subprint.Time, new TimerAction(this.FinishBlueprint), subprint.StatusName, this.GetActionId("FinishBlueprint"), id, subprintIndex, cardData, subprint.ParentBlueprint.IgnoreEnergyWorkerDemand);
-					}
-					else if (worker != null)
-					{
-						this.MyGameCard.StartBlueprintTimer(worker.GetActionTimeModifier() * subprint.Time, new TimerAction(this.FinishBlueprint), subprint.StatusName, this.GetActionId("FinishBlueprint"), id, subprintIndex, cardData, subprint.ParentBlueprint.IgnoreEnergyWorkerDemand);
+                        float timeMod = 1f / laborActor.GetLaborEfficiency(); // Inverse efficiency for time taken
+						this.MyGameCard.StartBlueprintTimer(timeMod * subprint.Time, new TimerAction(this.FinishBlueprint), subprint.StatusName, this.GetActionId("FinishBlueprint"), id, subprintIndex, cardData, subprint.ParentBlueprint.IgnoreEnergyWorkerDemand);
 					}
 					else
 					{
@@ -1019,8 +1025,15 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 	public void FinishBlueprint()
 	{
 		Blueprint blueprintWithId = WorldManager.instance.GetBlueprintWithId(this.MyGameCard.TimerBlueprintId);
-		if (blueprintWithId != null)
+				if (blueprintWithId != null)
 		{
+            foreach (GameCard gc in this.MyGameCard.GetAllCardsInStack())
+            {
+                if (gc != null && gc.CardData != null && LaborUtility.IsLaborCapable(gc.CardData))
+                {
+                    LaborUtility.ConsumeLaborStamina(gc.CardData, 5f);
+                }
+            }
 			blueprintWithId.BlueprintComplete(this.MyGameCard, this.MyGameCard.GetAllCardsInStack(), blueprintWithId.Subprints[this.MyGameCard.TimerSubprintIndex]);
 		}
 	}
@@ -1596,6 +1609,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 			return true;
 		}
 		int num = 0;
+		// Count legacy attached workers
 		for (int i = 0; i < this.MyGameCard.WorkerChildren.Count; i++)
 		{
 			if (this.MyGameCard.WorkerChildren[i] != null)
@@ -1603,6 +1617,18 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 				num++;
 			}
 		}
+		
+		// Fallback check for new LaborCapable cards directly stacked (like Cats) that aren't attached via WorkerHolder
+		GameCard child = this.MyGameCard.Child;
+		while (child != null)
+		{
+			if (LaborUtility.IsLaborCapable(child.CardData) && !(child.CardData is Worker)) // Don't double count actual workers
+			{
+				num++;
+			}
+			child = child.Child;
+		}
+
 		return num >= this.WorkerAmount;
 	}
 
@@ -2065,3 +2091,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 
 	private static List<string> reqList = new List<string>();
 }
+
+
+
+

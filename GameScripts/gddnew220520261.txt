@@ -1,1133 +1,851 @@
-# Mewtations: Dogma — GDD Prototype (Bản Tiếng Việt)
+# Mewtations: Dogma — Master GDD V2
 
-# 1. Tổng Quan Dự Án
+## 1. High Concept
 
-## Core Identity
+Mewtations: Dogma là game quản lý và xây dựng đội hình theo dạng card sandbox.
 
-Mewtations: Dogma là game:
+Người chơi quản lý một cộng đồng mèo nhỏ đang cố gắng sinh tồn trong một xã hội lạnh lẽo và đầy áp lực. Người chơi sẽ:
 
-* quản lý thẻ bài kiểu Stacklands
-* kết hợp combat turn-based tự động
-* progression tu tiên
+* nuôi dưỡng mèo
+* chế tạo trang bị
 * xây dựng đội hình
-* khám phá thế giới qua gameplay và lore ẩn
+* đưa mèo đi thám hiểm
+* đối mặt với các phe chó
+* tìm kiếm cổ vật và vùng đất mới
+* tạo ra những đội hình dị thường nhờ các mèo đột biến.
 
-Người chơi điều khiển những chú mèo sống bằng cách:
-
-* thu gom tài nguyên
-* tận dụng “rác thải giá trị” của xã hội
-* liều mạng đi expedition
-* mạnh lên bằng tu luyện và trang bị
-
-Trong khi đó:
-
-* loài chó kiểm soát xã hội
-* nắm quân đội
-* nắm tài nguyên
-* duy trì trật tự cứng nhắc
-
----
-
-# 2. Triết Lý Thiết Kế
-
-Game không phải:
-
-* ARPG phản xạ nhanh
-* game click tay kỹ năng liên tục
-* game combat kỹ năng cá nhân
+Toàn bộ thế giới đều tồn tại dưới dạng card.
 
 Game tập trung vào:
 
-* chuẩn bị trước combat
+* cảm giác kéo thả card
+* chuẩn bị trước chiến đấu
+* quản lý sức bền của mèo
 * xây dựng đội hình
-* quản lý tài nguyên
-* build synergy
-* quyết định rủi ro
+* khám phá các build kỳ lạ
+* tiến triển dần từ nghèo khó sang ổn định.
 
-Skill của player nằm ở:
+Combat là tự động.
+Người chơi chiến thắng chủ yếu nhờ:
 
-* build đúng
-* hiểu boss
-* hiểu economy
-* quản lý greed
-* chuẩn bị expedition
+* chuẩn bị
+* vị trí đội hình
+* trang bị
+* phối hợp mèo
+* hiểu cơ chế.
 
-Không nằm ở:
+---
 
-* micro
-* combo tay
-* phản xạ
+# 2. Trụ Cột Gameplay
+
+## 2.1. Kéo Thả Và Tổ Chức Board
+
+Cảm giác chính của game là:
+
+* kéo card
+* sắp xếp card
+* gom tài nguyên
+* quản lý không gian
+* tối ưu quy trình.
+
+Board lúc đầu khá chật và hỗn loạn.
+Theo tiến độ game:
+
+* kho chứa
+* relic
+* công trình
+  sẽ dần giảm thao tác lặp lại.
+
+---
+
+## 2.2. Chuẩn Bị Quan Trọng Hơn Điều Khiển
+
+Người chơi không điều khiển trực tiếp trong combat.
+
+Sức mạnh đội hình đến từ:
+
+* cách sắp xếp
+* lựa chọn vũ khí
+* kỹ năng
+* lượng nộ
+* mèo hỗ trợ
+* chuẩn bị trước trận.
+
+---
+
+## 2.3. Sức Bền Và Kiệt Sức
+
+Mỗi mèo có thanh stamina riêng.
+
+Stamina giảm:
+
+* theo thời gian
+* theo combat.
+
+Nếu stamina xuống thấp:
+
+* mèo bị giảm hiệu quả chiến đấu
+* bị kiệt sức
+* cuối cùng bị tê liệt nếu tiếp tục bị ép hoạt động.
+
+Đồ ăn không còn là upkeep theo ngày.
+Đồ ăn chủ yếu dùng để:
+
+* hồi phục
+* duy trì hoạt động dài hạn
+* hỗ trợ thám hiểm.
+
+---
+
+## 2.4. Mèo Đột Biến
+
+Mèo đột biến là nguồn tạo build đặc biệt.
+
+Chúng:
+
+* hiếm
+* mạnh
+* có hướng build riêng
+* thay đổi cách xây dựng đội hình.
+
+Mỗi mèo đột biến đều có hình ảnh riêng.
+
+---
+
+## 2.5. Tiến Triển Từ Hỗn Loạn Sang Ổn Định
+
+Đầu game:
+
+* nghèo tài nguyên
+* thiếu chỗ chứa
+* ít mèo
+* combat khó.
+
+Giữa và cuối game:
+
+* có thêm storage
+* relic hỗ trợ
+* quy trình ổn định hơn
+* build phức tạp hơn.
+
+---
+
+## 2.6. Xung Đột Giữa Chó Và Mèo
+
+Game không xây dựng phe thiện và phe ác rõ ràng.
+
+Chó và mèo đại diện cho:
+
+* cách sống
+* tư tưởng
+* cách nhìn xã hội khác nhau.
+
+Người chơi chỉ nhìn thế giới từ phía mèo.
 
 ---
 
 # 3. Gameplay Loop Chính
 
-## Vòng lặp gameplay
+Gameplay chính xoay quanh chu kỳ:
 
-```text
-Thu gom → Stack/Xử lý → Chuẩn bị → Expedition → Combat → Mang tài nguyên về → Nâng cấp → Lặp lại
-```
-
----
-
-# 4. Quản Lý Base
-
-Player thao tác trực tiếp trên board card.
-
-Các hoạt động chính:
-
-* craft
-* nấu ăn
-* luyện đan
-* xử lý tài nguyên
-* nâng cấp
-* tích trữ
-* chuẩn bị expedition
-
-Triết lý:
-
-```text
-Mọi thứ đều là card
-```
-
-Ngoại lệ:
-
-* Quest
-* Một số UI event đặc biệt
+1. Thu thập tài nguyên
+2. Chế tạo đồ
+3. Hồi phục mèo
+4. Xây đội hình
+5. Đi thám hiểm
+6. Chiến đấu
+7. Mang tài nguyên về
+8. Mở khóa tiến triển mới
+9. Lặp lại với độ khó cao hơn.
 
 ---
 
-# 5. Expedition System
+# 4. Board Và Card
 
-## Expedition theo node
+## 4.1. Toàn Bộ Thế Giới Là Card
 
-Player đi qua các node:
+Mọi thứ đều tồn tại dưới dạng card:
 
-* combat
-* resource
-* event
-* ruins
-* portal
-* lore
-* boss tiến trình
-* encounter đặc biệt
-* hidden hint
-
----
-
-## Tính chất expedition
-
-Expedition không phải:
-
-```text
-heroic adventure
-```
-
-Mà là:
-
-```text
-những chuyến đi liều mạng để kiếm cơ hội đổi đời
-```
-
-Fantasy chính:
-
-```text
-đi bới những phần dư thừa của xã hội
-```
+* mèo
+* tài nguyên
+* công trình
+* relic
+* đồ ăn
+* trang bị
+* sự kiện
+* expedition.
 
 ---
 
-# 6. Combat System
+## 4.2. Board Chính
 
-# Cấu trúc combat
+Game chủ yếu diễn ra trên board chính.
 
-Combat tạo:
+Combat không chuyển sang màn riêng.
+Thay vào đó:
 
-```text
-một layer riêng đè lên board
-```
-
-Khi combat:
-
-* toàn bộ board đóng băng
-* không thể thao tác
+* combat tạo layer mới đè lên board
+* board chính bị tạm dừng trong lúc chiến đấu.
 
 ---
 
-# Combat flow
+## 4.3. Không Gian Board
 
-Combat:
+Board có giới hạn.
 
-* turn-based
-* speed quyết định thứ tự đánh
-* từng unit hành động tuần tự
-* hết lượt toàn bộ → sang vòng mới
+Người chơi có thể:
 
----
+* mở rộng board
+* xây storage
+* mở thêm slot.
 
-# Combat Philosophy
-
-Combat:
-
-* auto hoàn toàn
-* không manual skill
-* deterministic thiên nhiều hơn RNG
-* dễ đọc
-* dựa vào role và synergy
-
-Player thắng nhờ:
-
-* build đội hình đúng
-* chuẩn bị đúng
-* hiểu pressure của enemy
-
-Không thắng nhờ:
-
-* click nhanh
-* combo tay
-* phản xạ
+Áp lực không gian là một phần quan trọng của đầu game.
 
 ---
 
-# 7. Formation
+# 5. Hệ Thống Mèo
 
-Đội hình:
+## 5.1. Mèo Thường
 
-* 3 trước
-* 3 sau
+Mèo thường có chỉ số cơ bản giống nhau.
 
-Không đổi vị trí giữa combat.
+Sự khác biệt chủ yếu đến từ:
 
----
-
-# 8. Rage System
-
-Mỗi unit có:
-
-```text
-Nộ
-```
-
-Đủ:
-
-```text
-100 nộ
-```
-
-→ tự động dùng ultimate.
-
-Nếu vượt quá:
-
-```text
-145 nộ = 145% scaling skill
-```
+* trang bị
+* kỹ năng
+* build
+* vị trí
+* mèo đột biến.
 
 ---
 
-# 9. Vai Trò Nhân Vật
+## 5.2. Mèo Đột Biến
 
-Mỗi mèo là:
+Mèo đột biến rất hiếm.
 
-```text
-một combat role
-```
+Nguồn nhận:
+
+* boss tiến độ
+* tỉ lệ thấp từ Miệng Thần Mèo.
+
+Mỗi mèo đột biến:
+
+* có hình riêng
+* có hướng build riêng
+* thay đổi đội hình mạnh.
+
+Một đội mạnh thường xoay quanh:
+
+* 1 mèo gây sát thương chính
+* nhiều mèo hỗ trợ phía sau.
+
+---
+
+## 5.3. Stamina
+
+Mỗi mèo có:
+
+* stamina chính
+* stamina kiệt sức.
 
 Ví dụ:
 
-* DPS chính
-* Tank
-* Shield support
-* Rage support
-* Debuff
-* Quấy nhiễu
-* Attrition scaler
+* stamina chính: 50
+* stamina kiệt sức: 20.
 
-Late game:
+Mỗi ngày:
 
-* role càng rõ ràng hơn
+* stamina giảm dần.
 
----
+Trong combat:
 
-# 10. Enemy Design
+* mỗi cycle tiếp tục giảm stamina.
 
-Không có AI phức tạp.
+Khi hết stamina chính:
 
-Enemy hoạt động bằng:
+* mèo bị debuff kiệt sức
+* giảm hiệu quả chiến đấu.
 
-* stat được thiết kế sẵn
-* composition được set sẵn
-* combat pressure rõ ràng
+Khi hết stamina kiệt sức:
+
+* mèo bị tê liệt
+* không thể hành động
+* cần thực phẩm hoặc vật phẩm đặc biệt để hồi phục.
 
 ---
 
-# Boss Design Philosophy
+## 5.4. Sẹo
 
-Boss không phải:
+Một số thất bại sẽ tạo sẹo.
 
-```text
-hard-counter puzzle
-```
+Sẹo có thể:
 
-Boss tạo pressure:
-
-* AOE
-* sustain
-* rage
-* attrition
-* corruption
-
-Player giải bằng:
-
-* build team
-* role allocation
-* synergy
+* giảm chỉ số
+* khóa slot trang bị
+* khóa kỹ năng.
 
 ---
 
-# 11. Equipment System
+# 6. Combat
 
-# Weapon
+## 6.1. Đội Hình
 
-Vũ khí không chỉ tăng stat.
+Combat sử dụng grid 3x3.
+
+Mỗi phe:
+
+* tối đa 5 mèo.
+
+Người chơi được tự do sắp xếp vị trí.
+
+---
+
+## 6.2. Turn Order
+
+Combat hoạt động theo tốc độ.
+
+Các mèo hành động tuần tự.
+
+Sau mỗi cycle:
+
+* lượt sẽ reset.
+
+---
+
+## 6.3. Rage
+
+Mỗi mèo có thanh nộ.
+
+Nộ nhận được chủ yếu từ:
+
+* đánh thường
+* một số kỹ năng.
+
+Khi dùng kỹ năng:
+
+* toàn bộ nộ bị reset.
+
+---
+
+## 6.4. Kỹ Năng
+
+Kỹ năng:
+
+* thay thế đòn đánh thường
+* dùng khi tới lượt
+* tiêu hao toàn bộ nộ.
+
+Skill system sẽ mở rộng mạnh hơn theo tiến độ game.
+
+---
+
+## 6.5. Targeting
+
+Targeting không ngẫu nhiên.
+
+Ưu tiên mục tiêu dựa theo:
+
+* hàng
+* kiểu tấn công
+* vũ khí.
+
+---
+
+## 6.6. Vũ Khí
 
 Vũ khí quyết định:
 
-```text
-combat behavior
-```
-
-Ví dụ:
-
-* đánh hàng ngang
-* đánh hàng dọc
-* giảm nộ
-* tăng nộ bản thân
-* cleave
-* pressure support
-
-Triết lý:
-
-```text
-weapon là identity
-```
-
-không phải:
-
-```text
-stat stick
-```
-
----
-
-# Talisman / Bùa
-
-Đóng vai trò:
-
-* phòng thủ
-* utility
-* “giáp” của mèo
+* kiểu đánh
+* hướng build
+* cách gây sát thương.
 
 Có:
 
-* 2 slot
+* vũ khí craft được
+* vũ khí unique.
 
 ---
 
-# 12. Breakthrough System
+## 6.7. Hiệu Ứng
 
-## Đột phá 1
+Combat có các hiệu ứng như:
 
-Mở:
+* burn
+* poison
+* bleed
+* stun.
 
-```text
-slot linh đan
-```
-
-* chỉ dùng 1 lần
-* không tháo được
-
-Thường cho:
-
-* stat
-* elemental effect
-* modifier
+Một số build xoay quanh stacking debuff.
 
 ---
 
-## Đột phá 2
+## 6.8. Sát Thương Đồng Minh
 
-Mở:
+Một số build có thể:
 
-```text
-slot thức ăn
-```
+* gây sát thương lên đồng minh
+  để đổi lấy lượng sát thương lớn hơn lên địch.
 
-Thay đổi:
-
-* kỹ năng nộ
-
-Nếu chưa gắn:
-
-* dùng skill mặc định
+Các build này sẽ có role riêng.
 
 ---
 
-## Đột phá 3
+## 6.9. Boss
 
-Mở:
+Boss thường là nhân vật có tư tưởng đối lập mạnh.
 
-```text
-Passive slot 1
-```
+Combat boss tập trung vào:
 
----
+* cơ chế riêng
+* cách build đội hình đúng.
 
-## Đột phá 4
-
-Mở:
-
-```text
-Passive slot 2
-```
+Boss không quá khó nếu đội hình được chuẩn bị phù hợp.
 
 ---
 
-# 13. Element System
+# 7. Trang Bị
 
-Element không phải:
+## 7.1. Slot Trang Bị
 
-```text
-hệ khắc chế
-```
+Mỗi mèo có:
 
-Mà là:
+* 1 slot vũ khí
+* 2 slot bùa.
 
-```text
-combat behavior modifier
-```
+Sau khi tiến triển:
 
-Ví dụ:
-
-* Lửa → damage cố định mỗi lượt
-* Độc → yếu ban đầu nhưng scale theo stack
-* Băng → control/disruption
-* Sét → tương tác nộ
-
-Triết lý:
-
-* đơn giản
-* readable
-* dễ hiểu
+* mở thêm slot đan
+* slot thức ăn
+* slot passive.
 
 ---
 
-# 14. Progression
+## 7.2. Độ Hiếm
 
-## Pacing dự kiến
-
-Player “biết chơi”:
-
-* Đột phá 1 → ~45 phút
-* Đột phá 2 → ~1h30
-* Đột phá 3 → ~2h
-* Đột phá 4 → ~3h
-* Endgame → ~5h
+Trang bị có rarity.
 
 ---
 
-# 15. Ancient Relics
+## 7.3. Tăng Tiến
 
-Cổ vật:
+Trang bị mạnh dần theo tiến độ game.
 
-* giảm grind
-* giảm friction
-* auto craft
-* tăng tốc low-tier generation
+Ngoài chỉ số:
 
-KHÔNG:
-
-* tăng combat power quá mạnh
-
-Triết lý:
-
-```text
-meta progression giúp game mượt hơn
-```
-
-không phải:
-
-```text
-power creep vô hạn
-```
+* passive của trang bị cũng tăng theo.
 
 ---
 
-# 16. Build Philosophy
+# 8. Expedition
 
-Game cho phép:
+## 8.1. Tổng Quan
 
-* build dị
-* synergy lạ
-* comp sáng tạo
+Expedition là nguồn chính để:
 
-Meta build:
-
-* được phép tồn tại
-
-Một vài build broken:
-
-* chấp nhận được
-* miễn vui
-* thú vị
-* cộng đồng thích
+* lấy relic
+* lấy tài nguyên hiếm
+* lấy vật phẩm unique
+* gặp boss.
 
 ---
 
-# 17. Mutation System
+## 8.2. Cách Hoạt Động
 
-Enemy có thể có:
+Expedition diễn ra trên board chính nhưng có layer riêng.
 
-```text
-đột biến ngẫu nhiên
-```
+Người chơi chỉ mang theo:
 
-Giúp:
-
-* replayability
-* variation
-* tránh solved meta
+* đội combat
+* trang bị nằm trong chest expedition.
 
 ---
 
-# 18. Thiên Kiêu System
+## 8.3. Chest Expedition
 
-Boss hoặc event có thể cho:
+Chest expedition có giới hạn slot.
 
-```text
-thẻ Thiên Kiêu
-```
+Chest dùng để:
 
-Thiên Kiêu:
+* mang trang bị đi
+* mang loot về.
 
-* định hướng build
-* thay đổi hướng progression
-* buộc player adapt
+Nếu retreat:
 
-Ví dụ:
-
-* Thiên Kiêu độc
-  → build poison
-
-* Thiên Kiêu shield
-  → build tank/shield
+* mất ngẫu nhiên 50% đồ trong chest.
 
 ---
 
-# 19. Hệ Thống Miệng Thần Mèo
+## 8.4. Node
 
-## Core Concept
+Mỗi expedition có pool node riêng.
 
-Không tồn tại “đền thần” hay NPC thần riêng biệt.
+Node có thể gồm:
 
-Thay vào đó:
-
-```text
-Thần Mèo xuất hiện dưới dạng một cái miệng khổng lồ bí ẩn.
-```
-
-Đây là nơi:
-
-* hiến tế
-* đánh đổi
-* dâng card
-* thử vận may
-* cầu cơ hội đổi đời
-
----
-
-# Cơ Chế Hoạt Động
-
-Player có thể:
-
-* kéo card vào miệng thần
-* hiến tế tài nguyên
-* hiến tế vật phẩm
-* hiến tế card quý
-* hiến tế hàng loạt
-
-Mỗi card có:
-
-```text
-giá trị ẩn
-```
-
-Player không nhìn thấy trực tiếp.
-
-Chỉ khi:
-
-* cho miệng thần “ăn”
-* thanh tiến độ tăng lên
-
-→ mới hiểu card đó giá trị bao nhiêu.
-
----
-
-# Triết Lý Thiết Kế
-
-Hệ thống này đại diện cho:
-
-* greed
-* đánh đổi
-* niềm tin mù quáng
-* ham muốn vượt tầng lớp xã hội
-
-Fantasy chính:
-
-```text
-“ném tất cả những gì mình có vào một cơ hội đổi đời”
-```
-
----
-
-# Reward
-
-Phần thưởng có thể là:
-
-* vật phẩm hiếm
-* card unique
-* Thiên Kiêu
-* tài nguyên lớn
-* relic
-* hoặc hoàn toàn không đáng
-
-Có xác suất nhỏ:
-
-* nhận được đồ cực mạnh
-* reward cực hiếm
-
----
-
-# Visual Direction
-
-Miệng thần:
-
-* bí ẩn
-* hơi đáng sợ
-* không quá cosmic horror
-* không quá tà ác
-
-Cảm giác:
-
-```text
-một tồn tại tham lam đang nuốt mọi thứ
-```
-
-Nhưng:
-
-* mèo vẫn tiếp tục hiến tế
-* vì hy vọng đổi đời
-
----
-
-# 20. Hệ Thống Đối Thoại Theo Tiến Trình
-
-## Core Concept
-
-Game có:
-
-```text
-hệ thống đối thoại mở theo trigger và tiến trình
-```
-
-Phong cách:
-
-* giống các game cũ
-* nhân vật xuất hiện hai bên màn hình
-* lần lượt nói chuyện
-* cinematic đơn giản
-
----
-
-# Trigger Dialogue
-
-Đối thoại có thể mở khi:
-
-* vào node đặc biệt
-* gặp boss
-* tìm thấy hint
-* mang item nào đó
-* hoàn thành expedition
-* đạt breakthrough
-* kích hoạt event
-* gặp đúng nhân vật
-* giải quyết điều kiện ẩn
-
----
-
-# Cấu Trúc Hệ Thống
-
-Dialogue system không chỉ để:
-
-* kể chuyện
-
-Mà còn:
-
-* reward gameplay
-* mở progression
-* mở lore
-* thay đổi quan hệ nhân vật
-
----
-
-# Reward Through Dialogue
-
-Trong lúc đối thoại:
-player có thể:
-
-* nhận card
-* nhận item
-* nhận quest
-* mở node mới
-* mở relic
-* nhận thiên kiêu
-* unlock event
-
----
-
-# Psychological / Emotional Resolution Events
-
-Một số dialogue:
-
-* có hidden condition
-* liên quan tâm lý nhân vật
-* liên quan lựa chọn trước đó
-
-Ví dụ:
-
-```text
-an ủi một chú chó
-nói đúng điều nó cần nghe
-giúp nó thoát khỏi áp lực của hệ thống
-```
-
-→ được thưởng:
-
-* card đặc biệt
-* item
-* route mới
-* lore quan trọng
-
----
-
-# Triết Lý Narrative
-
-Narrative của game:
-
-* không linear hoàn toàn
-* không cinematic nặng
-* không visual novel thuần
-
-Mà là:
-
-```text
-lore được mở dần qua gameplay và encounter
-```
-
-Player:
-
-* tự ghép thế giới lại
-* tự hiểu conflict mèo/chó
-* tự phát hiện sự thật
-
----
-
-# Vai Trò Của Dialogue System
-
-Dialogue system là:
-
-```text
-lớp cảm xúc phủ lên systemic gameplay
-```
-
-Nó giúp:
-
-* thế giới sống hơn
-* player gắn bó hơn
-* faction có chiều sâu hơn
-* expedition có ý nghĩa hơn
-
----
-
-# Emotional Direction
-
-Các cuộc hội thoại nên:
-
-* đời thường
-* hơi buồn
-* có chút nghịch ngợm
-* đôi lúc rất con người
-
-Triết lý:
-
-```text
-đây không phải cuộc chiến thiện ác
-```
-
-Mà là:
-
-```text
-những cá thể đang cố sống theo cách của mình
-```
-
-
----
-
-# 21. Punishment System
-
-Punishment có thể:
-
-* khóa slot đồ
-* khóa kỹ năng
-* debuff
-* expedition penalty
-* chết nếu tích quá nhiều
-
-Punishment là:
-
-```text
-pressure
-```
-
-không phải:
-
-```text
-game over trực tiếp
-```
-
----
-
-# 22. Healing Philosophy
-
-Healing bị hạn chế mạnh.
-
-Combat tập trung vào:
-
-* shield
-* mitigation
-* prevention
-
-Heal thật sự:
-
-* chủ yếu ở base
-* cần công trình đặc biệt
-
-Mục tiêu:
-
-```text
-mỗi chuyến đi đều phải trả giá
-```
-
----
-
-# 23. Death Philosophy
-
-Chết:
-
-* mất tài nguyên
-* mất progress expedition
-* mất mèo
-
-Nhưng:
-
-* có insurance
-* vẫn có recovery
-
-Mất mèo:
-
-```text
-là chuyện bình thường
-```
-
----
-
-# 24. Lore Core
-
-# Conflict chính
-
-Game không phải:
-
-```text
-Thiện vs Ác
-```
-
-Mà là:
-
-```text
-Tự do vs Trật tự
-```
-
----
-
-# 25. Loài Chó
-
-Chó đại diện:
-
-* luật lệ
-* quân đội
-* kỷ luật
-* trật tự
-* cấu trúc xã hội
-
-Một số chó:
-
-* đáng thương
-* chấp nhận số phận
-* bị hệ thống nghiền nát
-* mù quáng phục tùng
-
-Chó:
-
-* kiểm soát tài nguyên
-* kiểm soát xã hội
-
----
-
-# 26. Loài Mèo
-
-Mèo đại diện:
-
-* tuổi trẻ
-* bản năng
-* ham muốn
-* tự do
-* hỗn loạn
-* ích kỷ
-* tham lam
-* lười biếng
-* tò mò
-
-Mèo không phải:
-
-```text
-chính nghĩa
-```
-
-Mà là:
-
-```text
-bản năng con người
-```
-
----
-
-# 27. Cultivation Philosophy
-
-Tu tiên chỉ là:
-
-```text
-ngôn ngữ ẩn dụ
-```
-
-Không phải:
-
-```text
-mô phỏng tiên hiệp hardcore
-```
-
-Game mượn:
-
-* kim đan
-* độ kiếp
-* tu luyện
-* cảnh giới
-
-Để nói về:
-
-* trưởng thành
-* tham vọng
-* bất công xã hội
-* tuổi trẻ
-* đánh đổi
-
----
-
-# 28. World Tone
-
-Thế giới:
-
-* hưng thịnh
-* nhưng bất công
-* lạnh nhẹ
-* ma thuật âm thầm tồn tại
-
-Fantasy level:
-
-* fantasy trung cổ nhẹ
-* không quá cổ đại
-* không quá hiện đại
-* không quá “Tàu hardcore”
-
----
-
-# 29. Visual Direction
-
-Reference chính:
-WitchHand
-
-Định hướng:
-
-* tactile card feel
-* glow nhẹ
-* màu trầm
-* readable
-* hơi cô đơn
-* hơi kỳ bí
-
----
-
-# 30. Palette
-
-Tone màu:
-
-* xanh xám
-* tím tro
-* nâu bụi
-* vàng mờ
-* đỏ hiếm nhẹ
-
-Không quá flashy.
-
----
-
-# 31. Rare Item Visual
-
-Đồ hiếm:
-
-* shimmer nhẹ
-* ánh đỏ mờ
-* subtle
-* đủ nhận ra
-
-Mục tiêu:
-
-```text
-“ờ? card này hơi khác?”
-```
-
----
-
-# 32. Character Visual Philosophy
-
-Không redesign nhân vật mạnh theo tier.
-
-Chỉ:
-
-* border
-* aura
-* recognition layer
-* accent nhỏ
-
-Mục tiêu:
-
-* tiết kiệm scope
-* dễ đọc
-* giữ attachment
-
----
-
-# 33. Emotional Fantasy
-
-Fantasy chính của game:
-
-```text
-Những con mèo trẻ tuổi đi nhặt nhạnh cơ hội sống trong một xã hội vốn không được xây cho chúng.
-```
-
----
-
-# 34. Narrative Structure
-
-Lore:
-
-* mở dần
-* environmental storytelling
-* hội thoại chó/mèo
-* hidden hint
+* combat
+* elite
+* boss
 * event
-* expedition discovery
+* Q&A
+* hint.
+
+Node được random trong phạm vi pool của expedition đó.
 
 ---
 
-# 35. Endgame
+## 8.5. Retreat
 
-Main ending:
+Người chơi có thể retreat thường xuyên.
 
-* đánh final boss
-
-True ending:
-
-* tìm hint
-* hiểu sự thật thế giới
-* mở lore ẩn
-
-Game có:
-
-```text
-kết thúc hữu hạn
-```
-
-Không phải:
-
-```text
-infinite power treadmill
-```
+Retreat là một phần chiến thuật quan trọng.
 
 ---
 
-# 36. Symbolic Motif
+# 9. Event
 
-Motif chính:
+## 9.1. Event Thường
 
-```text
-bàn chân mèo ↔ bàn chân chó
-```
+Event có thể:
 
-Opening:
-
-* bàn chân mèo biến thành chó
-* rồi đảo ngược lại
-
-Ý nghĩa:
-
-* tự do ↔ trật tự
-* không phe nào tuyệt đối đúng
-* xã hội luôn dao động giữa hai phía
+* cho phần thưởng
+* tạo risk/reward
+* tạo lựa chọn khó.
 
 ---
 
-# 37. Prototype Priorities
+## 9.2. Event Hỏi Đáp
 
-Prototype cần ưu tiên:
+Một số event yêu cầu:
 
-1. Board interaction
-2. Combat loop
-3. Expedition loop
-4. Team-building
-5. UI readability
-6. Card feel
-7. Reward pacing
+* nhớ hint
+* nhớ lore
+* suy luận.
+
+Trả lời đúng sẽ mở thêm:
+
+* phần thưởng
+* lore
+* hướng đi mới.
 
 ---
 
-# 38. Những thứ chưa cần mở rộng sớm
+## 9.3. Event Chó
 
-Chưa cần đầu tư mạnh vào:
+Một số event liên quan tới:
 
-* AI phức tạp
-* VFX lớn
-* animation quá nhiều
-* lore khổng lồ
-* elemental reaction phức tạp
-* infinite progression
-* content pool quá rộng
-* redesign character liên tục
+* thu thuế
+* bị chó tấn công
+* tranh chấp tài nguyên.
+
+---
+
+# 10. Tài Nguyên Và Crafting
+
+## 10.1. Linh Thảo
+
+Linh thảo là nhóm tài nguyên chính dùng cho:
+
+* thức ăn
+* đan
+* linh dược.
+
+---
+
+## 10.2. Linh Khoáng
+
+Linh khoáng dùng cho:
+
+* công trình
+* trang bị.
+
+---
+
+## 10.3. Thuộc Tính
+
+Một vật phẩm có thể mang tag:
+
+* Kim
+* Mộc
+* Thủy
+* Hỏa
+* Thổ.
+
+Hệ không giữ vai trò quá lớn trong combat.
+Nó chủ yếu:
+
+* tạo variation
+* mở thêm hướng build.
+
+Có vòng tương tác nhẹ giữa các hệ.
+
+---
+
+## 10.4. Tiền Tệ
+
+Linh thạch là tiền tệ chính.
+
+Linh lực là tài nguyên đi kèm.
+
+---
+
+# 11. Shrine Và Relic
+
+## 11.1. Shrine
+
+Shrine là công trình unique.
+
+Shrine:
+
+* không liên quan tới Miệng Thần Mèo
+* dùng để tôn thờ relic và cổ vật.
+
+---
+
+## 11.2. Relic
+
+Relic chủ yếu là hỗ trợ thụ động.
+
+Ví dụ:
+
+* tăng tỉ lệ rơi đồ
+* nhân đôi sản xuất
+* giảm thao tác lặp lại.
+
+Relic giúp người chơi:
+
+* ổn định quy trình
+* giảm micromanagement.
+
+---
+
+## 11.3. Tiến Triển Shrine
+
+Shrine có thể:
+
+* tăng slot relic
+* mở utility mới.
+
+---
+
+# 12. Miệng Thần Mèo
+
+Miệng Thần Mèo là hệ thống gacha.
+
+Người chơi có thể:
+
+* ném tài nguyên vào
+* nhận phần thưởng random.
+
+Đây là nơi có thể nhận:
+
+* mèo đột biến hiếm
+* vật phẩm lạ
+* phần thưởng giá trị cao.
+
+Đây là hệ thống:
+
+* tham lam
+* khó đoán
+* nhiều rủi ro.
+
+---
+
+# 13. Đột Phá
+
+## 13.1. Tổng Quan
+
+Đột phá là quá trình tăng tiến sức mạnh.
+
+Nó không hoàn toàn là tu luyện.
+
+Đột phá giúp:
+
+* mở slot mới
+* tăng chỉ số
+* mở sức mạnh mới.
+
+---
+
+## 13.2. Real-time Setup
+
+Đột phá diễn ra theo thời gian thực.
+
+Người chơi có thể:
+
+* thêm card hỗ trợ
+* tháo card hỗ trợ.
+
+Nếu thay đổi setup giữa chừng:
+
+* timer reset lại từ đầu.
+
+---
+
+## 13.3. Hoàn Thành
+
+Khi quá trình hoàn tất:
+
+* không thể can thiệp nữa
+* sét sẽ tấn công.
+
+Kết quả phụ thuộc vào:
+
+* setup
+* hỗ trợ
+* chuẩn bị trước đó.
+
+---
+
+## 13.4. Thất Bại
+
+Thất bại có thể tạo:
+
+* sẹo
+* debuff
+* hậu quả lâu dài.
+
+---
+
+# 14. Thế Giới
+
+## 14.1. Xã Hội Chó Và Mèo
+
+Thế giới tồn tại sự khác biệt lớn giữa:
+
+* chó
+* mèo.
+
+Hai phe có:
+
+* cách suy nghĩ
+* cách sống
+* cách tổ chức xã hội khác nhau.
+
+Game không xác định phe thiện hay ác tuyệt đối.
+
+---
+
+## 14.2. Tone
+
+Tone game:
+
+* hơi lạnh
+* thư giãn
+* có châm biếm nhẹ
+* không quá grimdark.
+
+Humor tồn tại nhưng không quá lố.
+
+---
+
+## 14.3. Lore
+
+Lore được mở dần thông qua:
+
+* boss
+* event
+* hint
+* expedition.
+
+Người chơi có thể:
+
+* hiểu rất ít
+* hoặc đào sâu toàn bộ lore.
+
+---
+
+# 15. Art Direction
+
+Visual gần với phong cách của entity["video_game","WitchHand","WitchHand by Jon Nielsen"] hơn.
+
+Mục tiêu:
+
+* dễ đọc
+* hơi mềm mại
+* có nét vẽ tay nhẹ.
+
+Mèo đột biến:
+
+* độc đáo
+* lạ
+* nhưng không quá kinh dị.
+
+UI:
+
+* mức độ vừa phải
+* không quá dày.
+
+---
+
+# 16. Audio Direction
+
+Nhạc nền:
+
+* nhẹ nhàng
+* hơi buồn
+* thư giãn.
+
+Combat sound:
+
+* mạnh tay hơn
+* rõ lực đánh.
+
+---
+
+# 17. Endgame
+
+Game có nhiều ending.
+
+Ví dụ:
+
+* đánh boss cuối
+* đánh boss cuối sau khi tìm đủ hint.
+
+Người chơi có thể:
+
+* chơi world rất lâu
+* hoặc tiến nhanh bằng build tối ưu.
+
+---
+
+# 18. Triết Lý Thiết Kế
+
+## 18.1. Không Quá Nhiều Thuật Ngữ
+
+Gameplay phải dễ hiểu trước.
+Lore và tên gọi chỉ là lớp phủ bên ngoài.
+
+---
+
+## 18.2. Build Quan Trọng Hơn Độ Hiếm
+
+Một đội hình phối hợp tốt quan trọng hơn một mèo mạnh đơn lẻ.
+
+---
+
+## 18.3. Chuẩn Bị Quan Trọng Hơn Phản Xạ
+
+Game không tập trung vào thao tác nhanh.
+
+Người chơi thắng nhờ:
+
+* hiểu game
+* chuẩn bị đúng
+* xây dựng đội hình hợp lý.
+
+---
+
+## 18.4. Sự Tiến Bộ Phải Cảm Nhận Được
+
+Đầu game:
+
+* nghèo
+* chật chội
+* thiếu thốn.
+
+Cuối game:
+
+* ổn định hơn
+* có nhiều hỗ trợ tự động hơn
+* build phức tạp hơn.
+
+Người chơi phải cảm thấy mình thật sự xây dựng được một cộng đồng mèo mạnh dần theo thời gian.

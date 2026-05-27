@@ -28,9 +28,21 @@ namespace Mewtations.Expedition
             Instance = this;
         }
 
-        public void StartExpedition(GameCard portalCard, List<CatCardData> cats, CardData backpackCard, CardData relicCard = null)
+                public void StartExpedition(GameCard portalCard, List<CatCardData> cats, CardData backpackCard, CardData relicCard = null)
         {
             if (IsExpeditionActive) return;
+
+            // Phase 2: Check for Exhausted or Recovering cats
+            foreach (var cat in cats)
+            {
+                if (cat.CurrentLaborState == Mewtations.Systems.Labor.LaborReadinessState.Exhausted || 
+                    cat.CurrentLaborState == Mewtations.Systems.Labor.LaborReadinessState.Recovering)
+                {
+                    WorldManager.instance.CreateFloatingText(portalCard, false, 0, "?? Khng th? k?i hnh! M?t s? M?o dang ki?t s?c ho?c h?i ph?c.", "", false, 0, 2f, true);
+                    return;
+                }
+            }
+
 
             int capacity = (backpackCard != null && backpackCard.BackpackCapacity > 0) ? backpackCard.BackpackCapacity : 10;
             int seed = UnityEngine.Random.Range(0, 100000);
@@ -959,12 +971,31 @@ namespace Mewtations.Expedition
             {
                 Vector3 spawnPos = PortalCardSource.transform.position + Vector3.back * 1.5f;
 
-                // Return cats to base board and clear active temporary mutations
+                                // Return cats to base board and clear active temporary mutations
                 foreach (var cat in ActiveCats)
                 {
                     if (cat != null)
                     {
                         cat.ClearMutations(); // Mutations cleared upon returning to base!
+                        
+                        // Phase 3: Expedition Aftermath (Exhaustion Debt)
+                        int staminaDebt = 20; // Base stamina cost of going on an expedition
+                        if (RunState != null) {
+                            staminaDebt += (RunState.CurrentLayer * 5); // +5 stamina per layer deepened
+                        }
+                        cat.Stamina = UnityEngine.Mathf.Max(0, cat.Stamina - staminaDebt);
+                        
+                        // Adding Memoirs
+                        if (cat.Stamina == 0) {
+                            cat.AddMemoir("Tr? v? trong tr?ng thi ki?t s?c! (Exhausted Return)");
+                        }
+                        if (RunState != null && RunState.CorruptionLevel > 50) {
+                            cat.AddMemoir("Tr? v? v?i t kh (Corrupted Return)");
+                        }
+                        if (isManualRetreat) {
+                            cat.AddMemoir("B? tr?n kh?i vi?n chinh (Retreat)");
+                        }
+
                         if (cat.MyGameCard != null)
                         {
                             // Clean combat overlay links and set position
@@ -1205,3 +1236,6 @@ namespace Mewtations.Expedition
         }
     }
 }
+
+
+

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,19 +25,29 @@ public class SaveGame
 			try
 			{
 				saveGame = JsonUtility.FromJson<SaveGame>(json);
+				if (saveGame.SaveFormatIdentity != "Mewtations_Dogma")
+				{
+					Debug.LogWarning($"[Save Game Reset] Resetting save {saveId} due to SaveFormatIdentity mismatch.");
+					saveGame = new SaveGame { SaveFormatIdentity = "Mewtations_Dogma", SaveDataVersion = 1 };
+				}
+				else if (saveGame.SaveDataVersion < 1)
+				{
+					saveGame = SaveMigrationManager.ExecuteMigration(saveGame, 1);
+				}
 				if (saveGame.LastPlayedRound != null && saveGame.LastPlayedRound.SavedCards.Count == 0 && saveGame.LastPlayedRound.SavedBoosters.Count == 0)
 				{
 					saveGame.LastPlayedRound = null;
 				}
 				goto IL_0053;
 			}
-			catch
+			catch (Exception ex)
 			{
-				saveGame = new SaveGame();
+				Debug.LogException(ex);
+				saveGame = new SaveGame { SaveFormatIdentity = "Mewtations_Dogma", SaveDataVersion = 1 };
 				goto IL_0053;
 			}
 		}
-		saveGame = new SaveGame();
+		saveGame = new SaveGame { SaveFormatIdentity = "Mewtations_Dogma", SaveDataVersion = 1 };
 		IL_0053:
 		saveGame.SaveId = saveId;
 		return saveGame;
@@ -76,4 +86,7 @@ public class SaveGame
 	public bool FinishedDeath;
 
 	public bool FinishedHappiness;
+
+	public string SaveFormatIdentity = "Mewtations_Dogma";
+	public int SaveDataVersion = 1;
 }

@@ -313,7 +313,7 @@ public class WorldManager : MonoBehaviour
 			new GameObject("RelicAutomationSystem").AddComponent<RelicAutomationSystem>();
 		}
 		OptionsScreen.LoadSettings();
-		QuestManager.instance.CheckSteamAchievements();
+		Mewtations.Core.LegacyQuestHooks.CheckSteamAchievements();
 		WorldManager.CheckForceReloadSave();
 	}
 
@@ -364,7 +364,7 @@ public class WorldManager : MonoBehaviour
 		{
 			gameBoard.WorldSizeIncrease = this.DetermineTargetWorldSize(gameBoard);
 		}
-		if (QuestManager.instance.QuestIsComplete(AllQuests.KillDemon) && !this.CurrentSave.GotIslandIntroPack)
+		if (Mewtations.Core.LegacyQuestHooks.QuestIsComplete(AllQuests.KillDemon) && !this.CurrentSave.GotIslandIntroPack)
 		{
 			this.QueueCutscene(Cutscenes.IslandIntroPack());
 		}
@@ -411,9 +411,9 @@ public class WorldManager : MonoBehaviour
 		saveRound.BoardMonths = this.BoardMonths.ToSavedMonth();
 		saveRound.NewCardsFound = this.NewCardsFound;
 		saveRound.QuestsCompleted = this.QuestsCompleted;
-		saveRound.CitiesWellbeing = CitiesManager.instance.Wellbeing;
-		saveRound.CitiesConflictMonth = CitiesManager.instance.NextConflictMonth;
-		saveRound.CitiesDisaster = CitiesManager.instance.ActiveEvent;
+		saveRound.CitiesWellbeing = Mewtations.Core.LegacyCitiesHooks.Wellbeing;
+		saveRound.CitiesConflictMonth = Mewtations.Core.LegacyCitiesHooks.NextConflictMonth;
+		saveRound.CitiesDisaster = Mewtations.Core.LegacyCitiesHooks.ActiveEvent;
 		foreach (BattlefieldContext BattlefieldContext in this.GetAllConflicts())
 		{
 			List<SavedConflict> savedConflicts = saveRound.SavedConflicts;
@@ -468,7 +468,7 @@ public class WorldManager : MonoBehaviour
 		GameCanvas.instance.SetScreen<GameScreen>();
 		this.CurrentGameState = WorldManager.GameState.Playing;
 		GameCamera.instance.CenterOnBoard(this.CurrentBoard);
-		QuestManager.instance.CheckPacksUnlocked();
+		Mewtations.Core.LegacyQuestHooks.CheckPacksUnlocked();
 		GameScreen.instance.OnBoardChange();
 		this.UpdateCardTargets();
 	}
@@ -487,7 +487,7 @@ public class WorldManager : MonoBehaviour
 		{
 			gameCard.UpdateCardPalette();
 		}
-		CitiesManager.instance.StopDrawCable(null);
+		Mewtations.Core.LegacyCitiesHooks.StopDrawCable(null);
 	}
 
 	public void SavePreset(SavedPreset preset)
@@ -585,7 +585,7 @@ public class WorldManager : MonoBehaviour
 			});
 		}
 		AudioManager.me.PlaySound2D(AudioManager.me.QuestComplete, 1f, 0.1f);
-		BoosterpackData boosterpackData = QuestManager.instance.JustUnlockedPack();
+		BoosterpackData boosterpackData = Mewtations.Core.LegacyQuestHooks.JustUnlockedPack();
 		if (boosterpackData != null)
 		{
 			bool flag = boosterpackData.BoosterLocation == quest.QuestLocation;
@@ -719,7 +719,7 @@ public class WorldManager : MonoBehaviour
 		this.CurrentRunVariables.BuiltLandmarks = new List<string>();
 		this.CurrentRunVariables.OpenedFirstTrash = false;
 		this.BoardMonths.CitiesMonth = 1;
-		CitiesManager.instance.Wellbeing = 15;
+		Mewtations.Core.LegacyCitiesHooks.Wellbeing = 15;
 	}
 
 	public void TogglePause()
@@ -1191,7 +1191,7 @@ public class WorldManager : MonoBehaviour
 					this.QueueCutscene(Cutscenes.EveryoneOnIslandDead());
 				}
 			}
-			CitiesManager.instance.CheckCityHealth();
+			Mewtations.Core.LegacyCitiesHooks.CheckCityHealth();
 		}
 		if (this.TimeScale > 0f)
 		{
@@ -1447,7 +1447,7 @@ public class WorldManager : MonoBehaviour
 		GameCanvas.instance.SetScreen<MainMenu>();
 		GameCamera.instance.OnRestartGame();
 		CardopediaScreen.instance.RefreshCardopedia();
-		QuestManager.instance.UpdateCurrentQuests();
+		Mewtations.Core.LegacyQuestHooks.UpdateCurrentQuests();
 		foreach (BuyBoosterBox buyBoosterBox in WorldManager.instance.AllBoosterBoxes)
 		{
 			buyBoosterBox.UpdateUndiscoveredCards();
@@ -1621,7 +1621,7 @@ public class WorldManager : MonoBehaviour
 		GameCard gameCard2 = null;
 		if (flag)
 		{
-			QuestManager.instance.SpecialActionComplete("worker_removed", null);
+			Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("worker_removed", null);
 		}
 		if (this.CurrentBoard.Id == "cities")
 		{
@@ -1653,7 +1653,7 @@ public class WorldManager : MonoBehaviour
 			gameCard2 = this.CreateCardStack(pos, Mathf.CeilToInt(multiplier * (float)stackValue.TotalValue), text, checkAddToStack);
 			if (gameCard2 != null)
 			{
-				QuestManager.instance.SpecialActionComplete("sell_card", gameCard2.CardData);
+				Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("sell_card", gameCard2.CardData);
 				AudioManager.me.PlaySound2D(AudioManager.me.Coin, Random.Range(0.8f, 1.2f), 0.8f);
 			}
 		}
@@ -1759,7 +1759,7 @@ public class WorldManager : MonoBehaviour
 			GameBoard currentBoard = this.CurrentBoard;
 			this.CurrentRunVariables.PreviouseBoard = currentBoard.Id;
 			this.CurrentBoard = newBoard;
-			QuestManager.instance.SpecialActionComplete("board_" + this.CurrentBoard.Id, null);
+			Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("board_" + this.CurrentBoard.Id, null);
 			if (this.CurrentBoard.Id == "island")
 			{
 				if (!this.CurrentRunVariables.VisitedIsland)
@@ -1773,7 +1773,7 @@ public class WorldManager : MonoBehaviour
 			{
 				this.CreateBoosterIfNotExists(this.CurrentBoard.MiddleOfBoard(), "cities_intro");
 				this.CurrentRunVariables.HasCitiesBoard = true;
-				CitiesManager.instance.Wellbeing = CitiesManager.instance.WellbeingStart;
+				Mewtations.Core.LegacyCitiesHooks.Wellbeing = Mewtations.Core.LegacyCitiesHooks.WellbeingStart;
 			}
 			if (this.CurrentBoard.Id == "greed")
 			{
@@ -1815,7 +1815,7 @@ public class WorldManager : MonoBehaviour
 				this.CreateCard(this.CurrentBoard.MiddleOfBoard(), "blueprint_road_builder", true, true, true);
 			}
 			GameCamera.instance.CenterOnBoard(this.CurrentBoard);
-			QuestManager.instance.CheckPacksUnlocked();
+			Mewtations.Core.LegacyQuestHooks.CheckPacksUnlocked();
 			this.SetViewType(ViewType.Default);
 			SaveManager.instance.Save(true);
 		}, transitionId, 2f);
@@ -2238,6 +2238,10 @@ public class WorldManager : MonoBehaviour
 	public CardData CreateCard(Vector3 position, string cardId, bool faceUp = true, bool checkAddToStack = true, bool playSound = true)
 	{
 		CardData cardPrefab = this.GetCardPrefab(cardId, true);
+		if (cardPrefab != null && (cardPrefab is Mewtations.Legacy.Stacklands.BaseVillager || cardPrefab is Mewtations.Legacy.Stacklands.Enemy))
+		{
+			Debug.LogWarning($"[Legacy Isolation Warning] Spawning legacy entity '{cardId}' unexpectedly at {position}!");
+		}
 		Vector2 vector = Random.insideUnitCircle * 0.001f;
 		position += new Vector3(vector.x, 0f, vector.y);
 		return this.CreateCard(position, cardPrefab, faceUp, checkAddToStack, playSound, true);
@@ -2311,7 +2315,7 @@ public class WorldManager : MonoBehaviour
 		card.gameObject.name = cardPrefab.gameObject.name;
 		if (!this.IsLoadingSaveRound)
 		{
-			QuestManager.instance.CardCreated(cardData2);
+			Mewtations.Core.LegacyQuestHooks.CardCreated(cardData2);
 		}
 		cardData2.MyGameCard.IsNew = false;
 		this.FoundCard(cardData2);
@@ -2378,7 +2382,7 @@ public class WorldManager : MonoBehaviour
 		}
 		if (!this.IsLoadingSaveRound)
 		{
-			QuestManager.instance.CardCreated(cardData);
+			Mewtations.Core.LegacyQuestHooks.CardCreated(cardData);
 		}
 		if (markAsFound)
 		{
@@ -2469,7 +2473,7 @@ public class WorldManager : MonoBehaviour
 			return false;
 		}
 		this.StackSendTo(card, nearestCardMatchingPred.MyGameCard.GetLeafCard());
-		QuestManager.instance.SpecialActionComplete("use_magnet", null);
+		Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("use_magnet", null);
 		return true;
 	}
 
@@ -3118,7 +3122,7 @@ public class WorldManager : MonoBehaviour
 			GameScreen.instance.SetControllerInUI(false);
 		}
 		this.SpeedUp = 1f;
-		QuestManager.instance.SpecialActionComplete("month_end", null);
+		Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("month_end", null);
 	}
 
 	public IEnumerator FinishDemand(Demand demand, DemandEvent demandEvent)
@@ -3131,7 +3135,7 @@ public class WorldManager : MonoBehaviour
 			GameScreen.instance.SetControllerInUI(false);
 		}
 		this.SpeedUp = 1f;
-		QuestManager.instance.SpecialActionComplete("first_demand", null);
+		Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("first_demand", null);
 		yield break;
 	}
 
@@ -3216,7 +3220,7 @@ public class WorldManager : MonoBehaviour
 				List<BaseVillager> villagersToAge = EndOfMonthCutscenes.GetVillagersToAge();
 				if (villagersToAge.Any<BaseVillager>((BaseVillager x) => x.DetermineLifeStageFromAge(x.Age) == LifeStage.Elderly))
 				{
-					QuestManager.instance.SpecialActionComplete("villager_old", null);
+					Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("villager_old", null);
 				}
 				if (EndOfMonthCutscenes.AnyVillagerWillChangeLifeStage(villagersToAge))
 				{
@@ -3277,7 +3281,7 @@ public class WorldManager : MonoBehaviour
 		yield return EndOfMonthCutscenes.MaxCardCount();
 		if (this.CurseIsActive(CurseType.Greed))
 		{
-			yield return DemandManager.instance.CheckDemands(this.CurrentMonth);
+			yield return Mewtations.Core.LegacyDemandHooks.CheckDemands(this.CurrentMonth);
 		}
 		if (this.IsCitiesDlcActive() && this.CurrentBoard.Id == "main")
 		{
@@ -3358,12 +3362,12 @@ public class WorldManager : MonoBehaviour
 		{
 			this.CutsceneTitle = param.CutsceneTitle;
 		}
-		CutsceneScreen.instance.EnableWellbeingBar(CitiesManager.instance.Wellbeing);
+		CutsceneScreen.instance.EnableWellbeingBar(Mewtations.Core.LegacyCitiesHooks.Wellbeing);
 		yield return new WaitForSeconds(1f);
 		List<CardData> requirementsCards = (from x in this.GetCards<CardData>()
 			where x.RequirementHolders != null && x.RequirementHolders.Count > 0 && (!(x.MyGameCard.GetCardWithStatusInStack() != null) || !(x.MyGameCard.GetCardWithStatusInStack().TimerActionId == "finish_blueprint"))
 			select x).ToList<CardData>();
-		int previousWellbeing = CitiesManager.instance.Wellbeing;
+		int previousWellbeing = Mewtations.Core.LegacyCitiesHooks.Wellbeing;
 		(from x in this.GetCards<Enemy>()
 			where x.InConflict
 			select x).ToList<Enemy>();
@@ -3411,25 +3415,25 @@ public class WorldManager : MonoBehaviour
 		List<CardData> rootWithResults = (from x in this.GetCards<CardData>()
 			where x.MonthlyRequirementResult != null
 			select x).ToList<CardData>();
-		CutsceneScreen.instance.WellbeingAmount = CitiesManager.instance.Wellbeing;
-		if (CitiesManager.instance.Wellbeing - previousWellbeing > 0)
+		CutsceneScreen.instance.WellbeingAmount = Mewtations.Core.LegacyCitiesHooks.Wellbeing;
+		if (Mewtations.Core.LegacyCitiesHooks.Wellbeing - previousWellbeing > 0)
 		{
 			AudioManager.me.PlaySound2D(AudioManager.me.AddWellbeing, 1f, 0.5f);
 		}
-		else if (CitiesManager.instance.Wellbeing - previousWellbeing < 0)
+		else if (Mewtations.Core.LegacyCitiesHooks.Wellbeing - previousWellbeing < 0)
 		{
 			AudioManager.me.PlaySound2D(AudioManager.me.LostWellbeing, 1f, 0.5f);
 		}
-		if (CitiesManager.instance.Wellbeing - previousWellbeing >= 5)
+		if (Mewtations.Core.LegacyCitiesHooks.Wellbeing - previousWellbeing >= 5)
 		{
-			QuestManager.instance.SpecialActionComplete("cities_wellbeing_gained_5", null);
+			Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("cities_wellbeing_gained_5", null);
 		}
-		else if (CitiesManager.instance.Wellbeing - previousWellbeing <= -5)
+		else if (Mewtations.Core.LegacyCitiesHooks.Wellbeing - previousWellbeing <= -5)
 		{
-			QuestManager.instance.SpecialActionComplete("cities_wellbeing_lost_5", null);
+			Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("cities_wellbeing_lost_5", null);
 		}
 		bool lostGame = false;
-		if (CitiesManager.instance.Wellbeing > 0)
+		if (Mewtations.Core.LegacyCitiesHooks.Wellbeing > 0)
 		{
 			foreach (CardData cardData in rootWithResults)
 			{
@@ -3446,7 +3450,7 @@ public class WorldManager : MonoBehaviour
 			this.CutsceneBoardView = true;
 			yield return EndOfMonthCutscenes.MaxCardCount();
 			this.CutsceneBoardView = false;
-			if (CitiesManager.instance.Wellbeing > 25 && !this.CurrentRunOptions.IsPeacefulMode && this.CurrentMonth == CitiesManager.instance.NextConflictMonth && CitiesManager.instance.NextConflictMonth != -1)
+			if (Mewtations.Core.LegacyCitiesHooks.Wellbeing > 25 && !this.CurrentRunOptions.IsPeacefulMode && this.CurrentMonth == Mewtations.Core.LegacyCitiesHooks.NextConflictMonth && Mewtations.Core.LegacyCitiesHooks.NextConflictMonth != -1)
 			{
 				Vector3 randomSpawnPosition = this.GetRandomSpawnPosition();
 				GameCamera.instance.TargetPositionOverride = new Vector3?(randomSpawnPosition);
@@ -3458,7 +3462,7 @@ public class WorldManager : MonoBehaviour
 			}
 			this.CutsceneBoardView = true;
 			CutsceneScreen.instance.CanMoveScreen = true;
-			int num2 = CitiesManager.instance.Wellbeing - previousWellbeing;
+			int num2 = Mewtations.Core.LegacyCitiesHooks.Wellbeing - previousWellbeing;
 			this.CutsceneTitle = SokLoc.Translate("label_end_of_moon_cities_wellbeing");
 			string text = Mathf.Abs(num2).ToString();
 			if (num2 > 0)
@@ -3575,7 +3579,7 @@ public class WorldManager : MonoBehaviour
 				pack = null;
 			}
 		}
-		QuestManager.instance.SpecialActionComplete("cities_wellbeing_changed", null);
+		Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("cities_wellbeing_changed", null);
 		GameCanvas.instance.SetScreen<GameScreen>();
 		if (param.OnDone != null)
 		{
@@ -3643,7 +3647,8 @@ public class WorldManager : MonoBehaviour
 	}
 
 	private IEnumerator FinishDemandRoutine(Demand demand, DemandEvent demandEvent)
-	{
+    {
+        if (!Mewtations.Core.LegacyRuntimeFlags.EnableDemands) yield break;
 		if (demand.Amount == demandEvent.AmountGiven)
 		{
 			yield return GreedCutscenes.FinishDemandSuccessPreMoon(demand);
@@ -3666,11 +3671,11 @@ public class WorldManager : MonoBehaviour
 		this.CurrentRunVariables.ActiveDemand = null;
 		if (demandEvent.Successful)
 		{
-			QuestManager.instance.SpecialActionComplete("demand_success", null);
+			Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("demand_success", null);
 		}
 		else
 		{
-			QuestManager.instance.SpecialActionComplete("demand_failed", null);
+			Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("demand_failed", null);
 		}
 		yield break;
 	}
@@ -3780,7 +3785,22 @@ public class WorldManager : MonoBehaviour
 
 	public bool CheckAllVillagersDead()
 	{
-		return !this.DebugDontNeedVillagers && this.GetCardCount<BaseVillager>() <= 0;
+		if (this.DebugDontNeedVillagers)
+		{
+			return false;
+		}
+		int count = 0;
+		foreach (GameCard gameCard in this.AllCards)
+		{
+			if (gameCard != null && gameCard.CardData is IPrimaryRunEntity primary && primary.CountsForRunSurvival)
+			{
+				if (primary.BlocksRunFailure)
+				{
+					count++;
+				}
+			}
+		}
+		return count <= 0;
 	}
 
 	public void CreateSmoke(Vector3 pos)
@@ -4008,13 +4028,13 @@ public class WorldManager : MonoBehaviour
 		this.CurrentRunOptions = saveRound.RunOptions;
 		this.CurrentRunVariables = saveRound.RunVariables;
 		this.RoundExtraKeyValues = saveRound.ExtraKeyValues;
-		if (CitiesManager.instance == null)
+		if (!Mewtations.Core.LegacyRuntimeFlags.EnableCitiesSystem)
 		{
-			new Exception("CitiesManager should be active before loading the saveRound");
+			// Legacy exception removed
 		}
-		CitiesManager.instance.Wellbeing = saveRound.CitiesWellbeing;
-		CitiesManager.instance.NextConflictMonth = saveRound.CitiesConflictMonth;
-		CitiesManager.instance.ActiveEvent = saveRound.CitiesDisaster;
+		Mewtations.Core.LegacyCitiesHooks.Wellbeing = saveRound.CitiesWellbeing;
+		Mewtations.Core.LegacyCitiesHooks.NextConflictMonth = saveRound.CitiesConflictMonth;
+		Mewtations.Core.LegacyCitiesHooks.ActiveEvent = saveRound.CitiesDisaster;
 		if (this.CurrentRunVariables.ActiveDemand != null && string.IsNullOrEmpty(this.CurrentRunVariables.ActiveDemand.DemandId))
 		{
 			this.CurrentRunVariables.ActiveDemand = null;
@@ -4428,10 +4448,10 @@ public class WorldManager : MonoBehaviour
 		this.NewCardsFound = 0;
 		this.MonthTimer = 0f;
 		this.BoardMonths = new BoardMonths();
-		if (CitiesManager.instance != null)
+		if (Mewtations.Core.LegacyRuntimeFlags.EnableCitiesSystem)
 		{
-			CitiesManager.instance.Wellbeing = CitiesManager.instance.WellbeingStart;
-			CitiesManager.instance.NextConflictMonth = 0;
+			Mewtations.Core.LegacyCitiesHooks.Wellbeing = Mewtations.Core.LegacyCitiesHooks.WellbeingStart;
+			Mewtations.Core.LegacyCitiesHooks.NextConflictMonth = 0;
 		}
 		this.GivenCards.Clear();
 		this.BoughtBoosterIds.Clear();
@@ -4460,11 +4480,11 @@ public class WorldManager : MonoBehaviour
 	{
 		if (InputController.instance.GetKeyDown(Key.Period))
 		{
-			CitiesManager.instance.AddWellbeing(5);
+			Mewtations.Core.LegacyCitiesHooks.AddWellbeing(5);
 		}
 		if (InputController.instance.GetKeyDown(Key.Comma))
 		{
-			CitiesManager.instance.AddWellbeing(-5);
+			Mewtations.Core.LegacyCitiesHooks.AddWellbeing(-5);
 		}
 		if (this.HoveredCard != null && InputController.instance.GetKeyDown(Key.Z))
 		{
@@ -4873,5 +4893,8 @@ public class WorldManager : MonoBehaviour
 		InMenu
 	}
 }
+
+
+
 
 

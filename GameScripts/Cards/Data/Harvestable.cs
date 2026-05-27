@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Mewtations.Systems.Labor;
 
 public class Harvestable : CardData
 {
@@ -23,7 +24,7 @@ public class Harvestable : CardData
 
 	protected override bool CanHaveCard(CardData otherCard)
 	{
-		return otherCard is BaseVillager || otherCard is Worker || otherCard.Id == this.Id || (this.MyCardType == CardType.Weather && otherCard.MyCardType == CardType.Weather) || this.CanHaveCardIds.Contains(otherCard.Id);
+		return LaborUtility.IsLaborCapable(otherCard) || otherCard.Id == this.Id || (this.MyCardType == CardType.Weather && otherCard.MyCardType == CardType.Weather) || this.CanHaveCardIds.Contains(otherCard.Id);
 	}
 
 	public override void SetFoil()
@@ -55,21 +56,25 @@ public class Harvestable : CardData
 	{
 		if (!(this is EnergyHarvestable))
 		{
-			base.GetChildrenMatchingPredicate((CardData x) => x is BaseVillager || x is Worker, this.villagers);
+			base.GetChildrenMatchingPredicate((CardData x) => LaborUtility.IsLaborCapable(x), this.villagers);
 			bool flag = true;
 			GameCard cardWithStatusInStack = this.MyGameCard.GetCardWithStatusInStack();
 			if (cardWithStatusInStack != null && cardWithStatusInStack.TimerRunning && cardWithStatusInStack.TimerActionId == "finish_blueprint")
 			{
 				flag = false;
 			}
-			if (this.villagers.Count >= this.RequiredVillagerCount && (base.HasCardOnTop<BaseVillager>() || base.HasCardOnTop<Worker>()) && flag)
+			if (this.villagers.Count >= this.RequiredVillagerCount && (HasLaborCapableOnTop()) && flag)
 			{
-				string actionId = base.GetActionId("CompleteHarvest");
+								string actionId = base.GetActionId("CompleteHarvest");
 				float num = 1f;
-				List<CardData> list = this.villagers.FindAll((CardData x) => x is BaseVillager).ToList<CardData>();
+				List<CardData> list = this.villagers.FindAll((CardData x) => LaborUtility.IsLaborCapable(x));
 				if (list.Count > 0)
 				{
-					num = list.Max<CardData>((CardData v) => ((BaseVillager)v).GetActionTimeModifier(actionId, this));
+                    // Fallback to max efficiency among labor capable actors.
+					num = list.Min(v => {
+                        if (v is ILaborCapable laborCap) return 1f / laborCap.GetLaborEfficiency();
+                        return 1f;
+                    });
 				}
 				this.MyGameCard.StartTimer(num * this.HarvestTime, new TimerAction(this.CompleteHarvest), this.StatusText, actionId, true, false, false);
 			}
@@ -128,12 +133,23 @@ public class Harvestable : CardData
 		{
 			this.Amount--;
 		}
-		GameCard gameCard = null;
-		if (base.HasCardOnTop<BaseVillager>() || base.HasCardOnTop<Worker>())
+				GameCard gameCard = null;
+		if (HasLaborCapableOnTop())
 		{
 			gameCard = this.MyGameCard.Child;
 			gameCard.RotWobble(0.5f);
 		}
+        foreach (CardData worker in this.villagers)
+        {
+            if (worker != null && LaborUtility.IsLaborCapable(worker))
+            {
+                float staminaCost = 5f;
+                if (this.Id == "berrybush" || this.Id == "apple_tree") staminaCost = 2f;
+                else if (this.Id == "tree" || this.Id == "wood") staminaCost = 5f;
+                else if (this.Id == "rock" || this.Id == "iron_rock") staminaCost = 8f;
+                LaborUtility.ConsumeLaborStamina(worker, staminaCost);
+            }
+        }
 		ICardId cardToGive = this.GetCardToGive();
 		if (cardToGive != null && !string.IsNullOrEmpty(cardToGive.Id))
 		{
@@ -194,3 +210,6 @@ public class Harvestable : CardData
 	[Card]
 	public List<string> CanHaveCardIds = new List<string>();
 }
+
+
+
