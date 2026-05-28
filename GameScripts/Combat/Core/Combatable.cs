@@ -425,10 +425,6 @@ public class Combatable : CardData
 			this.MyConflict.UpdateConflict();
 		}
 		// Legacy realtime combat loop disabled. Combat execution controlled exclusively by CombatV2.
-		if (this.MyGameCard.BeingHovered && this.InConflict && !this.IsPassiveCombatant)
-		{
-			this.DrawConflictArrows(false);
-		}
 		this.previouseHealthPoints = this.HealthPoints;
 		base.UpdateCard();
 		this.CheckDeath();
@@ -469,40 +465,7 @@ public class Combatable : CardData
 	[Obsolete("Legacy realtime method. Controlled by CombatV2.")]
 	public void CompleteAttack() {}
 
-	public void DrawConflictArrows(bool onlyVeryEffective)
-	{
-		if (this.InAttack || this.Attacked)
-		{
-			return;
-		}
-		if (this.MyGameCard.BeingDragged)
-		{
-			return;
-		}
-		foreach (Combatable combatable in this.MyConflict.GetCombatableTargets(this))
-		{
-			if (!(combatable == null) && (!combatable.InAttack || combatable.CurrentAttackAnimation == null || !(combatable.CurrentAttackAnimation is AttackAnimationMelee)) && !combatable.MyGameCard.BeingDragged)
-			{
-				bool flag = this.IsVeryEffective(this.ProcessedAttackType, combatable.ProcessedAttackType);
-				if (!onlyVeryEffective || flag)
-				{
-					Vector3 vector = base.transform.position + Vector3.up * 0.1f;
-					Vector3 vector2 = combatable.transform.position + Vector3.up * 0.1f;
-					Vector3 normalized = (vector2 - vector).normalized;
-					float conflictArrowLengthDecrease = WorldManager.instance.ConflictArrowLengthDecrease;
-					Color color = (onlyVeryEffective ? ColorManager.instance.EffectiveCombatLineColor : ColorManager.instance.CombatLineColor);
-					ConflictArrow conflictArrow = new ConflictArrow
-					{
-						Start = vector + normalized * conflictArrowLengthDecrease,
-						End = vector2 - normalized * conflictArrowLengthDecrease,
-						Color = color,
-						VeryEffective = flag
-					};
-					DrawManager.instance.DrawShape(conflictArrow);
-				}
-			}
-		}
-	}
+
 
 	public override void StoppedDragging()
 	{
