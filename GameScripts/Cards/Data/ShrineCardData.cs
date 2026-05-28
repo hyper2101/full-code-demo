@@ -155,4 +155,24 @@ public class ShrineCardData : CardData
 			}
 		}
 	}
+
+	public static bool IsRelicActiveInShrine(string relicId)
+	{
+		if (WorldManager.instance == null) return false;
+		var shrines = WorldManager.instance.AllCards.FindAll(c => c != null && c.CardData is ShrineCardData && !c.Destroyed);
+		foreach (var shrine in shrines)
+		{
+			GameCard curr = shrine.Child;
+			while (curr != null)
+			{
+				if (curr.CardData != null && !curr.Destroyed && curr.CardData.Id == relicId)
+				{
+					return true;
+				}
+				curr = curr.Child;
+			}
+		}
+		return false;
+	}
 }
+

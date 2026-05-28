@@ -12,6 +12,10 @@ public class GameCard : Draggable, IGameCardOrCardData
 {
 	public ICardContainer MainContainer { get; private set; }
 	public ICardContainer InventoryContainer { get; private set; }
+	public void SetInventoryContainer(ICardContainer container)
+	{
+		this.InventoryContainer = container;
+	}
 
 	protected override bool HasPhysics
 	{
@@ -367,11 +371,73 @@ public class GameCard : Draggable, IGameCardOrCardData
 				WorldManager.instance.UniqueIdToCard.Remove(this.CardData.UniqueId);
 			}
 		}
+		if (Mewtations.Combat.UI.CombatOverlayUI.BoardHoveredCat == this)
+		{
+			Mewtations.Combat.UI.CombatOverlayUI.BoardHoveredCat = null;
+		}
 		base.OnDestroy();
 	}
 
 	private void OnGUI()
 	{
+		if (this.CardData is CatCardData && (this.BeingHovered || WorldManager.instance.HoveredCard == this))
+		{
+			Mewtations.Combat.UI.CombatOverlayUI.BoardHoveredCat = this;
+		}
+		else if (Mewtations.Combat.UI.CombatOverlayUI.BoardHoveredCat == this)
+		{
+			Mewtations.Combat.UI.CombatOverlayUI.BoardHoveredCat = null;
+		}
+
+		if (this.CardData is Mewtations.Legacy.Stacklands.Enemy enemy && (enemy.HoldProgress > 0f || this.BeingHovered || WorldManager.instance.HoveredCard == this))
+		{
+			if (Camera.main != null)
+			{
+				Vector3 screenPos = Camera.main.WorldToScreenPoint(this.transform.position + new Vector3(0, 0.2f, -0.6f));
+				if (screenPos.z > 0)
+				{
+					float x = screenPos.x - 75f;
+					float y = Screen.height - screenPos.y - 45f;
+
+					// Draw a premium glassmorphic background box
+					GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
+					boxStyle.normal.background = Texture2D.whiteTexture;
+					boxStyle.normal.textColor = Color.white;
+					boxStyle.fontSize = 11;
+					boxStyle.fontStyle = FontStyle.Bold;
+					boxStyle.alignment = TextAnchor.MiddleCenter;
+
+					Color oldColor = GUI.color;
+					GUI.color = new Color(0.10f, 0.10f, 0.14f, 0.90f);
+					GUI.Box(new Rect(x, y, 150f, 40f), "", boxStyle);
+
+					GUI.color = new Color(0.85f, 0.2f, 0.2f, 1f); // Red/Crimson top border line
+					GUI.Box(new Rect(x, y, 150f, 2f), ""); 
+
+					float pct = Mathf.Clamp01(enemy.HoldProgress / Mewtations.Legacy.Stacklands.Enemy.MaxHoldTime);
+					
+					// Bar BG
+					GUI.color = new Color(0.2f, 0.2f, 0.2f, 1f);
+					GUI.Box(new Rect(x + 10f, y + 25f, 130f, 8f), ""); 
+
+					// Bar Fill (Crimson/orange-red gradient)
+					GUI.color = new Color(1.0f, 0.3f, 0.1f, 1f);
+					GUI.Box(new Rect(x + 10f, y + 25f, 130f * pct, 8f), ""); 
+
+					// Text
+					GUIStyle textStyle = new GUIStyle();
+					textStyle.normal.textColor = new Color(1.0f, 0.9f, 0.7f, 1f);
+					textStyle.fontSize = 10;
+					textStyle.fontStyle = FontStyle.Bold;
+					textStyle.alignment = TextAnchor.MiddleCenter;
+					string promptText = enemy.HoldProgress > 0f ? "Đang khiêu chiến..." : "Giữ chuột trái để khiêu chiến!";
+					GUI.Label(new Rect(x, y + 4f, 150f, 20f), promptText, textStyle);
+
+					GUI.color = oldColor;
+				}
+			}
+		}
+
 		if (this.CardData is CatGodMouth mouth)
 		{
 			// Render a beautiful floating glassmorphic progress bar or text overlay when hovered or selected

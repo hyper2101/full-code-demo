@@ -169,6 +169,36 @@ namespace Mewtations.Combat
                 penalty = Mathf.Min(0.50f, penalty);
                 baseDamage = Mathf.RoundToInt(baseDamage * (1f - penalty));
             }
+
+            // Check for Scaling Passive Talisman
+            if (Source is CatCardData cat)
+            {
+                bool hasScalingPassive = false;
+                if (cat.EquipmentSlots != null)
+                {
+                    if (cat.EquipmentSlots.ContainsKey(Mewtations.Expedition.CatSlotType.Passive1))
+                    {
+                        var p1 = cat.EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive1].EquippedItem;
+                        if (p1 != null && p1 is Mewtations.Cards.Data.ScalingPassiveTalisman) hasScalingPassive = true;
+                    }
+                    if (cat.EquipmentSlots.ContainsKey(Mewtations.Expedition.CatSlotType.Passive2))
+                    {
+                        var p2 = cat.EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive2].EquippedItem;
+                        if (p2 != null && p2 is Mewtations.Cards.Data.ScalingPassiveTalisman) hasScalingPassive = true;
+                    }
+                }
+
+                if (hasScalingPassive && TurnBasedCombatManager.Instance != null)
+                {
+                    int currentRound = TurnBasedCombatManager.Instance.CurrentRound;
+                    if (currentRound >= 6)
+                    {
+                        float bonus = 0.05f * (currentRound - 5);
+                        baseDamage = Mathf.RoundToInt(baseDamage * (1f + bonus));
+                    }
+                }
+            }
+
             return baseDamage;
         }
 

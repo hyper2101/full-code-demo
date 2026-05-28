@@ -532,6 +532,10 @@ public class WorldManager : MonoBehaviour
 	{
 		get
 		{
+			if (WorldSimulationPaused)
+			{
+				return 0f;
+			}
 			if (!this.IsPlaying)
 			{
 				return 0f;

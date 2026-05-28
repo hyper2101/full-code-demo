@@ -39,6 +39,10 @@ namespace Mewtations.Combat.UI
 
         // Tooltip hover caching
         private object _hoveredObject = null;
+        private GameCard _selectedRingItem = null;
+        
+        public static GameCard BoardHoveredCat { get; set; }
+        public GameCard DraggedRingItem { get; set; }
 
         private void Awake()
         {
@@ -147,37 +151,70 @@ namespace Mewtations.Combat.UI
 
         private void OnGUI()
         {
-            if (!_isVisible || !TurnBasedCombatManager.Instance.IsCombatActive) return;
-
             InitializeStyles();
             _pulseValue = 0.4f + 0.4f * Mathf.Sin(Time.time * 6.0f);
 
-            // Reset hover caching at start of frame
-            _hoveredObject = null;
+            bool showCombatOverlay = _isVisible && TurnBasedCombatManager.Instance.IsCombatActive;
 
-            float screenWidth = Screen.width;
-            float screenHeight = Screen.height;
-
-            Rect overlayRect = new Rect(0, 0, screenWidth, screenHeight);
-            GUILayout.BeginArea(overlayRect, _panelStyle);
-
-            // Title Header
-            GUILayout.Label("MEWTATIONS: DOGMA — COMBAT ARENA", _headerStyle);
-            GUILayout.Space(15);
-
-            if (TurnBasedCombatManager.Instance.State == MewtationsCombatState.Preparation)
+            if (showCombatOverlay)
             {
-                DrawPreparationUI(screenWidth, screenHeight);
-            }
-            else
-            {
-                DrawBattleUI(screenWidth, screenHeight);
+                // Reset hover caching at start of frame
+                _hoveredObject = null;
+
+                float screenWidth = Screen.width;
+                float screenHeight = Screen.height;
+
+                Rect overlayRect = new Rect(0, 0, screenWidth, screenHeight);
+                GUILayout.BeginArea(overlayRect, _panelStyle);
+
+                // Title Header
+                GUILayout.Label("MEWTATIONS: DOGMA — COMBAT ARENA", _headerStyle);
+                GUILayout.Space(15);
+
+                if (TurnBasedCombatManager.Instance.State == MewtationsCombatState.Preparation)
+                {
+                    DrawPreparationUI(screenWidth, screenHeight);
+                }
+                else
+                {
+                    DrawBattleUI(screenWidth, screenHeight);
+                }
+
+                GUILayout.EndArea();
             }
 
-            GUILayout.EndArea();
+            // Global mouse up to clear drag if not applied (dropped on empty space)
+            if (Event.current.type == EventType.MouseUp && DraggedRingItem != null)
+            {
+                DraggedRingItem = null;
+            }
+
+            // Draw ghost icon
+            if (DraggedRingItem != null)
+            {
+                Vector2 mousePos = Event.current.mousePosition;
+                Rect ghostRect = new Rect(mousePos.x - 30, mousePos.y - 30, 60, 60);
+                
+                GUI.color = new Color(1, 1, 1, 0.6f);
+                if (DraggedRingItem.CardData.Icon != null)
+                {
+                    GUI.DrawTexture(ghostRect, DraggedRingItem.CardData.Icon.texture);
+                }
+                else
+                {
+                    GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
+                    boxStyle.normal.background = CreateColorTexture(new Color(0.2f, 0.2f, 0.3f, 0.9f));
+                    boxStyle.normal.textColor = Color.white;
+                    GUI.Box(ghostRect, DraggedRingItem.CardData.Name, boxStyle);
+                }
+                GUI.color = Color.white;
+            }
 
             // Render tooltip on top of all windows at the end of repaint
-            DrawFloatingTooltip();
+            if (Event.current.type == EventType.Repaint)
+            {
+                DrawFloatingTooltip();
+            }
         }
 
         private void DrawPreparationUI(float screenWidth, float screenHeight)
@@ -231,14 +268,25 @@ namespace Mewtations.Combat.UI
 
                 GUILayout.Label($"<color=#ff8>{roleVi}</color> | HP: {cat.HealthPoints}/{cat.ProcessedCombatStats.MaxHealth}", _logStyle);
 
-                // Handle click selection if not slotted
-                if (!isSlotted)
+                // Handle drop or selection
+                Rect cardRect = GUILayoutUtility.GetLastRect();
+                cardRect.y -= 18;
+                cardRect.height = 65;
+                
+                if (cardRect.Contains(Event.current.mousePosition))
                 {
-                    Rect cardRect = GUILayoutUtility.GetLastRect();
-                    cardRect.y -= 18;
-                    cardRect.height = 65;
-                    
-                    if (GUI.Button(cardRect, "", GUIStyle.none))
+                    _hoveredObject = cat;
+                    if (Event.current.type == EventType.MouseUp && DraggedRingItem != null)
+                    {
+                        ApplyRingItemToCat(DraggedRingItem, cat);
+                        DraggedRingItem = null;
+                        Event.current.Use();
+                    }
+                }
+                
+                if (GUI.Button(cardRect, "", GUIStyle.none))
+                {
+                    if (!isSlotted)
                     {
                         if (_selectedSidebarCat == cat)
                         {
@@ -248,11 +296,6 @@ namespace Mewtations.Combat.UI
                         {
                             _selectedSidebarCat = cat;
                         }
-                    }
-
-                    if (cardRect.Contains(Event.current.mousePosition))
-                    {
-                        _hoveredObject = cat;
                     }
                 }
                 
@@ -335,6 +378,9 @@ namespace Mewtations.Combat.UI
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
+
+            GUILayout.Space(20);
+            DrawOrderingInventoryUI(screenWidth, screenHeight);
         }
 
         private void DrawPrepGrid(bool isPlayer)
@@ -454,6 +500,19 @@ namespace Mewtations.Combat.UI
 
                 if (isPlayer)
                 {
+                    Rect slotRect = GUILayoutUtility.GetLastRect();
+                    
+                    if (slotRect.Contains(Event.current.mousePosition))
+                    {
+                        _hoveredObject = unit;
+                        if (Event.current.type == EventType.MouseUp && DraggedRingItem != null && unit.Source is CatCardData cat)
+                        {
+                            ApplyRingItemToCat(DraggedRingItem, cat);
+                            DraggedRingItem = null;
+                            Event.current.Use();
+                        }
+                    }
+                    
                     if (GUILayout.Button(contentText, GUIStyle.none, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true)))
                     {
                         formation.PlayerUnits.Remove(unit);
@@ -462,13 +521,12 @@ namespace Mewtations.Combat.UI
                 else
                 {
                     GUILayout.Label(contentText, _logStyle);
-                }
-
-                // Hover checking
-                Rect lastRect = GUILayoutUtility.GetLastRect();
-                if (lastRect.Contains(Event.current.mousePosition))
-                {
-                    _hoveredObject = unit;
+                    
+                    Rect lastRect = GUILayoutUtility.GetLastRect();
+                    if (lastRect.Contains(Event.current.mousePosition))
+                    {
+                        _hoveredObject = unit;
+                    }
                 }
             }
 
@@ -708,7 +766,13 @@ namespace Mewtations.Combat.UI
 
         private void DrawFloatingTooltip()
         {
-            if (_hoveredObject == null) return;
+            object tooltipTarget = _hoveredObject;
+            if (tooltipTarget == null && BoardHoveredCat != null)
+            {
+                tooltipTarget = BoardHoveredCat;
+            }
+            
+            if (tooltipTarget == null || DraggedRingItem != null) return;
 
             InitializeStyles();
 
@@ -742,7 +806,7 @@ namespace Mewtations.Combat.UI
             string weaponEfficiencyVi = "Bậc C (1.0x sát thương)";
             string weaponResistanceVi = "Giảm 0% sát thương gánh chịu";
 
-            if (_hoveredObject is CombatUnit unit)
+            if (tooltipTarget is CombatUnit unit)
             {
                 title = unit.Name;
                 role = unit.Role.ToString();
@@ -777,7 +841,7 @@ namespace Mewtations.Combat.UI
                     ultDesc = GetUltimateDescVi(ultType);
                 }
             }
-            else if (_hoveredObject is CatCardData catCard)
+            else if (tooltipTarget is GameCard gameCard && gameCard.CardData is CatCardData catCard)
             {
                 title = catCard.Name;
                 role = catCard.Role.ToString();
@@ -940,6 +1004,149 @@ namespace Mewtations.Combat.UI
                 UltimateType.DisruptStun => "Nhảy đập gây sát thương lớn và Đóng Băng (đứng hình 1 lượt) kẻ địch chính.",
                 _ => type.ToString()
             };
+        }
+
+        private void ApplyRingItemToCat(GameCard ringItem, CatCardData cat)
+        {
+            if (ringItem == null || cat == null) return;
+
+            var ringCard = WorldManager.instance.AllCards
+                .FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.StorageRingCardData && !c.Destroyed);
+            if (ringCard == null) return;
+
+            if (ringItem.CardData is Equipable eq)
+            {
+                var oldEquip = cat.GetEquipableOfEquipableType(eq.EquipableType);
+                if (oldEquip != null)
+                {
+                    cat.UnequipItem(oldEquip);
+                    ringCard.InventoryContainer.Insert(oldEquip.MyGameCard, new ContainerInsertContext { SourceCard = cat.MyGameCard, ContextSource = "OrderingSwap" });
+                }
+                
+                ringCard.InventoryContainer.Remove(ringItem);
+                cat.MyGameCard.Equip(eq);
+                TurnBasedCombatManager.Instance.AddLog($"⚔️ Trang bị thành công '{eq.Name}' cho {cat.Name}!");
+            }
+            else if (ringItem.CardData.Id.Contains("potion") || ringItem.CardData.Id.Contains("pill") || ringItem.CardData.Id.Contains("food") || ringItem.CardData is Food)
+            {
+                cat.HealthPoints = Mathf.Min(cat.ProcessedCombatStats.MaxHealth, cat.HealthPoints + 15);
+                
+                ringCard.InventoryContainer.Remove(ringItem);
+                ringItem.DestroyCard(true, true);
+                
+                TurnBasedCombatManager.Instance.AddLog($"🧪 Sử dụng '{ringItem.CardData.Name}' cho {cat.Name}. Phục hồi +15 HP!");
+            }
+            else
+            {
+                TurnBasedCombatManager.Instance.AddLog("⚠️ Vật phẩm này không thể trang bị hoặc sử dụng lên Mèo!");
+            }
+
+            _selectedRingItem = null;
+        }
+
+        private void DrawOrderingInventoryUI(float screenWidth, float screenHeight)
+        {
+            GUILayout.BeginVertical(_sidebarCardStyle, GUILayout.ExpandWidth(true));
+            
+            var ringCard = WorldManager.instance.AllCards
+                .FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.StorageRingCardData && !c.Destroyed);
+
+            string title = "<b>NHẪN TRỮ VẬT (EXPEDITION STORAGE RING) - LƯỚI 6x5 TIỂU THẾ GIỚI</b>";
+            if (ringCard == null)
+            {
+                GUILayout.Label($"{title} <color=red>(Không tìm thấy Nhẫn Trữ Vật trên Board!)</color>", _headerStyle);
+                GUILayout.EndVertical();
+                return;
+            }
+
+            GUILayout.Label(title, _headerStyle);
+            GUILayout.Space(10);
+
+            var container = ringCard.InventoryContainer;
+            var items = container != null ? container.GetChildren() : new List<GameCard>();
+            bool hasRelic = ShrineCardData.IsRelicActiveInShrine("item_ancient_relic_insurance");
+
+            GUILayout.BeginVertical();
+            for (int r = 0; r < 5; r++)
+            {
+                GUILayout.BeginHorizontal();
+                for (int c = 0; c < 6; c++)
+                {
+                    int index = r * 6 + c;
+                    bool isProtected = hasRelic && index < 5;
+                    
+                    GUIStyle slotStyle = new GUIStyle(_unitCardStyle);
+                    if (isProtected)
+                    {
+                        Texture2D protectedBg = CreateColorTexture(new Color(0.1f, 0.4f, 0.45f, 0.85f));
+                        slotStyle.normal.background = protectedBg;
+                    }
+
+                    GameCard itemCard = index < items.Count ? items[index] : null;
+
+                    string buttonText = "[ Trống ]";
+                    if (isProtected && itemCard == null)
+                    {
+                        buttonText = "<color=#00ffcc>[🛡️ Trống]</color>";
+                    }
+                    else if (itemCard != null)
+                    {
+                        string prefix = isProtected ? "<color=#00ffcc>🛡️</color> " : "";
+                        buttonText = $"{prefix}<b>{itemCard.CardData.Name}</b>";
+                    }
+
+                    if (itemCard != null && DraggedRingItem == itemCard)
+                    {
+                        Texture2D selBg = CreateColorTexture(new Color(0.85f, 0.70f, 0.35f, 0.5f)); // Half transparent ghost style
+                        slotStyle.normal.background = selBg;
+                    }
+
+                    GUILayout.Box(buttonText, slotStyle, GUILayout.Width(screenWidth * 0.15f), GUILayout.Height(50));
+                    Rect slotRect = GUILayoutUtility.GetLastRect();
+                    
+                    if (itemCard != null && slotRect.Contains(Event.current.mousePosition))
+                    {
+                        if (Event.current.type == EventType.MouseDown && Event.current.button == 0)
+                        {
+                            DraggedRingItem = itemCard;
+                            Event.current.Use();
+                        }
+                    }
+                }
+                GUILayout.EndHorizontal();
+                GUILayout.Space(5);
+            }
+            GUILayout.EndVertical();
+
+            GUILayout.Space(20);
+            
+            // TRASH SLOT
+            GUIStyle trashStyle = new GUIStyle(GUI.skin.box);
+            trashStyle.normal.background = CreateColorTexture(new Color(0.4f, 0.1f, 0.1f, 0.9f));
+            trashStyle.normal.textColor = Color.red;
+            trashStyle.fontSize = 16;
+            trashStyle.fontStyle = FontStyle.Bold;
+            trashStyle.alignment = TextAnchor.MiddleCenter;
+            
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.Box("🗑️ HỦY TÀI NGUYÊN (Kéo thả vào đây để xóa vĩnh viễn)", trashStyle, GUILayout.Width(screenWidth * 0.4f), GUILayout.Height(60));
+            Rect trashRect = GUILayoutUtility.GetLastRect();
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            if (DraggedRingItem != null && trashRect.Contains(Event.current.mousePosition))
+            {
+                if (Event.current.type == EventType.MouseUp)
+                {
+                    TurnBasedCombatManager.Instance.AddLog($"🗑️ Đã vứt bỏ vĩnh viễn: {DraggedRingItem.CardData.Name}");
+                    DraggedRingItem.DestroyCard(true, true);
+                    DraggedRingItem = null;
+                    Event.current.Use();
+                }
+            }
+
+            GUILayout.EndVertical();
         }
 
         private Rect GUILayoutGetLastRect()

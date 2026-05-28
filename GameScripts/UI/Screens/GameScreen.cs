@@ -1642,6 +1642,61 @@ public class GameScreen : SokScreen
 	private bool redBlink;
 
 	public Image GameSpeedIcon;
+
+	private void OnGUI()
+	{
+		if (WorldManager.instance == null || WorldManager.instance.CurrentBoard == null) return;
+
+		// Count active enemy encounter cards on the board
+		var enemies = WorldManager.instance.AllCards
+			.Where(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.Enemy && !c.Destroyed)
+			.ToList();
+
+		int enemyCount = enemies.Count;
+		if (enemyCount == 0) return;
+
+		float screenWidth = Screen.width;
+		float width = 240f;
+		float height = 45f;
+		float x = screenWidth - width - 20f;
+		float y = 75f; // Render below standard speed controls
+
+		GUIStyle panelStyle = new GUIStyle(GUI.skin.box);
+		panelStyle.normal.background = Texture2D.whiteTexture;
+
+		Color oldColor = GUI.color;
+		GUI.color = new Color(0.12f, 0.08f, 0.08f, 0.90f); // Sleek translucent blood-tinted glass
+		GUI.Box(new Rect(x, y, width, height), "", panelStyle);
+
+		GUI.color = new Color(0.9f, 0.2f, 0.2f, 1f); // Premium crimson top border highlight
+		GUI.Box(new Rect(x, y, width, 3f), "");
+
+		GUIStyle textStyle = new GUIStyle();
+		textStyle.normal.textColor = new Color(0.95f, 0.8f, 0.8f);
+		textStyle.fontSize = 11;
+		textStyle.fontStyle = FontStyle.Bold;
+		textStyle.alignment = TextAnchor.MiddleLeft;
+
+		GUI.color = Color.white;
+		GUI.Label(new Rect(x + 15f, y + 10f, 150f, 25f), $"⚠️ THẾ LỰC THÙ ĐỊCH: {enemyCount}", textStyle);
+
+		GUIStyle btnStyle = new GUIStyle(GUI.skin.button);
+		btnStyle.normal.textColor = Color.white;
+		btnStyle.fontSize = 10;
+		btnStyle.fontStyle = FontStyle.Bold;
+		btnStyle.alignment = TextAnchor.MiddleCenter;
+
+		if (GUI.Button(new Rect(x + 160f, y + 10f, 65f, 25f), "ĐỊNH VỊ", btnStyle))
+		{
+			var randomEnemy = enemies[UnityEngine.Random.Range(0, enemies.Count)];
+			if (randomEnemy != null && GameCamera.instance != null)
+			{
+				GameCamera.instance.FocusOn(randomEnemy);
+			}
+		}
+
+		GUI.color = oldColor;
+	}
 }
 
 

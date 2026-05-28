@@ -11,6 +11,117 @@ public enum CatDomain { Settlement, Expedition, Combat, Dead }
 
 public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
 {
+    public Dictionary<Mewtations.Expedition.CatSlotType, Mewtations.Expedition.EquipmentSlotData> EquipmentSlots = new Dictionary<Mewtations.Expedition.CatSlotType, Mewtations.Expedition.EquipmentSlotData>();
+
+    public void InitializeEquipmentSlots()
+    {
+        if (EquipmentSlots.Count > 0)
+        {
+            // Sync unlocked status
+            EquipmentSlots[Mewtations.Expedition.CatSlotType.Pill].IsUnlocked = this.HasPillSlot && !this.IsPillSlotLocked;
+            EquipmentSlots[Mewtations.Expedition.CatSlotType.Skill].IsUnlocked = this.HasFoodSlot && !this.IsFoodSlotLocked && !this.IsUltimateLocked;
+            EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive1].IsUnlocked = this.HasPassive1Slot && !this.IsPassiveSlotsLocked;
+            EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive2].IsUnlocked = this.HasPassive2Slot && !this.IsPassiveSlotsLocked;
+            EquipmentSlots[Mewtations.Expedition.CatSlotType.Weapon].IsUnlocked = !this.IsEquipmentSlotsLocked;
+            EquipmentSlots[Mewtations.Expedition.CatSlotType.Torso].IsUnlocked = !this.IsEquipmentSlotsLocked;
+            EquipmentSlots[Mewtations.Expedition.CatSlotType.Head].IsUnlocked = !this.IsEquipmentSlotsLocked;
+            return;
+        }
+        
+        EquipmentSlots[Mewtations.Expedition.CatSlotType.Weapon] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Weapon, "VŨ KHÍ", !this.IsEquipmentSlotsLocked);
+        EquipmentSlots[Mewtations.Expedition.CatSlotType.Torso] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Torso, "ÁO", !this.IsEquipmentSlotsLocked);
+        EquipmentSlots[Mewtations.Expedition.CatSlotType.Head] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Head, "GIÁP NÓN", !this.IsEquipmentSlotsLocked);
+        
+        EquipmentSlots[Mewtations.Expedition.CatSlotType.Pill] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Pill, "LINH ĐAN", this.HasPillSlot && !this.IsPillSlotLocked);
+        EquipmentSlots[Mewtations.Expedition.CatSlotType.Skill] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Skill, "KỸ NĂNG", this.HasFoodSlot && !this.IsFoodSlotLocked && !this.IsUltimateLocked);
+        
+        EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive1] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Passive1, "THIÊN PHÚ 1", this.HasPassive1Slot && !this.IsPassiveSlotsLocked);
+        EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive2] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Passive2, "THIÊN PHÚ 2", this.HasPassive2Slot && !this.IsPassiveSlotsLocked);
+    }
+
+    public bool EquipToSlot(CardData equipable, Mewtations.Expedition.CatSlotType type)
+    {
+        InitializeEquipmentSlots();
+        if (!EquipmentSlots.ContainsKey(type)) return false;
+        var slot = EquipmentSlots[type];
+        
+        if (!slot.IsUnlocked) return false;
+        if (!slot.CanEquip(equipable)) return false;
+
+        // If there's an old item, unequip it
+        if (slot.EquippedItem != null)
+        {
+            UnequipFromSlot(type, true);
+        }
+
+        slot.EquippedItem = equipable;
+        
+        if (equipable is Equipable eq)
+        {
+            this.MyGameCard.Equip(eq);
+        }
+        else
+        {
+            var context = new ContainerInsertContext { SourceCard = this.MyGameCard, ContextSource = "Equip" };
+            ContainerTransactionSystem.Instance.RequestInsert(equipable.MyGameCard, this.MyGameCard.InventoryContainer, context);
+            equipable.MyGameCard.IsEquipped = true;
+            equipable.MyGameCard.RemoveFromStack();
+            this.OnEquipItem(null); // Just trigger memoir or general update
+        }
+        return true;
+    }
+
+    public void UnequipFromSlot(Mewtations.Expedition.CatSlotType type, bool dropToWorld)
+    {
+        InitializeEquipmentSlots();
+        if (!EquipmentSlots.ContainsKey(type)) return;
+        var slot = EquipmentSlots[type];
+        var item = slot.EquippedItem;
+        if (item != null)
+        {
+            slot.EquippedItem = null;
+            
+            if (item is Equipable eq)
+            {
+                this.MyGameCard.Unequip(eq);
+            }
+            else
+            {
+                ContainerTransactionSystem.Instance.RequestRemove(item.MyGameCard, this.MyGameCard.InventoryContainer);
+                item.MyGameCard.IsEquipped = false;
+                this.OnUnequipItem(null);
+            }
+            
+            if (dropToWorld)
+            {
+                if (TurnBasedCombatManager.Instance != null && TurnBasedCombatManager.Instance.IsCombatActive)
+                {
+                    var ringCard = WorldManager.instance.AllCards.FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.StorageRingCardData && !c.Destroyed);
+                    if (ringCard != null)
+                    {
+                        var context = new ContainerInsertContext { SourceCard = this.MyGameCard, ContextSource = "Unequip" };
+                        ContainerTransactionSystem.Instance.RequestInsert(item.MyGameCard, ringCard.InventoryContainer, context);
+                    }
+                    else
+                    {
+                        DropItemNearCat(item);
+                    }
+                }
+                else
+                {
+                    DropItemNearCat(item);
+                }
+            }
+        }
+    }
+
+    private void DropItemNearCat(CardData item)
+    {
+        Vector3 dropPos = this.MyGameCard.transform.position + new Vector3(UnityEngine.Random.Range(-0.5f, 0.5f), 0.2f, UnityEngine.Random.Range(-0.5f, 0.5f));
+        item.MyGameCard.transform.position = dropPos;
+        item.MyGameCard.SendIt();
+    }
+
     [ExtraData("is_paralyzed")]
     public bool IsParalyzed = false;
 
@@ -121,6 +232,7 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
 
     private void Awake()
     {
+        InitializeEquipmentSlots();
         _modifierPipeline = new ModifierPipeline(OnModifiersChanged);
         _statusEffectPipeline = new StatusEffectPipeline(this);
     }

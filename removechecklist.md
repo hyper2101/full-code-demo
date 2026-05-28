@@ -633,5 +633,37 @@ It IS evolving toward:
 * tactical narrative colony survival
 * dark comedy political survival game
 
-```
+---
+
+# 19. HARD DELETION TARGETS (EXACT FILES TO PURGE)
+
+This is a tracking list of physical files and folders that contain 100% dead legacy code. In upcoming refactoring phases, these files should be **completely deleted** to reduce compile times and remove terminology contamination.
+
+### 🗑️ Localization & Texts
+- `GameScripts/Core/SokTerms.cs` (Contains thousands of dead Stacklands string constants. We now use `MewtationsLocTable.tsv`).
+
+### 🗑️ Stacklands Automation (Factorio-style logic)
+*Folder: `GameScripts/Legacy/Stacklands/Automation/`*
+- `Conveyor.cs`, `Battery.cs`, `PassiveEnergyGenerator.cs`
+- `IndustrialSmelter.cs`, `EnergyLogic.cs`, `ResourceMagnet.cs`
+
+### 🗑️ Cities Economy & Demands
+*Folder: `GameScripts/Legacy/Stacklands/Cities/`*
+- `CitiesManager.cs`
+- `Demand.cs`, `DemandManager.cs`, `DemandEvent.cs`, `EnergyDemand.cs`
+- `DemandProgressBar.cs`, `CitiesDashboard.cs`
+
+### 🗑️ Stacklands Linear Quests
+*Folder: `GameScripts/Legacy/Stacklands/Quests/`*
+- `QuestManager.cs`
+- `AllQuests.cs`
+- `QuestGroup.cs`
+
+### 🗑️ Worker & Demographics (Generic Pawns)
+*Folder: `GameScripts/Cards/Data/`*
+- `BaseVillager.cs`, `Villager.cs`, `OldVillager.cs`, `TeenageVillager.cs`
+- `Worker.cs`, `RobotWorker.cs`, `WorkerTransformHolder.cs`, `WorkerBlueprint.cs`
+- `HousingConsumer.cs`, `Apartment.cs`, `House.cs`
+
+*(Note: Check if `BaseVillager` is fully decoupled from our new Cats before deleting, otherwise re-parent the Cats first).*
 ```

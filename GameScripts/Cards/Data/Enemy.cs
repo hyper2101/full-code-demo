@@ -1,61 +1,112 @@
 using System;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
+using Mewtations.Combat.Core;
 
 namespace Mewtations.Legacy.Stacklands
 {
 	[Obsolete("Legacy combat entity. Transitioning to CombatV2.", false)]
 	public class Enemy : Mob
 	{
+		public float HoldProgress = 0f;
+		public const float MaxHoldTime = 2.0f;
+
+		public override bool CanMove
+		{
+			get
+			{
+				return false;
+			}
+		}
+
 		protected override void Move()
 		{
-			Vector3 vector;
-			if (this.CurrentTarget != null)
+			// Strictly static - no movement or velocity updates allowed
+			if (this.MyGameCard != null)
 			{
-				vector = base.transform.position - this.CurrentTarget.transform.position;
-				vector.y = 0f;
-				vector.Normalize();
-				Debug.DrawLine(base.transform.position, base.transform.position - vector, Color.red, 1f);
-				vector = this.Wiggle(vector, 45f);
-				Debug.DrawLine(base.transform.position, base.transform.position - vector, Color.green, 1f);
-				vector = -vector * 4f;
+				this.MyGameCard.Velocity = null;
 			}
-			else if (WorldManager.instance.CurrentBoard.Id == "cities")
-			{
-				vector = Vector3.zero;
-			}
-			else
-			{
-				Vector2 vector2 = UnityEngine.Random.insideUnitCircle.normalized * 4f;
-				vector = new Vector3(vector2.x, 0f, vector2.y);
-			}
-			this.MyGameCard.Velocity = new Vector3?(new Vector3(vector.x, 0f, vector.z));
 		}
 
 		public override void UpdateCard()
 		{
-			CardData cardData2;
-			if (this.Id == "wolf")
+			// Ensure enemy has no pathfinding targets or aggression on the board
+			this.IsAggressive = false;
+			this.MoveTimer = 0f;
+			this.CurrentTarget = null;
+			if (this.MyGameCard != null)
 			{
-				CardData cardData;
-				if (base.HasCardOnTop("bone", out cardData))
+				this.MyGameCard.Velocity = null;
+			}
+
+			// Handle hover + hold interaction (left mouse / primary input)
+			bool isHovered = (WorldManager.instance != null && WorldManager.instance.HoveredCard == this.MyGameCard);
+			bool isHolding = isHovered && InputController.instance != null && InputController.instance.GetInput(0);
+
+			if (isHolding)
+			{
+				HoldProgress += Time.deltaTime;
+				if (HoldProgress >= MaxHoldTime)
 				{
-					cardData.MyGameCard.DestroyCard(false, true);
-					this.MyGameCard.DestroyCard(false, true);
-					WorldManager.instance.CreateCard(base.transform.position, "dog", true, false, true);
+					HoldProgress = 0f;
+					TriggerEngagement();
+				}
+				else
+				{
+					// Visual Feedback: Subtle shake and pulse during progress
+					float shakeAmount = 0.03f * (HoldProgress / MaxHoldTime);
+					if (this.MyGameCard != null)
+					{
+						this.MyGameCard.transform.position += new Vector3(UnityEngine.Random.Range(-shakeAmount, shakeAmount), 0f, UnityEngine.Random.Range(-shakeAmount, shakeAmount));
+						this.MyGameCard.RotWobble(0.2f);
+					}
 				}
 			}
-			else if (this.Id == "feral_cat" && base.HasCardOnTop("milk", out cardData2) && WorldManager.instance.IsSpiritDlcActive())
+			else
 			{
-				cardData2.MyGameCard.DestroyCard(false, true);
-				this.MyGameCard.DestroyCard(false, true);
-				WorldManager.instance.CreateCard(base.transform.position, "cat", true, false, true);
+				HoldProgress = Mathf.Max(0f, HoldProgress - Time.deltaTime * 2f);
 			}
+
 			base.UpdateCard();
 		}
 
-		private Vector3 Wiggle(Vector3 vec, float angle)
+		private void TriggerEngagement()
 		{
-			return Quaternion.AngleAxis(UnityEngine.Random.Range(-angle, angle), Vector3.up) * vec;
+			if (WorldManager.instance == null || TurnBasedCombatManager.Instance == null) return;
+
+			// Gather all active player cats from the board
+			List<Combatable> players = WorldManager.instance.AllCards
+				.Where(c => c != null && c.CardData is CatCardData && !c.Destroyed)
+				.Select(c => c.CardData as Combatable)
+				.ToList();
+
+			// Encounter generation represents this enemy card as a node trigger
+			List<Combatable> enemies = new List<Combatable> { this };
+
+			// Pause world simulation and start turn-based combat preparation
+			TurnBasedCombatManager.Instance.StartCombat(players, enemies, (result) =>
+			{
+				if (result == CombatResult.Victory)
+				{
+					if (this.MyGameCard != null)
+					{
+						this.MyGameCard.DestroyCard(true, true);
+					}
+				}
+				else
+				{
+					// Push players away on retreat/defeat
+					foreach (var p in players)
+					{
+						if (p != null && p.MyGameCard != null)
+						{
+							p.MyGameCard.RemoveFromStack();
+							p.MyGameCard.TargetPosition = p.MyGameCard.transform.position + new Vector3(UnityEngine.Random.Range(-2.5f, -1.5f), 0f, UnityEngine.Random.Range(-2.5f, -1.5f));
+						}
+					}
+				}
+			});
 		}
 	}
 }

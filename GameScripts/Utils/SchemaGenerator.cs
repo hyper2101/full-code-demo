@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -862,9 +862,9 @@ public static class SchemaGenerator
 	public static List<string> PropBlacklist = new List<string>
 	{
 		"CardData.Id", "CardData.descriptionOverride", "CardData.nameOverride", "CardData.NameTerm", "CardData.DescriptionTerm", "CardData.PickupSound", "CardData.UniqueId", "CardData.ParentUniqueId", "CardData.EquipmentHolderUniqueId", "CardData.Value",
-		"CardData.Icon", "CardData.HideFromCardopedia", "CardData.MyGameCard", "CardData.MyCardType", "CardData.StatusEffects", "CardData.CreationMonth", "CardData.ExpectedValue", "Altar.inCutscene", "Animal.CreateTimer", "Combatable.Attacked",
-		"Combatable.AttackIsHit", "Combatable.AttackTimer", "Combatable.BeingAttacked", "Combatable.CurrentAttackType", "Combatable.InAttack", "Combatable.InAttackTimer", "Combatable._combatableDescription", "Combatable.AttackTargets", "Combatable.MyConflict", "Combatable.AttackAnimations",
-		"Combatable.CurrentHitText", "Combatable.BeingAttacked", "Combatable.StunTimer", "Conveyor.Direction", "Conveyor.corners", "DragonEgg.NormalIcon", "DragonEgg.CrackedIcon", "DragonEgg.CrackedIcon_2", "DragonEgg.CrackedSound", "Food.SpoilTime",
+		"CardData.Icon", "CardData.HideFromCardopedia", "CardData.MyGameCard", "CardData.MyCardType", "CardData.StatusEffects", "CardData.CreationMonth", "CardData.ExpectedValue", "Altar.inCutscene", "Animal.CreateTimer",
+		"Combatable._combatableDescription", "Combatable.MyConflict",
+		"Combatable.CurrentHitText", "Combatable.StunTimer", "Conveyor.Direction", "Conveyor.corners", "DragonEgg.NormalIcon", "DragonEgg.CrackedIcon", "DragonEgg.CrackedIcon_2", "DragonEgg.CrackedSound", "Food.SpoilTime",
 		"Mimic.TreasureChestIcon", "Mimic.RealIcon", "Mob.MoveTimer", "Mob.CurrentTarget", "Mob.moveFlag", "Poop.MakeSickTimer", "ResourceChest.SpecialIcon", "Royal.MoveTimer", "Spirit.SpiritSounds", "StrangePortal.SpawnTimer",
 		"StrangePortal.TravelTimer", "TrashCan.DestroySounds", "University.InventionSound", "University.SpecialIcon", "WickedWitch.WitchDieSounds", "WickedWitch.NormalIcon", "WickedWitch.OldLadyIcon", "WishingWell.SpecialIcon", "WishingWell.WishSound", "Equipable.AttackSounds",
 		"Equipable.blueprint", "Equipable._equipableInfo", "Subprint.SubprintIndex", "Subprint.ParentBlueprint", "Blueprint.BlueprintGroup", "Blueprint.HideFromIdeasTab", "Blueprint.IsInvention", "Blueprint.NeedsExactMatch", "Blueprint.Subprints"

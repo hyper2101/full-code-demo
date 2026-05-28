@@ -118,14 +118,6 @@ public class Combatable : CardData
 		}
 	}
 
-	public float TimeToAttackNormalized
-	{
-		get
-		{
-			return this.AttackTimer / this.GetAttackTime();
-		}
-	}
-
 	public Team Team
 	{
 		get
@@ -135,18 +127,6 @@ public class Combatable : CardData
 				return Team.Player;
 			}
 			return Team.Enemy;
-		}
-	}
-
-	public AttackAnimation CurrentAttackAnimation
-	{
-		get
-		{
-			if (this.AttackAnimations.Count > 0)
-			{
-				return this.AttackAnimations[0];
-			}
-			return null;
 		}
 	}
 
@@ -188,11 +168,7 @@ public class Combatable : CardData
 		return baseInitiative;
 	}
 
-	[Obsolete("Legacy realtime method. Use GetAccuracyScore instead.")]
-	protected virtual float GetHitChance() => GetAccuracyScore();
 
-	[Obsolete("Legacy realtime method. Use GetInitiativeScore instead.")]
-	protected virtual float GetAttackTime() => GetInitiativeScore();
 
 	public float DamageMultiplier
 	{
@@ -416,7 +392,7 @@ public class Combatable : CardData
 			this.MyGameCard.SpecialValue = new int?(this.HealthPoints);
 		}
 		this.UpdateCombatableTargets();
-		if ((this.combatableTargets.Count > 0 || this.GetConflictInStack() != null) && !this.InConflict)
+		if (this.Team != Team.Enemy && (this.combatableTargets.Count > 0 || this.GetConflictInStack() != null) && !this.InConflict)
 		{
 			this.StartOrJoinConflictInStack();
 		}
@@ -441,12 +417,6 @@ public class Combatable : CardData
 		base.UpdateCardText();
 	}
 
-	[Obsolete("Legacy realtime method. Controlled by CombatV2.")]
-	private void UpdateAttackAnimations() {}
-
-	[Obsolete("Legacy realtime method. Controlled by CombatV2.")]
-	private void StartAttack() {}
-
 	public virtual void NotifyParticipantUpdate(Combatable oldParticipant, Combatable newParticipant)
 	{
 	}
@@ -461,9 +431,6 @@ public class Combatable : CardData
 		projectile.OriginAnimation = originAnimation;
 		return projectile;
 	}
-
-	[Obsolete("Legacy realtime method. Controlled by CombatV2.")]
-	public void CompleteAttack() {}
 
 
 
@@ -535,11 +502,6 @@ public class Combatable : CardData
 
 	public void ExitConflict()
 	{
-		this.AttackAnimations.Clear();
-		this.AttackTimer = 0f;
-		this.BeingAttacked = false;
-		this.InAttack = false;
-		this.Attacked = false;
 	}
 
 	public SpecialHit DetermineSpecialHit()
@@ -661,11 +623,6 @@ public class Combatable : CardData
 				ChainLightningSystem.CastChainLightning(this, target, damage, 4, 0.25f);
 				break;
 		}
-	}
-
-	[Obsolete("Legacy realtime method. Controlled by CombatV2.")]
-	public virtual void PerformAttack(Combatable target, Vector3 attackPos)
-	{
 	}
 
 	private void PerformSpecialHit(SpecialHit specialHit, Combatable target, int dmg)
@@ -894,8 +851,11 @@ public class Combatable : CardData
 		}
 		if (this.HealthPoints <= 0)
 		{
+			if (this is CatCardData)
+			{
+				return; // Mèo không thực sự chết, chỉ bị tê tái ở 0 HP
+			}
 			this.isDead = true;
-			this.InAttack = false;
 			QuestManager.instance.SpecialActionComplete(this.Id + "_killed", null);
 			this.Die();
 		}
@@ -1037,47 +997,14 @@ public class Combatable : CardData
 
 	private int previouseHealthPoints;
 
-	[ExtraData("attack_timer")]
-	[HideInInspector]
-	[Obsolete("Legacy realtime combat field. Controlled by CombatV2.")]
-	public float AttackTimer;
-
-	[HideInInspector]
-	public bool BeingAttacked;
-
-	[HideInInspector]
-	public float StunTimer;
-
 	protected List<Combatable> combatableTargets = new List<Combatable>();
-
-	[HideInInspector]
-	[Obsolete("Legacy realtime combat field. Controlled by CombatV2.")]
-	public bool InAttack;
 
 	[HideInInspector]
 	public AttackType CurrentAttackType;
 
-	[HideInInspector]
-	public bool Attacked;
-
-	[HideInInspector]
-	[Obsolete("Legacy realtime combat field. Controlled by CombatV2.")]
-	public List<Combatable> AttackTargets;
-
-	[HideInInspector]
-	[Obsolete("Legacy realtime combat field. Controlled by CombatV2.")]
-	public float InAttackTimer;
-
-	[HideInInspector]
-	[Obsolete("Legacy realtime combat field. Controlled by CombatV2.")]
-	public bool AttackIsHit;
-
 	public BattlefieldContext MyConflict;
 
 	private SpecialHit AttackSpecialHit;
-
-	[Obsolete("Legacy realtime combat field. Controlled by CombatV2.")]
-	public List<AttackAnimation> AttackAnimations = new List<AttackAnimation>();
 
 	[HideInInspector]
 	public HitText CurrentHitText;

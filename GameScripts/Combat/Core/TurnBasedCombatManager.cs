@@ -368,54 +368,23 @@ namespace Mewtations.Combat.Core
                 }
                 else
                 {
-                    // Convert to Corpse card on board
-                    Vector3 spawnPos = unit.Source.transform.position;
-                    GameCard corpseCard = WorldManager.instance.CreateCard(spawnPos, "cat_corpse", true, true, true);
-                    CatCorpseData corpseData = corpseCard.CardData as CatCorpseData;
-                    if (corpseData != null)
-                    {
-                        corpseData.OriginalCatId = unit.Source.Id;
-                        corpseData.OriginalCatName = unit.Name;
-                        if (unit.Source is CatCardData cat)
-                        {
-                            corpseData.OriginalCatRole = cat.Role;
-                            corpseData.OriginalCatElement = cat.Element;
+                    // No corpse anymore! Cat is paralyzed with 0 HP
+                    AddLog($"💤 {unit.Name} bị đánh gục và rơi vào trạng thái Tê Liệt (0 HP).");
+                    unit.CurrentHP = 0;
+                    unit.Stamina = 0;
+                    unit.IsExhausted = true;
+                    unit.ExhaustionLevel = Mathf.Max(1, unit.ExhaustionLevel);
 
-                            // Save breakthrough and stats
-                            corpseData.OriginalBreakthroughLevel = cat.BreakthroughLevel;
-                            corpseData.OriginalHasPillSlot = cat.HasPillSlot;
-                            corpseData.OriginalHasFoodSlot = cat.HasFoodSlot;
-                            corpseData.OriginalHasPassive1Slot = cat.HasPassive1Slot;
-                            corpseData.OriginalHasPassive2Slot = cat.HasPassive2Slot;
-                            corpseData.OriginalSpeed = cat.Speed;
-                            if (cat.BaseCombatStats != null)
-                            {
-                                corpseData.OriginalMaxHealth = cat.BaseCombatStats.MaxHealth;
-                            }
-
-                            // Write death milestone to memoirs and serialize
-                            string layerInfo = (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive) 
-                                ? "Tầng " + ExpeditionManager.Instance.RunState.CurrentLayer 
-                                : "Căn Cứ";
-                            cat.AddMemoir("Tử trận tại viễn chinh " + layerInfo);
-                            corpseData.OriginalLineageGeneration = cat.LineageGeneration;
-                            corpseData.OriginalCharacterMemoirs = cat.CharacterMemoirsString;
-                        }
-                    }
-                    
-                    // Destroy original cat
-                    if (unit.Source.MyGameCard != null)
-                    {
-                        unit.Source.MyGameCard.DestroyCard(true, true);
-                    }
                     if (unit.Source is CatCardData catData)
                     {
-                        if (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive)
-                        {
-                            ExpeditionManager.Instance.ActiveCats.Remove(catData);
-                        }
+                        // Write death milestone to memoirs
+                        string layerInfo = (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive) 
+                            ? "Tầng " + ExpeditionManager.Instance.RunState.CurrentLayer 
+                            : "Căn Cứ";
+                        catData.AddMemoir("Bị đánh gục tại viễn chinh " + layerInfo);
                     }
-                    Formation.PlayerUnits.Remove(unit);
+                    
+                    // We DO NOT remove them from Formation.PlayerUnits so they sync back HP=0
                 }
             }
         }
@@ -434,8 +403,47 @@ namespace Mewtations.Combat.Core
             }
         }
 
+        private void ProcessOrderingLossRules()
+        {
+            if (Result != CombatResult.Defeat && Result != CombatResult.Retreated) return;
+
+            var rings = WorldManager.instance.AllCards
+                .Where(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.StorageRingCardData && !c.Destroyed)
+                .ToList();
+
+            foreach (var ringCard in rings)
+            {
+                if (ringCard.InventoryContainer == null) continue;
+
+                var items = ringCard.InventoryContainer.GetChildren().ToList();
+                if (items.Count == 0) continue;
+
+                bool hasRelic = ShrineCardData.IsRelicActiveInShrine("item_ancient_relic_insurance");
+                
+                List<GameCard> destroyableItems = new List<GameCard>();
+                for (int i = 0; i < items.Count; i++)
+                {
+                    if (hasRelic && i < 5) continue;
+                    destroyableItems.Add(items[i]);
+                }
+
+                if (destroyableItems.Count == 0) continue;
+
+                int destroyCount = Mathf.CeilToInt(destroyableItems.Count * 0.5f);
+                var shuffled = destroyableItems.OrderBy(x => UnityEngine.Random.value).ToList();
+                for (int i = 0; i < destroyCount && i < shuffled.Count; i++)
+                {
+                    var item = shuffled[i];
+                    ringCard.InventoryContainer.Remove(item);
+                    item.DestroyCard(true, false);
+                    AddLog($"💥 Nhẫn Trữ Vật: Tiêu hủy vật phẩm '{item.CardData.Name}'!");
+                }
+            }
+        }
+
         private void EndCombat()
         {
+            ProcessOrderingLossRules();
             IsCombatActive = false;
             WorldManager.WorldSimulationPaused = false;
             

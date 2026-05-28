@@ -44,6 +44,16 @@ public class GameCamera : MonoBehaviour
 		}
 	}
 
+	public void FocusOn(Vector3 position)
+	{
+		this.TargetPositionOverride = position;
+	}
+
+	public void FocusOn(IGameCardOrCardData card)
+	{
+		this.TargetCardOverride = card;
+	}
+
 	public void CenterOnBoard(GameBoard board)
 	{
 		this.cameraTargetPosition = (base.transform.position = board.MiddleOfBoard() + this.GameStartCameraPosition);
