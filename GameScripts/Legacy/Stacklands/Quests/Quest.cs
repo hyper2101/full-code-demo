@@ -18,13 +18,13 @@ using System;
 		{
 			if (this.DescriptionTermOverride == null)
 			{
-				return SokLoc.Translate(this.DescriptionTerm);
+				return MewtationsLoc.Translate(this.DescriptionTerm);
 			}
 			if (this.RequiredCount != -1)
 			{
-				return SokLoc.Translate(this.DescriptionTermOverride, new LocParam[] { LocParam.Create("count", this.RequiredCount.ToString()) });
+				return MewtationsLoc.Translate(this.DescriptionTermOverride, new LocParam[] { LocParam.Create("count", this.RequiredCount.ToString()) });
 			}
-			return SokLoc.Translate(this.DescriptionTermOverride);
+			return MewtationsLoc.Translate(this.DescriptionTermOverride);
 		}
 	}
 

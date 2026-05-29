@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class Merchant : CardData
@@ -65,7 +65,7 @@ public class Merchant : CardData
 	{
 		if (this.AmountGiven > 0)
 		{
-			this.descriptionOverride = SokLoc.Translate("card_merchant_description_2", new LocParam[] { LocParam.Create("coinsNeeded", (this.AmountNeeded - this.AmountGiven).ToString()) });
+			this.descriptionOverride = MewtationsLoc.Translate("card_merchant_description_2", new LocParam[] { LocParam.Create("coinsNeeded", (this.AmountNeeded - this.AmountGiven).ToString()) });
 		}
 		else
 		{

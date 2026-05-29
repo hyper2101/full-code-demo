@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class SlaughterHouse : CardData
 {
@@ -25,7 +25,7 @@ public class SlaughterHouse : CardData
 	{
 		if (this.MyGameCard.HasChild && this.MyGameCard.Child.CardData is Animal)
 		{
-			this.MyGameCard.StartTimer(60f, new TimerAction(this.SlaughterAnimal), SokLoc.Translate("action_slaughtering_status"), base.GetActionId("SlaughterAnimal"), true, false, false);
+			this.MyGameCard.StartTimer(60f, new TimerAction(this.SlaughterAnimal), MewtationsLoc.Translate("action_slaughtering_status"), base.GetActionId("SlaughterAnimal"), true, false, false);
 		}
 		else
 		{

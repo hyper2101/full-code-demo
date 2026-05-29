@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
@@ -38,15 +38,15 @@ public class GameCanvas : MonoBehaviour
 	private void Awake()
 	{
 		GameCanvas.instance = this;
-		this.screens = base.GetComponentsInChildren<SokScreen>(true).ToList<SokScreen>();
+		this.screens = base.GetComponentsInChildren<MewtationsScreen>(true).ToList<MewtationsScreen>();
 		this.screenPositions = new List<GameCanvas.ScreenPosition>();
 		this.screenInTransition = new List<bool>();
-		foreach (SokScreen sokScreen in this.screens)
+		foreach (MewtationsScreen MewtationsScreen in this.screens)
 		{
 			this.screenPositions.Add(GameCanvas.ScreenPosition.Bottom);
 			this.screenInTransition.Add(false);
 		}
-		foreach (SokScreen sokScreen2 in this.screens)
+		foreach (MewtationsScreen sokScreen2 in this.screens)
 		{
 			sokScreen2.gameObject.SetActive(true);
 			sokScreen2.gameObject.SetActive(false);
@@ -70,7 +70,7 @@ public class GameCanvas : MonoBehaviour
 		}
 		if (InputController.instance.CancelTriggered() && !this.ModalIsOpen)
 		{
-			SokScreen previousScreen = this.GetPreviousScreen(this.CurrentScreen);
+			MewtationsScreen previousScreen = this.GetPreviousScreen(this.CurrentScreen);
 			if (previousScreen != null)
 			{
 				this.SetScreen(previousScreen);
@@ -137,7 +137,7 @@ public class GameCanvas : MonoBehaviour
 		}
 	}
 
-	private SokScreen GetPreviousScreen(SokScreen screen)
+	private MewtationsScreen GetPreviousScreen(MewtationsScreen screen)
 	{
 		if (screen is CardopediaScreen)
 		{
@@ -159,37 +159,37 @@ public class GameCanvas : MonoBehaviour
 
 	public static string FormatTimeLeft(float timeLeft)
 	{
-		return SokLoc.Translate("label_seconds_left_format", new LocParam[] { LocParam.Create("seconds", timeLeft.ToString("0.0")) });
+		return MewtationsLoc.Translate("label_seconds_left_format", new LocParam[] { LocParam.Create("seconds", timeLeft.ToString("0.0")) });
 	}
 
 	public static string FormatTime(float time)
 	{
-		return SokLoc.Translate("label_seconds_format", new LocParam[] { LocParam.Create("seconds", time.ToString("0.0")) });
+		return MewtationsLoc.Translate("label_seconds_format", new LocParam[] { LocParam.Create("seconds", time.ToString("0.0")) });
 	}
 
 	public static string FormatTimeShort(float time)
 	{
-		return SokLoc.Translate("label_seconds_format", new LocParam[] { LocParam.Create("seconds", time.ToString("0")) });
+		return MewtationsLoc.Translate("label_seconds_format", new LocParam[] { LocParam.Create("seconds", time.ToString("0")) });
 	}
 
-	public void SetScreen(SokScreen nextScreen)
+	public void SetScreen(MewtationsScreen nextScreen)
 	{
 		if (nextScreen == this.CurrentScreen)
 		{
 			return;
 		}
-		SokScreen currentScreen = this.CurrentScreen;
+		MewtationsScreen currentScreen = this.CurrentScreen;
 		if (currentScreen != null)
 		{
 			this.lastSelectedObject[currentScreen.Rect] = EventSystem.current.currentSelectedGameObject;
 		}
 		this.HandleTransition(this.CurrentScreen, nextScreen);
 		this.CurrentScreen = nextScreen;
-		foreach (SokScreen sokScreen in this.screens)
+		foreach (MewtationsScreen MewtationsScreen in this.screens)
 		{
-			if (!(sokScreen == currentScreen))
+			if (!(MewtationsScreen == currentScreen))
 			{
-				sokScreen.gameObject.SetActive(nextScreen == sokScreen);
+				MewtationsScreen.gameObject.SetActive(nextScreen == MewtationsScreen);
 			}
 		}
 		if (this.lastSelectedObject.ContainsKey(nextScreen.Rect))
@@ -203,30 +203,30 @@ public class GameCanvas : MonoBehaviour
 		this.SetFrameRateCap(this.CurrentScreen);
 	}
 
-	public SokScreen GetScreen<T>() where T : SokScreen
+	public MewtationsScreen GetScreen<T>() where T : MewtationsScreen
 	{
-		return this.screens.Find((SokScreen x) => x is T);
+		return this.screens.Find((MewtationsScreen x) => x is T);
 	}
 
-	public void SetScreen<T>() where T : SokScreen
+	public void SetScreen<T>() where T : MewtationsScreen
 	{
-		SokScreen screen = this.GetScreen<T>();
+		MewtationsScreen screen = this.GetScreen<T>();
 		if (screen == this.CurrentScreen)
 		{
 			return;
 		}
-		SokScreen currentScreen = this.CurrentScreen;
+		MewtationsScreen currentScreen = this.CurrentScreen;
 		if (currentScreen != null)
 		{
 			this.lastSelectedObject[currentScreen.Rect] = EventSystem.current.currentSelectedGameObject;
 		}
 		this.HandleTransition(this.CurrentScreen, screen);
 		this.CurrentScreen = screen;
-		foreach (SokScreen sokScreen in this.screens)
+		foreach (MewtationsScreen MewtationsScreen in this.screens)
 		{
-			if (!(sokScreen == currentScreen))
+			if (!(MewtationsScreen == currentScreen))
 			{
-				sokScreen.gameObject.SetActive(screen == sokScreen);
+				MewtationsScreen.gameObject.SetActive(screen == MewtationsScreen);
 			}
 		}
 		if (this.lastSelectedObject.ContainsKey(screen.Rect))
@@ -240,7 +240,7 @@ public class GameCanvas : MonoBehaviour
 		this.SetFrameRateCap(this.CurrentScreen);
 	}
 
-	private void SetFrameRateCap(SokScreen currentScreen)
+	private void SetFrameRateCap(MewtationsScreen currentScreen)
 	{
 		if (!currentScreen.IsFrameRateUncapped)
 		{
@@ -258,7 +258,7 @@ public class GameCanvas : MonoBehaviour
 		QualitySettings.vSyncCount = 0;
 	}
 
-	private void HandleTransition(SokScreen prevScreen, SokScreen nextScreen)
+	private void HandleTransition(MewtationsScreen prevScreen, MewtationsScreen nextScreen)
 	{
 		if (!this.HasTransition(prevScreen, nextScreen))
 		{
@@ -377,8 +377,8 @@ public class GameCanvas : MonoBehaviour
 	public void ShowDlcNotInstalledModal()
 	{
 		ModalScreen.instance.Clear();
-		ModalScreen.instance.SetTexts(SokLoc.Translate("label_spirit_dlc_not_installed_title"), SokLoc.Translate("label_spirit_dlc_not_installed_text"));
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_okay"), delegate
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_spirit_dlc_not_installed_title"), MewtationsLoc.Translate("label_spirit_dlc_not_installed_text"));
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_okay"), delegate
 		{
 			this.CloseModal();
 		});
@@ -388,8 +388,8 @@ public class GameCanvas : MonoBehaviour
 	public void ShowCantChangeBoardSpirit()
 	{
 		ModalScreen.instance.Clear();
-		ModalScreen.instance.SetTexts(SokLoc.Translate("label_change_board_disabled_title"), SokLoc.Translate("label_change_board_disabled_text"));
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_okay"), delegate
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_change_board_disabled_title"), MewtationsLoc.Translate("label_change_board_disabled_text"));
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_okay"), delegate
 		{
 			this.CloseModal();
 		});
@@ -399,7 +399,7 @@ public class GameCanvas : MonoBehaviour
 	public void ShowNameCombatableModal(CardData cb, Action onDone)
 	{
 		ModalScreen.instance.Clear();
-		ModalScreen.instance.SetTexts(SokLoc.Translate("label_name_villager_title"), SokLoc.Translate("label_name_villager_text"));
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_name_villager_title"), MewtationsLoc.Translate("label_name_villager_text"));
 		TMP_InputField input = ModalScreen.instance.AddInputNoButton();
 		if (!string.IsNullOrEmpty(cb.CustomName))
 		{
@@ -410,15 +410,15 @@ public class GameCanvas : MonoBehaviour
 			input.text = cb.Name;
 		}
 		input.characterLimit = 12;
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_random_name"), delegate
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_random_name"), delegate
 		{
 			input.text = this.GetRandomName();
 		});
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_okay"), delegate
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_okay"), delegate
 		{
 			ProfanityChecker profanityChecker = WorldManager.instance.GameDataLoader.ProfanityChecker;
 			string text = input.text;
-			if (profanityChecker.IsProfanityInLanguage(SokLoc.instance.CurrentLanguage, text))
+			if (profanityChecker.IsProfanityInLanguage(MewtationsLoc.instance.CurrentLanguage, text))
 			{
 				text = "Bobba";
 			}
@@ -439,7 +439,7 @@ public class GameCanvas : MonoBehaviour
 	{
 		ModalScreen.instance.Clear();
 		ModalScreen.instance.SetTexts(titleTerm, textTerm);
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_okay"), delegate
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_okay"), delegate
 		{
 			this.CloseModal();
 		});
@@ -449,8 +449,8 @@ public class GameCanvas : MonoBehaviour
 	public void ShowClearSaveModal()
 	{
 		ModalScreen.instance.Clear();
-		ModalScreen.instance.SetTexts(SokLoc.Translate("label_clear_save"), SokLoc.Translate("label_clear_save_confirm"));
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_yes"), delegate
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_clear_save"), MewtationsLoc.Translate("label_clear_save_confirm"));
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_yes"), delegate
 		{
 			TransitionScreen.instance.StartTransition(delegate
 			{
@@ -458,7 +458,7 @@ public class GameCanvas : MonoBehaviour
 				this.CloseModal();
 			}, 0.2f);
 		});
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_no"), delegate
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_no"), delegate
 		{
 			this.CloseModal();
 		});
@@ -468,9 +468,9 @@ public class GameCanvas : MonoBehaviour
 	public void ShowEarlyAccessModal()
 	{
 		ModalScreen.instance.Clear();
-		string text = SokLoc.Translate("label_youtube_cities_dlc_text", new LocParam[] { LocParam.Create("saveDirectory", PlatformHelper.CurrentSavesDirectory) });
-		ModalScreen.instance.SetTexts(SokLoc.Translate("label_youtube_cities_dlc_title"), text);
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_load_run"), delegate
+		string text = MewtationsLoc.Translate("label_youtube_cities_dlc_text", new LocParam[] { LocParam.Create("saveDirectory", PlatformHelper.CurrentSavesDirectory) });
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_youtube_cities_dlc_title"), text);
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_load_run"), delegate
 		{
 			SaveGame saveFromResources = SaveManager.instance.GetSaveFromResources("Saves/2000_BetaSave");
 			saveFromResources.SaveId = "4";
@@ -478,7 +478,7 @@ public class GameCanvas : MonoBehaviour
 			WorldManager.RestartGame();
 			this.CloseModal();
 		});
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_exit"), delegate
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_exit"), delegate
 		{
 			this.CloseModal();
 		});
@@ -488,13 +488,13 @@ public class GameCanvas : MonoBehaviour
 	public void ShowStartNewRunModal(Action onYes)
 	{
 		ModalScreen.instance.Clear();
-		ModalScreen.instance.SetTexts(SokLoc.Translate("label_start_new_run"), SokLoc.Translate("label_new_run_confirm"));
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_yes"), delegate
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_start_new_run"), MewtationsLoc.Translate("label_new_run_confirm"));
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_yes"), delegate
 		{
 			this.CloseModal();
 			onYes();
 		});
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_no"), delegate
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_no"), delegate
 		{
 			this.CloseModal();
 		});
@@ -506,17 +506,17 @@ public class GameCanvas : MonoBehaviour
 		ModalScreen.instance.Clear();
 		if (WorldManager.instance.CurrentBoard.Id == "main")
 		{
-			ModalScreen.instance.SetTexts(SokLoc.Translate(term), SokLoc.Translate("label_one_villager_needs_to_stay"));
+			ModalScreen.instance.SetTexts(MewtationsLoc.Translate(term), MewtationsLoc.Translate("label_one_villager_needs_to_stay"));
 		}
 		else if (WorldManager.instance.CurrentBoard.Id == "island")
 		{
-			ModalScreen.instance.SetTexts(SokLoc.Translate(term), SokLoc.Translate("label_one_villager_needs_to_stay_island"));
+			ModalScreen.instance.SetTexts(MewtationsLoc.Translate(term), MewtationsLoc.Translate("label_one_villager_needs_to_stay_island"));
 		}
 		else
 		{
-			ModalScreen.instance.SetTexts(SokLoc.Translate(term), SokLoc.Translate("label_one_villager_needs_to_stay"));
+			ModalScreen.instance.SetTexts(MewtationsLoc.Translate(term), MewtationsLoc.Translate("label_one_villager_needs_to_stay"));
 		}
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_okay"), delegate
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_okay"), delegate
 		{
 			this.CloseModal();
 		});
@@ -526,8 +526,8 @@ public class GameCanvas : MonoBehaviour
 	public void MaxVillagerCountPrompt(string term, int amount)
 	{
 		ModalScreen.instance.Clear();
-		ModalScreen.instance.SetTexts(SokLoc.Translate(term), SokLoc.Translate("label_max_villager_in_portal", new LocParam[] { LocParam.Create("amount", amount.ToString()) }));
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_okay"), delegate
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate(term), MewtationsLoc.Translate("label_max_villager_in_portal", new LocParam[] { LocParam.Create("amount", amount.ToString()) }));
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_okay"), delegate
 		{
 			this.CloseModal();
 		});
@@ -537,8 +537,8 @@ public class GameCanvas : MonoBehaviour
 	public void NotEnoughFoodToUsePortalPrompt()
 	{
 		ModalScreen.instance.Clear();
-		ModalScreen.instance.SetTexts(SokLoc.Translate("label_taking_portal_title"), SokLoc.Translate("label_not_enough_food_before_portal"));
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_okay"), delegate
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_taking_portal_title"), MewtationsLoc.Translate("label_not_enough_food_before_portal"));
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_okay"), delegate
 		{
 			this.CloseModal();
 		});
@@ -548,8 +548,8 @@ public class GameCanvas : MonoBehaviour
 	public void NotEnoughFoodToSailOffPrompt()
 	{
 		ModalScreen.instance.Clear();
-		ModalScreen.instance.SetTexts(SokLoc.Translate("label_sailing_off_title"), SokLoc.Translate("label_not_enough_food_before_sailing"));
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_okay"), delegate
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_sailing_off_title"), MewtationsLoc.Translate("label_not_enough_food_before_sailing"));
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_okay"), delegate
 		{
 			this.CloseModal();
 		});
@@ -559,13 +559,13 @@ public class GameCanvas : MonoBehaviour
 	public void LeaveSpiritWorldPrompt(Action onYes, Action onNo)
 	{
 		ModalScreen.instance.Clear();
-		ModalScreen.instance.SetTexts(SokLoc.Translate("label_return_from_spirit_world_title"), SokLoc.Translate("label_return_from_spirit_world_text"));
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_yes"), delegate
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_return_from_spirit_world_title"), MewtationsLoc.Translate("label_return_from_spirit_world_text"));
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_yes"), delegate
 		{
 			this.CloseModal();
 			onYes();
 		});
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_no"), delegate
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_no"), delegate
 		{
 			this.CloseModal();
 			onNo();
@@ -576,13 +576,13 @@ public class GameCanvas : MonoBehaviour
 	public void AbandonCityPrompt(Action onYes, Action onNo)
 	{
 		ModalScreen.instance.Clear();
-		ModalScreen.instance.SetTexts(SokLoc.Translate("label_abandon_city_title"), SokLoc.Translate("label_abandon_city_text"));
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_yes"), delegate
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_abandon_city_title"), MewtationsLoc.Translate("label_abandon_city_text"));
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_yes"), delegate
 		{
 			this.CloseModal();
 			onYes();
 		});
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_no"), delegate
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_no"), delegate
 		{
 			this.CloseModal();
 			Action onNo2 = onNo;
@@ -598,13 +598,13 @@ public class GameCanvas : MonoBehaviour
 	public void GoToCityPrompt(Action onYes, Action onNo)
 	{
 		ModalScreen.instance.Clear();
-		ModalScreen.instance.SetTexts(SokLoc.Translate("label_go_to_city_title"), SokLoc.Translate("label_go_to_city_text"));
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_yes"), delegate
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_go_to_city_title"), MewtationsLoc.Translate("label_go_to_city_text"));
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_yes"), delegate
 		{
 			this.CloseModal();
 			onYes();
 		});
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_no"), delegate
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_no"), delegate
 		{
 			this.CloseModal();
 			Action onNo2 = onNo;
@@ -623,15 +623,15 @@ public class GameCanvas : MonoBehaviour
 		string text = string.Join(", ", missingCardIds.Take<string>(3));
 		if (missingCardIds.Count > 3)
 		{
-			text = text + " " + SokLoc.Translate("label_missing_cards_more_text", new LocParam[] { LocParam.Create("amount", (missingCardIds.Count - 3).ToString()) });
+			text = text + " " + MewtationsLoc.Translate("label_missing_cards_more_text", new LocParam[] { LocParam.Create("amount", (missingCardIds.Count - 3).ToString()) });
 		}
-		ModalScreen.instance.SetTexts(SokLoc.Translate("label_missing_cards_title"), SokLoc.Translate("label_missing_cards_text", new LocParam[] { LocParam.Create("missing", text) }));
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_yes"), delegate
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_missing_cards_title"), MewtationsLoc.Translate("label_missing_cards_text", new LocParam[] { LocParam.Create("missing", text) }));
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_yes"), delegate
 		{
 			this.CloseModal();
 			onYes();
 		});
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_no"), delegate
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_no"), delegate
 		{
 			this.CloseModal();
 		});
@@ -677,13 +677,13 @@ public class GameCanvas : MonoBehaviour
 			text = "label_go_to_mainland_cities";
 		}
 		ModalScreen.instance.Clear();
-		ModalScreen.instance.SetTexts(SokLoc.Translate(text2), SokLoc.Translate(text));
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_yes"), delegate
+		ModalScreen.instance.SetTexts(MewtationsLoc.Translate(text2), MewtationsLoc.Translate(text));
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_yes"), delegate
 		{
 			this.CloseModal();
 			onYes();
 		});
-		ModalScreen.instance.AddOption(SokLoc.Translate("label_no"), delegate
+		ModalScreen.instance.AddOption(MewtationsLoc.Translate("label_no"), delegate
 		{
 			this.CloseModal();
 			onNo();
@@ -691,12 +691,12 @@ public class GameCanvas : MonoBehaviour
 		this.OpenModal();
 	}
 
-	private bool HasTransition(SokScreen prevScreen, SokScreen nextScreen)
+	private bool HasTransition(MewtationsScreen prevScreen, MewtationsScreen nextScreen)
 	{
 		return !(prevScreen == null) && !(nextScreen is GameScreen) && !(prevScreen is GameScreen) && !(prevScreen is CreditsScreen) && !(nextScreen is CreditsScreen);
 	}
 
-	private float GetEaseDuration(SokScreen screen, bool leaving)
+	private float GetEaseDuration(MewtationsScreen screen, bool leaving)
 	{
 		return 0.25f;
 	}
@@ -731,7 +731,7 @@ public class GameCanvas : MonoBehaviour
 		return new Vector2(vector.x * size.x, vector.y * size.y);
 	}
 
-	private void EnterFrom(SokScreen screen, GameCanvas.ScreenPosition pos)
+	private void EnterFrom(MewtationsScreen screen, GameCanvas.ScreenPosition pos)
 	{
 		if (screen == null)
 		{
@@ -749,12 +749,12 @@ public class GameCanvas : MonoBehaviour
 			});
 	}
 
-	private int ScreenIndex(SokScreen s)
+	private int ScreenIndex(MewtationsScreen s)
 	{
 		return this.screens.IndexOf(s);
 	}
 
-	private void TrackScreenPosition(SokScreen screen, GameCanvas.ScreenPosition pos)
+	private void TrackScreenPosition(MewtationsScreen screen, GameCanvas.ScreenPosition pos)
 	{
 		if (screen == null)
 		{
@@ -763,7 +763,7 @@ public class GameCanvas : MonoBehaviour
 		this.screenPositions[this.screens.IndexOf(screen)] = pos;
 	}
 
-	private void LeaveTo(SokScreen screen, GameCanvas.ScreenPosition pos)
+	private void LeaveTo(MewtationsScreen screen, GameCanvas.ScreenPosition pos)
 	{
 		RectTransform rect = screen.Rect;
 		if (rect == null)
@@ -802,12 +802,12 @@ public class GameCanvas : MonoBehaviour
 		rectTransform.anchoredPosition = position;
 	}
 
-	public SokScreen GetParentScreen(RectTransform obj)
+	public MewtationsScreen GetParentScreen(RectTransform obj)
 	{
-		return obj.gameObject.GetComponentInParent<SokScreen>(true);
+		return obj.gameObject.GetComponentInParent<MewtationsScreen>(true);
 	}
 
-	private bool ScreenInTransition(SokScreen screen)
+	private bool ScreenInTransition(MewtationsScreen screen)
 	{
 		return this.screenInTransition[this.ScreenIndex(screen)];
 	}
@@ -824,14 +824,14 @@ public class GameCanvas : MonoBehaviour
 		return false;
 	}
 
-	public bool ScreenIsInteractable(SokScreen screen)
+	public bool ScreenIsInteractable(MewtationsScreen screen)
 	{
 		return this.CurrentScreen == screen && !this.ScreenInTransition(screen);
 	}
 
-	public bool ScreenIsInteractable<T>() where T : SokScreen
+	public bool ScreenIsInteractable<T>() where T : MewtationsScreen
 	{
-		SokScreen screen = this.GetScreen<T>();
+		MewtationsScreen screen = this.GetScreen<T>();
 		return this.CurrentScreen == screen && !this.ScreenInTransition(screen);
 	}
 
@@ -881,7 +881,7 @@ public class GameCanvas : MonoBehaviour
 		}
 	}
 
-	private void SelectFirstSelectable(SokScreen screen)
+	private void SelectFirstSelectable(MewtationsScreen screen)
 	{
 		RectTransform rectTransform = screen.Rect;
 		if (this.ModalIsOpen)
@@ -935,7 +935,7 @@ public class GameCanvas : MonoBehaviour
 
 	public RectTransform FreeMoveParent;
 
-	public SokScreen CurrentScreen;
+	public MewtationsScreen CurrentScreen;
 
 	public RectTransform Modal;
 
@@ -947,7 +947,7 @@ public class GameCanvas : MonoBehaviour
 
 	private Dictionary<RectTransform, GameObject> lastSelectedObject = new Dictionary<RectTransform, GameObject>();
 
-	private List<SokScreen> screens;
+	private List<MewtationsScreen> screens;
 
 	private List<RaycastResult> raycastResults = new List<RaycastResult>();
 

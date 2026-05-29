@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,7 +20,7 @@ public class ConsumingEnergyGenerator : EnergyGenerator
 		{
 			if (!this.IsDamaged)
 			{
-				this.MyGameCard.StartTimer(this.CycleTime, new TimerAction(this.GenerateEnergy), SokLoc.Translate("card_energy_status_0"), base.GetActionId("GenerateEnergy"), true, false, false);
+				this.MyGameCard.StartTimer(this.CycleTime, new TimerAction(this.GenerateEnergy), MewtationsLoc.Translate("card_energy_status_0"), base.GetActionId("GenerateEnergy"), true, false, false);
 			}
 			if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == base.GetActionId("GenerateEnergy"))
 			{
@@ -42,7 +42,7 @@ public class ConsumingEnergyGenerator : EnergyGenerator
 		}
 		if (!this.MyGameCard.TimerRunning && this.hasEnergy)
 		{
-			this.MyGameCard.StartTimer(5f, new TimerAction(this.StopEnergy), SokLoc.Translate("card_energy_status_0"), base.GetActionId("StopEnergy"), false, true, true);
+			this.MyGameCard.StartTimer(5f, new TimerAction(this.StopEnergy), MewtationsLoc.Translate("card_energy_status_0"), base.GetActionId("StopEnergy"), false, true, true);
 		}
 		if (this.hasEnergy != this.prevHasEnergy)
 		{

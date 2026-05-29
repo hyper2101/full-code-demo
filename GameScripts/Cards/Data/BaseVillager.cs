@@ -42,11 +42,11 @@ namespace Mewtations.Legacy.Stacklands
 
 		public override void UpdateCardText()
 		{
-			this.descriptionOverride = SokLoc.Translate(this.DescriptionTerm);
+			this.descriptionOverride = MewtationsLoc.Translate(this.DescriptionTerm);
 			this.descriptionOverride += "\n\n";
 			if (WorldManager.instance.CurseIsActive(CurseType.Death))
 			{
-				this.descriptionOverride = this.descriptionOverride + "<i>" + SokLoc.Translate("label_villager_age_description", new LocParam[] { LocParam.Plural("age", this.Age + 1) }) + "<i>\n";
+				this.descriptionOverride = this.descriptionOverride + "<i>" + MewtationsLoc.Translate("label_villager_age_description", new LocParam[] { LocParam.Plural("age", this.Age + 1) }) + "<i>\n";
 			}
 			this.descriptionOverride = this.descriptionOverride + "<i>" + base.GetCombatableDescription() + "</i>";
 			if (AdvancedSettingsScreen.AdvancedCombatStatsEnabled || GameCanvas.instance.CurrentScreen is CardopediaScreen)
@@ -74,7 +74,7 @@ namespace Mewtations.Legacy.Stacklands
 					text = this.NameTerm + "_old";
 				}
 			}
-			this.nameOverride = SokLoc.Translate(text);
+			this.nameOverride = MewtationsLoc.Translate(text);
 			if (!string.IsNullOrEmpty(this.CustomName))
 			{
 				if (flag)
@@ -86,17 +86,17 @@ namespace Mewtations.Legacy.Stacklands
 					}
 					if (this.MyLifeStage == LifeStage.Teenager)
 					{
-						this.nameOverride = SokLoc.Translate("label_villager_young", new LocParam[] { LocParam.Create("villager", this.CustomName) });
+						this.nameOverride = MewtationsLoc.Translate("label_villager_young", new LocParam[] { LocParam.Create("villager", this.CustomName) });
 						return;
 					}
 					if (this.MyLifeStage == LifeStage.Elderly)
 					{
-						this.nameOverride = SokLoc.Translate("label_villager_old", new LocParam[] { LocParam.Create("villager", this.CustomName) });
+						this.nameOverride = MewtationsLoc.Translate("label_villager_old", new LocParam[] { LocParam.Create("villager", this.CustomName) });
 						return;
 					}
 					if (this.MyLifeStage == LifeStage.Dead)
 					{
-						this.nameOverride = SokLoc.Translate("label_villager_old", new LocParam[] { LocParam.Create("villager", this.CustomName) });
+						this.nameOverride = MewtationsLoc.Translate("label_villager_old", new LocParam[] { LocParam.Create("villager", this.CustomName) });
 						return;
 					}
 				}

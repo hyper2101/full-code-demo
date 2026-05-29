@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -113,7 +113,7 @@ public static class Extensions
 
 	public static string TranslateEnum<T>(this T value) where T : struct, IConvertible
 	{
-		return SokLoc.Translate(string.Format("{0}_{1}", value.GetType().ToString().ToLower(), value));
+		return MewtationsLoc.Translate(string.Format("{0}_{1}", value.GetType().ToString().ToLower(), value));
 	}
 
 	public static List<T> AsList<T>(this T value)

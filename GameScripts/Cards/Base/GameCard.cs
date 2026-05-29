@@ -1109,7 +1109,7 @@ public class GameCard : Draggable, IGameCardOrCardData
 		{
 			if (this.CardData.DamageType == CardDamageType.Damaged)
 			{
-				Tooltip.Text = "<b>" + SokLoc.Translate("label_damaged") + "</b>\n" + SokLoc.Translate("label_damaged_card_cost", new LocParam[]
+				Tooltip.Text = "<b>" + MewtationsLoc.Translate("label_damaged") + "</b>\n" + MewtationsLoc.Translate("label_damaged_card_cost", new LocParam[]
 				{
 					LocParam.Create("amount", this.CardData.GetRepairCost().ToStringCached()),
 					LocParam.Create("icon", Icons.Dollar)
@@ -1117,7 +1117,7 @@ public class GameCard : Draggable, IGameCardOrCardData
 			}
 			if (this.CardData.DamageType == CardDamageType.Fire)
 			{
-				Tooltip.Text = "<b>" + SokLoc.Translate("label_on_fire") + "</b>\n" + SokLoc.Translate("label_fire_card_cost");
+				Tooltip.Text = "<b>" + MewtationsLoc.Translate("label_on_fire") + "</b>\n" + MewtationsLoc.Translate("label_fire_card_cost");
 			}
 		}
 	}

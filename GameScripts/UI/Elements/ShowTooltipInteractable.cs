@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class ShowTooltipInteractable : Interactable
 {
@@ -16,8 +16,8 @@ public class ShowTooltipInteractable : Interactable
 
 	public override string GetTooltipText()
 	{
-		base.name = SokLoc.Translate(this.TooltipTitleTerm);
-		return SokLoc.Translate(this.TooltipTextTerm);
+		base.name = MewtationsLoc.Translate(this.TooltipTitleTerm);
+		return MewtationsLoc.Translate(this.TooltipTextTerm);
 	}
 
 	public string TooltipTextTerm;

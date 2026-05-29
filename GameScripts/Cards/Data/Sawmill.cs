@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class Sawmill : CardData
 {
@@ -11,7 +11,7 @@ public class Sawmill : CardData
 	{
 		if (base.ChildrenMatchingPredicateCount((CardData c) => c.Id == "wood") >= 2)
 		{
-			this.MyGameCard.StartTimer(10f, new TimerAction(this.CompleteMaking), SokLoc.Translate("card_sawmill_status"), base.GetActionId("CompleteMaking"), true, false, false);
+			this.MyGameCard.StartTimer(10f, new TimerAction(this.CompleteMaking), MewtationsLoc.Translate("card_sawmill_status"), base.GetActionId("CompleteMaking"), true, false, false);
 		}
 		else
 		{

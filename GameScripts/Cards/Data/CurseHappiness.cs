@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class CurseHappiness : Curse
 {
@@ -11,7 +11,7 @@ public class CurseHappiness : Curse
 	{
 		if (this.MyGameCard.IsDemoCard)
 		{
-			this.descriptionOverride = SokLoc.Translate("card_happiness_curse_description");
+			this.descriptionOverride = MewtationsLoc.Translate("card_happiness_curse_description");
 		}
 		else
 		{

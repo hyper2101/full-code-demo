@@ -17,7 +17,7 @@ public class TimeMachine : Landmark
 				}
 				if (!this.MyGameCard.TimerRunning)
 				{
-					this.MyGameCard.StartTimer(20f, new TimerAction(this.UseTimeMachine), SokLoc.Translate("card_time_machine_status_1"), base.GetActionId("UseTimeMachine"), true, false, false);
+					this.MyGameCard.StartTimer(20f, new TimerAction(this.UseTimeMachine), MewtationsLoc.Translate("card_time_machine_status_1"), base.GetActionId("UseTimeMachine"), true, false, false);
 				}
 			}
 			else
@@ -27,7 +27,7 @@ public class TimeMachine : Landmark
 		}
 		else if (this.HasEnergyInput(null))
 		{
-			this.MyGameCard.StartTimer(240f, new TimerAction(this.ChargeTimeMachine), SokLoc.Translate("card_time_machine_status_2"), base.GetActionId("ChargeTimeMachine"), true, false, false);
+			this.MyGameCard.StartTimer(240f, new TimerAction(this.ChargeTimeMachine), MewtationsLoc.Translate("card_time_machine_status_2"), base.GetActionId("ChargeTimeMachine"), true, false, false);
 			AudioManager.me.PlaySound(this.TimeMachineChargingSound, base.transform, 1f, 0.5f);
 		}
 		else
@@ -42,8 +42,8 @@ public class TimeMachine : Landmark
 		base.UpdateCardText();
 		if (this.IsCharged)
 		{
-			this.nameOverride = SokLoc.Translate("card_time_machine_name_real");
-			this.descriptionOverride = SokLoc.Translate("card_time_machine_desctiption_real");
+			this.nameOverride = MewtationsLoc.Translate("card_time_machine_name_real");
+			this.descriptionOverride = MewtationsLoc.Translate("card_time_machine_desctiption_real");
 		}
 	}
 

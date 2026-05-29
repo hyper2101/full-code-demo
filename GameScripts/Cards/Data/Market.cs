@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class Market : CardData
 {
@@ -28,7 +28,7 @@ public class Market : CardData
 	{
 		if (this.MyGameCard.HasChild && WorldManager.instance.CardCanBeSold(this.MyGameCard.Child, false, false) && (!this.MyGameCard.HasParent || this.MyGameCard.Parent.CardData is HeavyFoundation))
 		{
-			string text = SokLoc.Translate("new_selling_card", new LocParam[] { LocParam.Create("card", this.MyGameCard.Child.CardData.FullName) });
+			string text = MewtationsLoc.Translate("new_selling_card", new LocParam[] { LocParam.Create("card", this.MyGameCard.Child.CardData.FullName) });
 			this.MyGameCard.StartTimer(60f, new TimerAction(this.SellWithMarket), text, base.GetActionId("SellWithMarket"), true, false, false);
 		}
 		else

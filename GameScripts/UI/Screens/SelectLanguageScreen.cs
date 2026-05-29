@@ -1,25 +1,25 @@
-﻿using System;
+using System;
 using UnityEngine;
 
-public class SelectLanguageScreen : SokScreen
+public class SelectLanguageScreen : MewtationsScreen
 {
 	private void Start()
 	{
-		SokLanguage[] languages = SokLoc.Languages;
+		MewtationsLanguage[] languages = MewtationsLoc.Languages;
 		for (int i = 0; i < languages.Length; i++)
 		{
-			SokLanguage language = languages[i];
+			MewtationsLanguage language = languages[i];
 			CustomButton customButton = Object.Instantiate<CustomButton>(PrefabManager.instance.ButtonPrefab);
 			customButton.transform.SetParent(this.ButtonsParent);
 			customButton.transform.localScale = Vector3.one;
 			customButton.transform.localPosition = Vector3.zero;
 			customButton.transform.localRotation = Quaternion.identity;
 			customButton.name = language.LanguageName;
-			customButton.TextMeshPro.text = SokLoc.GetLocalLanguageName(language.LanguageName);
+			customButton.TextMeshPro.text = MewtationsLoc.GetLocalLanguageName(language.LanguageName);
 			customButton.GetComponentInChildren<FontSetter>().LanguageOverride = language.LanguageName;
 			customButton.Clicked += delegate
 			{
-				SokLoc.instance.SetLanguage(language.LanguageName);
+				MewtationsLoc.instance.SetLanguage(language.LanguageName);
 				OptionsScreen.SaveSettings();
 			};
 		}

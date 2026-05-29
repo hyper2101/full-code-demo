@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-public static class SokTerms
+public static class MewtationsTerms
 {
 	public const string card_animal_pen_description = "card_animal_pen_description";
 

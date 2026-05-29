@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Steamworks;
 using TMPro;
 using UnityEngine;
@@ -48,14 +48,14 @@ public class UpdatePopup : MonoBehaviour
 
 	private void UpdatePopupText()
 	{
-		this.UpdateTitle.text = SokLoc.Translate("label_update_title_cities");
+		this.UpdateTitle.text = MewtationsLoc.Translate("label_update_title_cities");
 		if (WorldManager.instance.IsCitiesDlcActive())
 		{
-			this.UpdateText.text = SokLoc.Translate("label_update_text_cities");
+			this.UpdateText.text = MewtationsLoc.Translate("label_update_text_cities");
 			this.BuyDLCButton.gameObject.SetActive(false);
 			return;
 		}
-		this.UpdateText.text = SokLoc.Translate("label_update_text_cities_locked");
+		this.UpdateText.text = MewtationsLoc.Translate("label_update_text_cities_locked");
 		this.BuyDLCButton.gameObject.SetActive(true);
 	}
 

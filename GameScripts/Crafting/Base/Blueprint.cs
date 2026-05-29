@@ -9,7 +9,7 @@ public class Blueprint : CardData, IKnowledge
 	{
 		get
 		{
-			return SokLoc.Translate(this.NameTerm);
+			return MewtationsLoc.Translate(this.NameTerm);
 		}
 	}
 
@@ -105,7 +105,7 @@ public class Blueprint : CardData, IKnowledge
 		string text = this.Subprints[0].DefaultText();
 		if (this.OverrideResultDescription)
 		{
-			string text2 = SokLoc.Translate(this.ResultDescriptionTerm);
+			string text2 = MewtationsLoc.Translate(this.ResultDescriptionTerm);
 			text = text + "\n\n\"" + text2 + "\"";
 		}
 		else
@@ -145,7 +145,7 @@ public class Blueprint : CardData, IKnowledge
 			}
 			if (this.Subprints[0].ResultWellbeing > 0)
 			{
-				text = text + "\n\n" + SokLoc.Translate("label_blueprint_wellbeing_generation", new LocParam[]
+				text = text + "\n\n" + MewtationsLoc.Translate("label_blueprint_wellbeing_generation", new LocParam[]
 				{
 					LocParam.Create("amount", this.Subprints[0].ResultWellbeing.ToString()),
 					LocParam.Create("icon", Icons.Wellbeing)
@@ -153,7 +153,7 @@ public class Blueprint : CardData, IKnowledge
 			}
 			if (this.Subprints[0].ResultPolution > 0)
 			{
-				text = text + "\n\n" + SokLoc.Translate("label_blueprint_pollution_generation", new LocParam[]
+				text = text + "\n\n" + MewtationsLoc.Translate("label_blueprint_pollution_generation", new LocParam[]
 				{
 					LocParam.Create("amount", this.Subprints[0].ResultPolution.ToString()),
 					LocParam.Create("icon", Icons.Pollution)
@@ -275,7 +275,7 @@ public class Blueprint : CardData, IKnowledge
 		if (print.ResultWellbeing != 0)
 		{
 			CitiesManager.instance.AddWellbeing(print.ResultWellbeing);
-			WorldManager.instance.CreateFloatingText(this.allResultCards[0].MyGameCard, print.ResultWellbeing > 0, print.ResultWellbeing, SokLoc.Translate("label_blueprint_wellbeing"), Icons.Wellbeing, true, 0, 0f, true);
+			WorldManager.instance.CreateFloatingText(this.allResultCards[0].MyGameCard, print.ResultWellbeing > 0, print.ResultWellbeing, MewtationsLoc.Translate("label_blueprint_wellbeing"), Icons.Wellbeing, true, 0, 0f, true);
 		}
 		WorldManager.instance.Restack(list);
 	}

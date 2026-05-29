@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class Dollar : Resource, ICurrency
 {
@@ -34,8 +34,8 @@ public class Dollar : Resource, ICurrency
 
 	public override void UpdateCardText()
 	{
-		this.nameOverride = SokLoc.Translate(this.NameTerm, new LocParam[] { LocParam.Create("icon", Icons.Dollar) });
-		this.descriptionOverride = SokLoc.Translate(this.DescriptionTerm, new LocParam[] { LocParam.Create("icon", Icons.Dollar) });
+		this.nameOverride = MewtationsLoc.Translate(this.NameTerm, new LocParam[] { LocParam.Create("icon", Icons.Dollar) });
+		this.descriptionOverride = MewtationsLoc.Translate(this.DescriptionTerm, new LocParam[] { LocParam.Create("icon", Icons.Dollar) });
 	}
 
 	public void UseCurrency(int currencyAmount, bool spawnSmoke = false)

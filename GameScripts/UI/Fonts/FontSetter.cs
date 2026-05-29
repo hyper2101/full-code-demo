@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -8,9 +8,9 @@ public class FontSetter : MonoBehaviour
 	private void Start()
 	{
 		this.SetFont();
-		if (SokLoc.instance != null)
+		if (MewtationsLoc.instance != null)
 		{
-			SokLoc.instance.LanguageChanged += this.SetFont;
+			MewtationsLoc.instance.LanguageChanged += this.SetFont;
 		}
 	}
 
@@ -21,9 +21,9 @@ public class FontSetter : MonoBehaviour
 
 	private void OnDestroy()
 	{
-		if (SokLoc.instance != null)
+		if (MewtationsLoc.instance != null)
 		{
-			SokLoc.instance.LanguageChanged -= this.SetFont;
+			MewtationsLoc.instance.LanguageChanged -= this.SetFont;
 		}
 	}
 

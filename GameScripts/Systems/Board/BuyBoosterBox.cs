@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Shapes;
@@ -260,7 +260,7 @@ public class BuyBoosterBox : CardTarget
 			{
 				text = Icons.Dollar;
 			}
-			return SokLoc.Translate("label_drag_coins_to_buy_pack", new LocParam[]
+			return MewtationsLoc.Translate("label_drag_coins_to_buy_pack", new LocParam[]
 			{
 				LocParam.Create("goldicon", text),
 				LocParam.Create("cost", this.GetCost().ToString())
@@ -271,7 +271,7 @@ public class BuyBoosterBox : CardTarget
 		{
 			text2 = "label_complete_more_island_quests_for_pack";
 		}
-		return SokLoc.Translate(text2, new LocParam[] { LocParam.Plural("remaining", this.Booster.RemainingAchievementCountToUnlock) });
+		return MewtationsLoc.Translate(text2, new LocParam[] { LocParam.Plural("remaining", this.Booster.RemainingAchievementCountToUnlock) });
 	}
 
 	public int Cost;

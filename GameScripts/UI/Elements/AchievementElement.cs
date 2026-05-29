@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -41,13 +41,13 @@ public class AchievementElement : MonoBehaviour
 			}
 			if (this.isVisible || this.isComplete)
 			{
-				GameScreen.InfoBoxTitle = SokLoc.Translate("label_quest");
+				GameScreen.InfoBoxTitle = MewtationsLoc.Translate("label_quest");
 				GameScreen.InfoBoxText = this.MyQuest.Description;
 			}
 			else
 			{
-				GameScreen.InfoBoxTitle = SokLoc.Translate("label_quest");
-				GameScreen.InfoBoxText = SokLoc.Translate("label_quests_complete_more_to_see");
+				GameScreen.InfoBoxTitle = MewtationsLoc.Translate("label_quest");
+				GameScreen.InfoBoxText = MewtationsLoc.Translate("label_quests_complete_more_to_see");
 			}
 		}
 		this.AchievementNameText.color = (this.isComplete ? ColorManager.instance.DisabledColor : Color.black);
@@ -55,7 +55,7 @@ public class AchievementElement : MonoBehaviour
 		this.Checkbox.color = ColorManager.instance.DisabledColor;
 		if (this.isVisible && !this.MyQuest.PossibleInPeacefulMode && WorldManager.instance.CurrentRunOptions.IsPeacefulMode)
 		{
-			this.MyButton.TooltipText = SokLoc.Translate("label_quest_not_possible_in_peaceful");
+			this.MyButton.TooltipText = MewtationsLoc.Translate("label_quest_not_possible_in_peaceful");
 		}
 		else
 		{

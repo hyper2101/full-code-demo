@@ -28,8 +28,14 @@ namespace Mewtations.Utils
                 }
 
                 // 2. Strip tech tree / progression dependencies of legacy features
-                // TODO: Intercept Stacklands quest unlocks
-
+                // Intercept Stacklands quest unlocks: Ensure crafting doesn't trigger Quests
+                if (bp.Subprints != null)
+                {
+                    foreach (var sub in bp.Subprints)
+                    {
+                        sub.ResultAction = string.Empty;
+                    }
+                }
                 // 3. Sanitize requirements
                 SanitizeRequirements(bp);
             }

@@ -59,7 +59,7 @@ using UnityEngine;
 
 	public string GetRandomStartDescription(Demand demand)
 	{
-		return SokLoc.Translate(demand.GetStartTerm(), new LocParam[]
+		return MewtationsLoc.Translate(demand.GetStartTerm(), new LocParam[]
 		{
 			LocParam.Create("cardsToGet", string.Format("{0} x {1}", demand.Amount, WorldManager.instance.GameDataLoader.GetCardFromId(demand.CardToGet, true).Name)),
 			LocParam.Create("month", demand.Duration.ToString()),
@@ -69,7 +69,7 @@ using UnityEngine;
 
 	public string GetDemandStartDescription(Demand demand, DemandEvent demandEvent = null)
 	{
-		return SokLoc.Translate("label_" + demand.DemandId + "_text", new LocParam[]
+		return MewtationsLoc.Translate("label_" + demand.DemandId + "_text", new LocParam[]
 		{
 			LocParam.Create("amount", demand.Amount.ToString()),
 			LocParam.Create("monthFinished", (((demandEvent == null) ? WorldManager.instance.Time.CurrentMonth : demandEvent.MonthStarted) + demand.Duration - 1).ToString())
@@ -78,7 +78,7 @@ using UnityEngine;
 
 	public string GetRandomSuccessDescription(Demand demand)
 	{
-		return SokLoc.Translate(demand.GetSuccessTerm(), new LocParam[]
+		return MewtationsLoc.Translate(demand.GetSuccessTerm(), new LocParam[]
 		{
 			LocParam.Create("cardsToGet", string.Format("{0} x {1}", demand.Amount, WorldManager.instance.GameDataLoader.GetCardFromId(demand.CardToGet, true).Name)),
 			LocParam.Create("month", demand.Duration.ToString())
@@ -87,7 +87,7 @@ using UnityEngine;
 
 	public string GetRandomFailedDescription(Demand demand)
 	{
-		return SokLoc.Translate(demand.GetFailedTerm(), new LocParam[]
+		return MewtationsLoc.Translate(demand.GetFailedTerm(), new LocParam[]
 		{
 			LocParam.Create("cardsToGet", string.Format("{0} x {1}", demand.Amount, WorldManager.instance.GameDataLoader.GetCardFromId(demand.CardToGet, true).Name)),
 			LocParam.Create("month", demand.Duration.ToString())

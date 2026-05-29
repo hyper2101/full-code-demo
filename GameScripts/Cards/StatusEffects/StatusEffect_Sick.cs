@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class StatusEffect_Sick : StatusEffect
@@ -23,7 +23,7 @@ public class StatusEffect_Sick : StatusEffect
 	{
 		get
 		{
-			return SokLoc.Translate("statuseffect_sick_description", new LocParam[]
+			return MewtationsLoc.Translate("statuseffect_sick_description", new LocParam[]
 			{
 				LocParam.Create("damage", 2.ToString()),
 				LocParam.Create("time", GameCanvas.FormatTimeShort(30f))

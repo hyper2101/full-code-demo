@@ -58,7 +58,7 @@ public class GameDataValidator
 			{
 				text = quest.DescriptionTermOverride;
 			}
-			if (!SokLoc.FallbackSet.ContainsTerm(text))
+			if (!MewtationsLoc.FallbackSet.ContainsTerm(text))
 			{
 				validationResult.AddError(null, string.Concat(new string[] { "Quest ", quest.Id, " has an invalid DescriptionTerm (", quest.DescriptionTerm, ")" }), ValidationCategory.Quests);
 			}
@@ -69,11 +69,11 @@ public class GameDataValidator
 	{
 		foreach (CardData cardData in this.GameDataLoader.CardDataPrefabs)
 		{
-			if (!SokLoc.FallbackSet.ContainsTerm(cardData.NameTerm))
+			if (!MewtationsLoc.FallbackSet.ContainsTerm(cardData.NameTerm))
 			{
 				validationResult.AddError(cardData, cardData.Id + " has an invalid NameTerm", ValidationCategory.CardTerms);
 			}
-			if (!string.IsNullOrWhiteSpace(cardData.DescriptionTerm) && !SokLoc.FallbackSet.ContainsTerm(cardData.DescriptionTerm))
+			if (!string.IsNullOrWhiteSpace(cardData.DescriptionTerm) && !MewtationsLoc.FallbackSet.ContainsTerm(cardData.DescriptionTerm))
 			{
 				validationResult.AddError(cardData, cardData.Id + " has an invalid DescriptionTerm", ValidationCategory.CardTerms);
 			}
@@ -256,7 +256,7 @@ public class GameDataValidator
 							validationResult.AddError(blueprint, string.Format("Blueprint {0} has an invalid card id (id: {1}) (subprint {2})", blueprint.Id, text, subprint.SubprintIndex), ValidationCategory.Blueprints);
 						}
 					}
-					if (!SokLoc.FallbackSet.ContainsTerm(subprint.StatusTerm))
+					if (!MewtationsLoc.FallbackSet.ContainsTerm(subprint.StatusTerm))
 					{
 						validationResult.AddError(blueprint, "Blueprint " + blueprint.Id + " has an invalid status term", ValidationCategory.Blueprints);
 					}

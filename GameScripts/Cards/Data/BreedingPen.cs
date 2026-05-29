@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class BreedingPen : CardData
 {
@@ -25,7 +25,7 @@ public class BreedingPen : CardData
 	{
 		if (this.MyGameCard.GetChildCount() == 2)
 		{
-			this.MyGameCard.StartTimer(120f, new TimerAction(this.BreedAnimals), SokLoc.Translate("action_breeding_status"), base.GetActionId("BreedAnimals"), true, false, false);
+			this.MyGameCard.StartTimer(120f, new TimerAction(this.BreedAnimals), MewtationsLoc.Translate("action_breeding_status"), base.GetActionId("BreedAnimals"), true, false, false);
 		}
 		else if (this.MyGameCard.GetChildCount() > 2)
 		{

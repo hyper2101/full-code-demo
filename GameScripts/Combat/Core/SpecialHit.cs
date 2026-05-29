@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 
 [Serializable]
 public class SpecialHit
 {
 	public string GetText()
 	{
-		string text = SokLoc.Translate("target_" + this.Target.ToString().ToLower());
-		return SokLoc.Translate("specialhit_" + this.HitType.ToString().ToLower() + "_long", new LocParam[]
+		string text = MewtationsLoc.Translate("target_" + this.Target.ToString().ToLower());
+		return MewtationsLoc.Translate("specialhit_" + this.HitType.ToString().ToLower() + "_long", new LocParam[]
 		{
 			LocParam.Create("chance", this.Chance.ToString()),
 			LocParam.Create("target", text)

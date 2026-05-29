@@ -20,7 +20,7 @@ public class StrangePortal : Portal
 			int num = base.ChildrenMatchingPredicateCount((CardData x) => x is BaseVillager || x is CatCardData);
 			if (!this.MyGameCard.TimerRunning && num == 0)
 			{
-				this.MyGameCard.StartTimer(this.SpawnTime, new TimerAction(this.SpawnCreature), SokLoc.Translate("new_portal_shaking"), base.GetActionId("SpawnCreature"), true, false, false);
+				this.MyGameCard.StartTimer(this.SpawnTime, new TimerAction(this.SpawnCreature), MewtationsLoc.Translate("new_portal_shaking"), base.GetActionId("SpawnCreature"), true, false, false);
 				if (this.SpawnTimer > 0f)
 				{
 					this.MyGameCard.CurrentTimerTime = this.SpawnTimer;
@@ -69,7 +69,7 @@ public class StrangePortal : Portal
 				{
 					this.SpawnTimer = this.MyGameCard.CurrentTimerTime;
 					this.MyGameCard.CancelTimer(base.GetActionId("SpawnCreature"));
-					this.MyGameCard.StartTimer(this.TravelTime, new TimerAction(base.TakePortal), SokLoc.Translate("card_stable_portal_status"), base.GetActionId("TakePortal"), true, false, false);
+					this.MyGameCard.StartTimer(this.TravelTime, new TimerAction(base.TakePortal), MewtationsLoc.Translate("card_stable_portal_status"), base.GetActionId("TakePortal"), true, false, false);
 					if (this.TravelTimer > 0f)
 					{
 						this.MyGameCard.CurrentTimerTime = this.TravelTimer;
@@ -77,7 +77,7 @@ public class StrangePortal : Portal
 				}
 				else if (!this.MyGameCard.TimerRunning)
 				{
-					this.MyGameCard.StartTimer(this.TravelTime, new TimerAction(base.TakePortal), SokLoc.Translate("card_stable_portal_status"), base.GetActionId("TakePortal"), true, false, false);
+					this.MyGameCard.StartTimer(this.TravelTime, new TimerAction(base.TakePortal), MewtationsLoc.Translate("card_stable_portal_status"), base.GetActionId("TakePortal"), true, false, false);
 					if (this.TravelTimer > 0f)
 					{
 						this.MyGameCard.CurrentTimerTime = this.TravelTimer;

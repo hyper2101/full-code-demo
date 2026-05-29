@@ -20,7 +20,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 			{
 				return this._name;
 			}
-			string text = MewtationsLoc.Translate(this.NameTerm, SokLoc.Translate(this.NameTerm));
+			string text = MewtationsLoc.Translate(this.NameTerm, MewtationsLoc.Translate(this.NameTerm));
 			if (this.MyCardType == CardType.Ideas)
 			{
 				Blueprint blueprint = this as Blueprint;
@@ -28,25 +28,25 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 				{
 					if (blueprint.IsInvention)
 					{
-						text = SokLoc.Translate("label_invention_fullname", new LocParam[] { LocParam.Create("name", text) });
+						text = MewtationsLoc.Translate("label_invention_fullname", new LocParam[] { LocParam.Create("name", text) });
 					}
 					else if (blueprint.IsLandmark)
 					{
-						text = SokLoc.Translate("label_landmark_fullname", new LocParam[] { LocParam.Create("name", text) });
+						text = MewtationsLoc.Translate("label_landmark_fullname", new LocParam[] { LocParam.Create("name", text) });
 					}
 					else
 					{
-						text = SokLoc.Translate("label_idea_fullname", new LocParam[] { LocParam.Create("name", text) });
+						text = MewtationsLoc.Translate("label_idea_fullname", new LocParam[] { LocParam.Create("name", text) });
 					}
 				}
 				else
 				{
-					text = SokLoc.Translate("label_idea_fullname", new LocParam[] { LocParam.Create("name", text) });
+					text = MewtationsLoc.Translate("label_idea_fullname", new LocParam[] { LocParam.Create("name", text) });
 				}
 			}
 			if (this.MyCardType == CardType.Rumors)
 			{
-				text = SokLoc.Translate("label_rumor_full", new LocParam[] { LocParam.Create("name", text) });
+				text = MewtationsLoc.Translate("label_rumor_full", new LocParam[] { LocParam.Create("name", text) });
 			}
 			this._oldNameTerm = this.NameTerm;
 			this._name = text;
@@ -69,7 +69,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 			string name = this.Name;
 			if (this.IsFoil)
 			{
-				return name + " " + SokLoc.Translate("label_foil");
+				return name + " " + MewtationsLoc.Translate("label_foil");
 			}
 			return name;
 		}
@@ -83,7 +83,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 			{
 				return this.descriptionOverride;
 			}
-			return MewtationsLoc.Translate(this.DescriptionTerm, SokLoc.Translate(this.DescriptionTerm));
+			return MewtationsLoc.Translate(this.DescriptionTerm, MewtationsLoc.Translate(this.DescriptionTerm));
 		}
 	}
 
@@ -277,7 +277,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 	{
 		this._name = null;
 		this._oldNameTerm = null;
-		if (WorldManager.instance.GameDataLoader.ProfanityChecker.IsProfanityInLanguage(SokLoc.instance.CurrentLanguage, this.CustomName))
+		if (WorldManager.instance.GameDataLoader.ProfanityChecker.IsProfanityInLanguage(MewtationsLoc.instance.CurrentLanguage, this.CustomName))
 		{
 			this.CustomName = "Bobba";
 		}
@@ -615,7 +615,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 		GameCard myGameCard = this.MyGameCard;
 		if (myGameCard != null && myGameCard.CardConnectorChildren.Count > 0 && this.MyGameCard.IsHovered)
 		{
-			this.descriptionOverride = SokLoc.Translate(this.DescriptionTerm);
+			this.descriptionOverride = MewtationsLoc.Translate(this.DescriptionTerm);
 			this.descriptionOverride = this.descriptionOverride + "\n\n<i>" + this.GetConnectorInfoString(this.MyGameCard) + "</i>";
 		}
 	}
@@ -647,7 +647,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 			int connectorCount2 = this.GetConnectorCount(card, CardDirection.input, ConnectionType.HV);
 			if (connectorCount > 0 || connectorCount2 > 0)
 			{
-				text += SokLoc.Translate("label_energy_input");
+				text += MewtationsLoc.Translate("label_energy_input");
 				if (connectorCount > 0)
 				{
 					text += string.Format(" {0}{1}", connectorCount, Icons.LV);
@@ -665,7 +665,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 				{
 					text += "\n\n";
 				}
-				text += SokLoc.Translate("label_energy_output");
+				text += MewtationsLoc.Translate("label_energy_output");
 				if (connectorCount3 > 0)
 				{
 					text += string.Format(" {0}{1}", connectorCount3, Icons.LV);

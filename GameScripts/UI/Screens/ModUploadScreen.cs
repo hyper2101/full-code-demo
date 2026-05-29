@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Steamworks;
 using TMPro;
 using UnityEngine;
 
-public class ModUploadScreen : SokScreen
+public class ModUploadScreen : MewtationsScreen
 {
 	private void Awake()
 	{
@@ -233,7 +233,7 @@ public class ModUploadScreen : SokScreen
 		if (result.m_eResult == EResult.k_EResultOK)
 		{
 			instance.SetTexts("Upload finished", "The files have been successfully uploaded");
-			instance.AddOption(SokLoc.Translate("label_okay"), delegate
+			instance.AddOption(MewtationsLoc.Translate("label_okay"), delegate
 			{
 				GameCanvas.instance.CloseModal();
 			});
@@ -241,7 +241,7 @@ public class ModUploadScreen : SokScreen
 		else
 		{
 			instance.SetTexts("uh oh", string.Format("something went wrong :( {0}", result.m_eResult));
-			instance.AddOption(SokLoc.Translate("label_okay"), delegate
+			instance.AddOption(MewtationsLoc.Translate("label_okay"), delegate
 			{
 				GameCanvas.instance.CloseModal();
 			});

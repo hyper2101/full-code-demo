@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class ExportCenter : Factory
 {
@@ -30,7 +30,7 @@ public class ExportCenter : Factory
 	{
 		if (this.MyGameCard.HasChild && WorldManager.instance.CardCanBeSold(this.MyGameCard.GetLeafCard(), true, false) && !this.MyGameCard.TimerRunning)
 		{
-			this.MyGameCard.StartTimer(this.ExportTime, new TimerAction(this.SellCard), SokLoc.Translate("card_export_center_status_1"), base.GetActionId("SellCard"), true, false, false);
+			this.MyGameCard.StartTimer(this.ExportTime, new TimerAction(this.SellCard), MewtationsLoc.Translate("card_export_center_status_1"), base.GetActionId("SellCard"), true, false, false);
 		}
 		else if (!this.MyGameCard.HasChild)
 		{

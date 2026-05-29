@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class Hotpot : Food
@@ -30,7 +30,7 @@ public class Hotpot : Food
 		{
 			if (this.MyGameCard.HasChild && !this.MyGameCard.TimerRunning && !(this.MyGameCard.Child.CardData is Hotpot))
 			{
-				this.MyGameCard.StartTimer(10f, new TimerAction(this.CookFood), SokLoc.Translate("card_hotpot_name"), base.GetActionId("CookFood"), true, false, false);
+				this.MyGameCard.StartTimer(10f, new TimerAction(this.CookFood), MewtationsLoc.Translate("card_hotpot_name"), base.GetActionId("CookFood"), true, false, false);
 			}
 			if (!this.MyGameCard.HasChild && this.MyGameCard.TimerRunning)
 			{

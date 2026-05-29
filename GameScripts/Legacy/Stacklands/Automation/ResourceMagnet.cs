@@ -36,12 +36,12 @@ using UnityEngine;
 		}
 		if (!string.IsNullOrEmpty(this.PullCardId))
 		{
-			this.nameOverride = SokLoc.Translate("card_resource_magnet_name_override", new LocParam[] { LocParam.Create("resource", WorldManager.instance.GameDataLoader.GetCardFromId(this.PullCardId, true).Name) });
-			this.descriptionOverride = SokLoc.Translate("card_resource_magnet_description_long", new LocParam[] { LocParam.Create("resource", WorldManager.instance.GameDataLoader.GetCardFromId(this.PullCardId, true).Name) });
+			this.nameOverride = MewtationsLoc.Translate("card_resource_magnet_name_override", new LocParam[] { LocParam.Create("resource", WorldManager.instance.GameDataLoader.GetCardFromId(this.PullCardId, true).Name) });
+			this.descriptionOverride = MewtationsLoc.Translate("card_resource_magnet_description_long", new LocParam[] { LocParam.Create("resource", WorldManager.instance.GameDataLoader.GetCardFromId(this.PullCardId, true).Name) });
 		}
 		else
 		{
-			this.nameOverride = SokLoc.Translate("card_resource_magnet_name");
+			this.nameOverride = MewtationsLoc.Translate("card_resource_magnet_name");
 			this.descriptionOverride = null;
 		}
 		base.UpdateCard();

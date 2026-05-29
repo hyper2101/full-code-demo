@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 public class House : CardData
@@ -12,7 +12,7 @@ public class House : CardData
 	{
 		if (base.HasCardOnTop<Kid>())
 		{
-			this.MyGameCard.StartTimer(120f, new TimerAction(this.GrowUpKid), SokLoc.Translate("new_growing_up"), base.GetActionId("GrowUpKid"), true, false, false);
+			this.MyGameCard.StartTimer(120f, new TimerAction(this.GrowUpKid), MewtationsLoc.Translate("new_growing_up"), base.GetActionId("GrowUpKid"), true, false, false);
 		}
 		else
 		{

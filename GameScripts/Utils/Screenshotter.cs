@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -79,8 +79,8 @@ public class Screenshotter : MonoBehaviour
 		{
 			GameCanvas.instance.SetUIToggle(false);
 		}
-		string originalLanguage = SokLoc.instance.CurrentLanguage;
-		SokLoc.instance.SetLanguage(sd.Language);
+		string originalLanguage = MewtationsLoc.instance.CurrentLanguage;
+		MewtationsLoc.instance.SetLanguage(sd.Language);
 		if (sd.ControlSchemeOverride != null)
 		{
 			InputController.instance.SchemeOverride = sd.ControlSchemeOverride;
@@ -100,7 +100,7 @@ public class Screenshotter : MonoBehaviour
 		Screenshotter.MakeScreenshot(sd, out flag, out text);
 		GameCanvas.instance.SetUIToggle(true);
 		Canvas.ForceUpdateCanvases();
-		SokLoc.instance.SetLanguage(originalLanguage);
+		MewtationsLoc.instance.SetLanguage(originalLanguage);
 		GameCanvas.instance.Canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 		InputController.instance.SchemeOverride = null;
 		if (flag)

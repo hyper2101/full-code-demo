@@ -6,7 +6,7 @@ public class StablePortal : Portal
 	{
 		if (string.IsNullOrWhiteSpace(this.descriptionOverride))
 		{
-			this.descriptionOverride = SokLoc.Translate("card_stable_portal_description", new LocParam[] { LocParam.Create("amount", this.MaxVillagerCount.ToString()) });
+			this.descriptionOverride = MewtationsLoc.Translate("card_stable_portal_description", new LocParam[] { LocParam.Create("amount", this.MaxVillagerCount.ToString()) });
 		}
 		if (!TransitionScreen.InTransition && !WorldManager.instance.InAnimation)
 		{
@@ -45,7 +45,7 @@ public class StablePortal : Portal
 				
 				if (!GameCanvas.instance.ModalIsOpen)
 				{
-					this.MyGameCard.StartTimer(this.TravelTime, new TimerAction(base.TakePortal), SokLoc.Translate("card_stable_portal_status"), base.GetActionId("TakePortal"), true, false, false);
+					this.MyGameCard.StartTimer(this.TravelTime, new TimerAction(base.TakePortal), MewtationsLoc.Translate("card_stable_portal_status"), base.GetActionId("TakePortal"), true, false, false);
 				}
 			}
 			else

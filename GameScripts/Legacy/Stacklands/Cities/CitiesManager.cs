@@ -303,7 +303,7 @@ using UnityEngine;
 
 	public static string GetCityStateTranslated(CityState state)
 	{
-		return SokLoc.Translate("label_wellbeing_" + state.ToString().ToLower());
+		return MewtationsLoc.Translate("label_wellbeing_" + state.ToString().ToLower());
 	}
 
 	public void CheckCityHealth()

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -87,7 +87,7 @@ public class Creditcard : CardData, ICurrency
 		GameCard myGameCard = this.MyGameCard;
 		if (myGameCard != null && myGameCard.CardConnectorChildren.Count > 0 && this.MyGameCard.IsHovered)
 		{
-			this.descriptionOverride = SokLoc.Translate(this.BankDescriptionTerm, new LocParam[]
+			this.descriptionOverride = MewtationsLoc.Translate(this.BankDescriptionTerm, new LocParam[]
 			{
 				LocParam.Create("count", this.DollarCount.ToString()),
 				LocParam.Create("max_count", this.MaxDollarCount.ToString()),

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SelectSaveScreen : SokScreen
+public class SelectSaveScreen : MewtationsScreen
 {
 	private void Start()
 	{
@@ -48,7 +48,7 @@ public class SelectSaveScreen : SokScreen
 			}
 			else
 			{
-				customButton.TextMeshPro.text = SokLoc.Translate("label_start_new_save", new LocParam[] { LocParam.Create("save_index", (index + 1).ToString()) });
+				customButton.TextMeshPro.text = MewtationsLoc.Translate("label_start_new_save", new LocParam[] { LocParam.Create("save_index", (index + 1).ToString()) });
 			}
 			Action <>9__1;
 			customButton.Clicked += delegate
@@ -65,9 +65,9 @@ public class SelectSaveScreen : SokScreen
 				if (PlatformHelper.HasModdingSupport && !new HashSet<string>(save.DisabledMods).SetEquals(new HashSet<string>(WorldManager.instance.CurrentSave.DisabledMods)))
 				{
 					ModalScreen.instance.Clear();
-					ModalScreen.instance.SetTexts(SokLoc.Translate("label_restart_required"), SokLoc.Translate("label_different_mods"));
+					ModalScreen.instance.SetTexts(MewtationsLoc.Translate("label_restart_required"), MewtationsLoc.Translate("label_different_mods"));
 					ModalScreen instance = ModalScreen.instance;
-					string text = SokLoc.Translate("label_restart");
+					string text = MewtationsLoc.Translate("label_restart");
 					Action action;
 					if ((action = <>9__1) == null)
 					{

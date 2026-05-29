@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class Mimic : Enemy
@@ -30,10 +30,10 @@ public class Mimic : Enemy
 		base.UpdateCard();
 		this.Icon = (this.WasDetected ? this.RealIcon : this.TreasureChestIcon);
 		this.MyGameCard.UpdateIcon();
-		this.nameOverride = (this.WasDetected ? SokLoc.Translate("card_mimic_name") : SokLoc.Translate("card_treasure_chest_name"));
+		this.nameOverride = (this.WasDetected ? MewtationsLoc.Translate("card_mimic_name") : MewtationsLoc.Translate("card_treasure_chest_name"));
 		if (!this.WasDetected)
 		{
-			this.descriptionOverride = SokLoc.Translate("card_treasure_chest_description");
+			this.descriptionOverride = MewtationsLoc.Translate("card_treasure_chest_description");
 		}
 		if (!this.WasDetected)
 		{

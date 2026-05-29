@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -78,7 +78,7 @@ public class Apartment : EnergyConsumer
 			{
 				if (!this.MyGameCard.TimerRunning)
 				{
-					this.MyGameCard.StartTimer(5f, new TimerAction(this.NewWorker), SokLoc.Translate("label_recruiting_worker"), base.GetActionId("NewWorker"), true, false, false);
+					this.MyGameCard.StartTimer(5f, new TimerAction(this.NewWorker), MewtationsLoc.Translate("label_recruiting_worker"), base.GetActionId("NewWorker"), true, false, false);
 				}
 			}
 			else
@@ -95,10 +95,10 @@ public class Apartment : EnergyConsumer
 
 	public override void UpdateCardText()
 	{
-		this.descriptionOverride = SokLoc.Translate(this.DescriptionTerm, new LocParam[] { LocParam.Create("amount", this.HousingSpace.ToString()) });
+		this.descriptionOverride = MewtationsLoc.Translate(this.DescriptionTerm, new LocParam[] { LocParam.Create("amount", this.HousingSpace.ToString()) });
 		if (this.FreeSpace != 0 && this.MyGameCard != null && !this.MyGameCard.IsDemoCard)
 		{
-			this.descriptionOverride = this.descriptionOverride + ". " + SokLoc.Translate("card_apartment_free_space", new LocParam[] { LocParam.Create("free", this.FreeSpace.ToString()) });
+			this.descriptionOverride = this.descriptionOverride + ". " + MewtationsLoc.Translate("card_apartment_free_space", new LocParam[] { LocParam.Create("free", this.FreeSpace.ToString()) });
 		}
 	}
 

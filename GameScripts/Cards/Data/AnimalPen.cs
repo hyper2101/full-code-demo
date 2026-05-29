@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -60,7 +60,7 @@ public class AnimalPen : CardData
 		{
 			if (this.GetAnimalInStack() != null)
 			{
-				this.MyGameCard.StartTimer(5f, new TimerAction(this.EatWheat), SokLoc.Translate("card_animal_eating_status"), "eat_wheat", true, false, false);
+				this.MyGameCard.StartTimer(5f, new TimerAction(this.EatWheat), MewtationsLoc.Translate("card_animal_eating_status"), "eat_wheat", true, false, false);
 			}
 		}
 		else
@@ -77,7 +77,7 @@ public class AnimalPen : CardData
 		if (firstAnimalToProduce != null)
 		{
 			CardData cardPrefab = WorldManager.instance.GetCardPrefab(firstAnimalToProduce.CreateCard, true);
-			string text = SokLoc.Translate("card_animal_pen_status", new LocParam[]
+			string text = MewtationsLoc.Translate("card_animal_pen_status", new LocParam[]
 			{
 				LocParam.Create("card", cardPrefab.Name),
 				LocParam.Create("name", firstAnimalToProduce.Name)

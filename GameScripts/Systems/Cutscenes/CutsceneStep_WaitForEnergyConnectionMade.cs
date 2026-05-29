@@ -14,7 +14,7 @@ public class CutsceneStep_WaitForEnergyConnectionMade : CutsceneStep
 			select x).ToList<GameCard>();
 		WorldManager.instance.ContinueClicked = false;
 		WorldManager.instance.ContinueClicked = false;
-		WorldManager.instance.ContinueButtonText = SokLoc.Translate("label_skip");
+		WorldManager.instance.ContinueButtonText = MewtationsLoc.Translate("label_skip");
 		WorldManager.instance.ShowContinueButton = true;
 		for (;;)
 		{

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,7 +31,7 @@ public class TrashCan : CardData
 	{
 		if (this.MyGameCard.HasChild)
 		{
-			this.MyGameCard.StartTimer(this.DestroyTime, new TimerAction(this.DestroyChild), SokLoc.Translate("card_trash_can_status_0"), base.GetActionId("DestroyChild"), true, false, false);
+			this.MyGameCard.StartTimer(this.DestroyTime, new TimerAction(this.DestroyChild), MewtationsLoc.Translate("card_trash_can_status_0"), base.GetActionId("DestroyChild"), true, false, false);
 		}
 		else
 		{

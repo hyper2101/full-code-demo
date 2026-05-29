@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class Farmland : CardData
@@ -31,7 +31,7 @@ public class Farmland : CardData
 			{
 				if (base.WorkerAmountMet() && !this.MyGameCard.TimerRunning)
 				{
-					this.MyGameCard.StartTimer(this.HarvestTime, new TimerAction(this.Harvest), SokLoc.Translate("card_farmland_status"), base.GetActionId("Harvest"), true, false, false);
+					this.MyGameCard.StartTimer(this.HarvestTime, new TimerAction(this.Harvest), MewtationsLoc.Translate("card_farmland_status"), base.GetActionId("Harvest"), true, false, false);
 				}
 			}
 			else
@@ -53,7 +53,7 @@ public class Farmland : CardData
 				{
 					if (!this.MyGameCard.TimerRunning)
 					{
-						this.MyGameCard.StartTimer(this.DepletedTime, new TimerAction(this.WaterFarmland), SokLoc.Translate("card_farmland_status_0"), base.GetActionId("WaterFarmland"), true, false, false);
+						this.MyGameCard.StartTimer(this.DepletedTime, new TimerAction(this.WaterFarmland), MewtationsLoc.Translate("card_farmland_status_0"), base.GetActionId("WaterFarmland"), true, false, false);
 						goto IL_0169;
 					}
 					goto IL_0169;

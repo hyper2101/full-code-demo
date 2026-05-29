@@ -8,7 +8,7 @@ public class RadarStation : CardData
 		int nextConflictMonth = CitiesManager.instance.NextConflictMonth;
 		if (currentMonth >= nextConflictMonth - 3 && currentMonth < nextConflictMonth)
 		{
-			this.descriptionOverride = SokLoc.Translate(this.DescriptionTerm) + ". " + SokLoc.Translate("statuseffect_radar_description", new LocParam[] { LocParam.Create("amount", (CitiesManager.instance.NextConflictMonth - 1).ToString()) });
+			this.descriptionOverride = MewtationsLoc.Translate(this.DescriptionTerm) + ". " + MewtationsLoc.Translate("statuseffect_radar_description", new LocParam[] { LocParam.Create("amount", (CitiesManager.instance.NextConflictMonth - 1).ToString()) });
 			base.AddStatusEffect(new StatusEffect_Radar());
 		}
 		else

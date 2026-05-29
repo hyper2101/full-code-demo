@@ -39,7 +39,7 @@ public class Poop : CardData
 	{
 		if (WorldManager.instance.CurseIsActive(CurseType.Death))
 		{
-			this.descriptionOverride = SokLoc.Translate(this.DescriptionTerm) + "\n\n<i>" + SokLoc.Translate("card_poop_cant_sell") + "</i>";
+			this.descriptionOverride = MewtationsLoc.Translate(this.DescriptionTerm) + "\n\n<i>" + MewtationsLoc.Translate("card_poop_cant_sell") + "</i>";
 		}
 		else
 		{

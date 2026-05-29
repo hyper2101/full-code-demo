@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class Monkey : Animal
 {
@@ -11,7 +11,7 @@ public class Monkey : Animal
 	{
 		if (this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.Id == "banana")
 		{
-			this.MyGameCard.StartTimer(1f, new TimerAction(this.TrainMonkey), SokLoc.Translate("idea_training_monkey_status"), base.GetActionId("TrainMonkey"), true, false, false);
+			this.MyGameCard.StartTimer(1f, new TimerAction(this.TrainMonkey), MewtationsLoc.Translate("idea_training_monkey_status"), base.GetActionId("TrainMonkey"), true, false, false);
 		}
 		else
 		{

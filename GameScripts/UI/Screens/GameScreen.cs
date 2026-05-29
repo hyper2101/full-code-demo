@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class GameScreen : SokScreen
+public class GameScreen : MewtationsScreen
 {
 	public override bool IsFrameRateUncapped
 	{
@@ -93,7 +93,7 @@ public class GameScreen : SokScreen
 		this.NotificationsParent.gameObject.SetActive(true);
 		this.SetViewdropdownTexts();
 		this.InitIdeaElements();
-		SokLoc.instance.LanguageChanged += this.Instance_LanguageChanged;
+		MewtationsLoc.instance.LanguageChanged += this.Instance_LanguageChanged;
 	}
 
 	private void SetView(ViewType viewType)
@@ -136,19 +136,19 @@ public class GameScreen : SokScreen
 	{
 		if (viewType == ViewType.Default)
 		{
-			return SokLoc.Translate("label_view_default");
+			return MewtationsLoc.Translate("label_view_default");
 		}
 		if (viewType == ViewType.Energy)
 		{
-			return SokLoc.Translate("label_view_energy");
+			return MewtationsLoc.Translate("label_view_energy");
 		}
 		if (viewType == ViewType.Sewer)
 		{
-			return SokLoc.Translate("label_view_sewage");
+			return MewtationsLoc.Translate("label_view_sewage");
 		}
 		if (viewType == ViewType.Calamity)
 		{
-			return SokLoc.Translate("label_view_calamity");
+			return MewtationsLoc.Translate("label_view_calamity");
 		}
 		if (viewType != ViewType.Transport)
 		{
@@ -156,9 +156,9 @@ public class GameScreen : SokScreen
 		}
 		if (!(WorldManager.instance.GetCurrentBoardSafe().Id == "cities"))
 		{
-			return SokLoc.Translate("label_view_transport_default");
+			return MewtationsLoc.Translate("label_view_transport_default");
 		}
-		return SokLoc.Translate("label_view_transport");
+		return MewtationsLoc.Translate("label_view_transport");
 	}
 
 	private void SetViewdropdownTexts()
@@ -184,9 +184,9 @@ public class GameScreen : SokScreen
 
 	private void OnDestroy()
 	{
-		if (SokLoc.instance != null)
+		if (MewtationsLoc.instance != null)
 		{
-			SokLoc.instance.LanguageChanged -= this.Instance_LanguageChanged;
+			MewtationsLoc.instance.LanguageChanged -= this.Instance_LanguageChanged;
 		}
 	}
 
@@ -435,7 +435,7 @@ public class GameScreen : SokScreen
 		{
 			text += group.ToString().ToLower();
 		}
-		return SokLoc.Translate(text);
+		return MewtationsLoc.Translate(text);
 	}
 
 	private List<AchievementElement> CreateQuestElements(RectTransform parent, List<Quest> quests, bool addLabels = true)
@@ -472,7 +472,7 @@ public class GameScreen : SokScreen
 					rectTransform.GetComponent<Image>().enabled = false;
 					TextMeshProUGUI componentInChildren = rectTransform.GetComponentInChildren<TextMeshProUGUI>();
 					componentInChildren.fontStyle = FontStyles.Bold;
-					componentInChildren.text = (cur.IsMainQuest ? SokLoc.Translate("label_main_quests") : SokLoc.Translate("label_side_quests"));
+					componentInChildren.text = (cur.IsMainQuest ? MewtationsLoc.Translate("label_main_quests") : MewtationsLoc.Translate("label_side_quests"));
 				}
 				if (quest == null || quest.QuestGroup != cur.QuestGroup)
 				{
@@ -763,7 +763,7 @@ public class GameScreen : SokScreen
 
 	private bool ShouldKeepAccents()
 	{
-		return SokLoc.instance.CurrentLanguage == "Chinese (Traditional)" || SokLoc.instance.CurrentLanguage == "Chinese (Simplified)" || SokLoc.instance.CurrentLanguage == "Japanese" || SokLoc.instance.CurrentLanguage == "Korean";
+		return MewtationsLoc.instance.CurrentLanguage == "Chinese (Traditional)" || MewtationsLoc.instance.CurrentLanguage == "Chinese (Simplified)" || MewtationsLoc.instance.CurrentLanguage == "Japanese" || MewtationsLoc.instance.CurrentLanguage == "Korean";
 	}
 
 	private static string RemoveAccents(string input)
@@ -804,7 +804,7 @@ public class GameScreen : SokScreen
 
 	private string GetBlueprintGroupText(BlueprintGroup group)
 	{
-		return SokLoc.Translate("ideagroup_" + group.ToString().ToLower());
+		return MewtationsLoc.Translate("ideagroup_" + group.ToString().ToLower());
 	}
 
 	private bool CompletedFirstAchievement()
@@ -890,8 +890,8 @@ public class GameScreen : SokScreen
 		this.QuestsTabNew.gameObject.SetActiveFast(this.questElements.Any<AchievementElement>((AchievementElement x) => x.IsNew));
 		this.IdeasTabNew.gameObject.SetActiveFast(this.ideaElements.Any<IdeaElement>((IdeaElement x) => x.IsNew && x.gameObject.activeSelf));
 		this.FoldedNewIcon.gameObject.SetActiveFast(this.isMinimized && (this.QuestsTabNew.gameObject.activeInHierarchy || this.IdeasTabNew.gameObject.activeInHierarchy));
-		this.MinimizeButtonInfoBox.InfoBoxTitle = SokLoc.Translate("label_toggle_panel_title");
-		this.MinimizeButtonInfoBox.InfoBoxText = SokLoc.Translate("label_toggle_panel_text", new LocParam[] { Extensions.LocParam_Action("panel_collapse") });
+		this.MinimizeButtonInfoBox.InfoBoxTitle = MewtationsLoc.Translate("label_toggle_panel_title");
+		this.MinimizeButtonInfoBox.InfoBoxText = MewtationsLoc.Translate("label_toggle_panel_text", new LocParam[] { Extensions.LocParam_Action("panel_collapse") });
 		this.UpdateSidePanelPosition();
 		this.MinimizeButton.transform.localScale = (this.isMinimized ? Vector3.one : new Vector3(-1f, 1f, 1f));
 		this.QuestsButton.Image.color = (this.QuestsTab.gameObject.activeInHierarchy ? ColorManager.instance.BackgroundColor : ColorManager.instance.InactiveBackgroundColor);
@@ -907,28 +907,28 @@ public class GameScreen : SokScreen
 		int wellbeing = Mewtations.Core.LegacyRuntimeFlags.EnableCitiesSystem ? CitiesManager.instance.Wellbeing : 50;
 		CityState cityState = Mewtations.Core.LegacyRuntimeFlags.EnableCitiesSystem ? CitiesManager.instance.CityState : CityState.Happy;
 		string text = GameCanvas.FormatTime(WorldManager.instance.MonthTime - WorldManager.instance.Time.MonthTimer);
-		this.ShowInfoBoxTime.InfoBoxTitle = SokLoc.Translate("label_time");
-		this.ShowInfoBoxTime.InfoBoxText = SokLoc.Translate("label_time_infobox", new LocParam[]
+		this.ShowInfoBoxTime.InfoBoxTitle = MewtationsLoc.Translate("label_time");
+		this.ShowInfoBoxTime.InfoBoxText = MewtationsLoc.Translate("label_time_infobox", new LocParam[]
 		{
 			LocParam.Create("time_left", text.ToString()),
 			Extensions.LocParam_Action("time_pause"),
 			Extensions.LocParam_Action("time_toggle")
 		});
-		this.ShowInfoBoxEnergyButton.InfoBoxTitle = SokLoc.Translate("label_energy_view");
-		this.ShowInfoBoxEnergyButton.InfoBoxText = SokLoc.Translate("label_energy_view_infobox", new LocParam[] { Extensions.LocParam_Action("toggle_view") });
+		this.ShowInfoBoxEnergyButton.InfoBoxTitle = MewtationsLoc.Translate("label_energy_view");
+		this.ShowInfoBoxEnergyButton.InfoBoxText = MewtationsLoc.Translate("label_energy_view_infobox", new LocParam[] { Extensions.LocParam_Action("toggle_view") });
 		this.FoodText.text = string.Format("{0}/{1} {2}", foodCount, requiredFoodCount, Icons.Food);
-		this.ShowInfoBoxMoney.InfoBoxTitle = SokLoc.Translate("label_coin_infobox_title");
-		this.ShowInfoBoxMoney.InfoBoxText = SokLoc.Translate("label_coin_infobox_text");
-		this.ShowInfoBoxFood.InfoBoxTitle = SokLoc.Translate("cardtype_food");
-		this.ShowInfoBoxFood.InfoBoxText = SokLoc.Translate("label_food_infobox", new LocParam[]
+		this.ShowInfoBoxMoney.InfoBoxTitle = MewtationsLoc.Translate("label_coin_infobox_title");
+		this.ShowInfoBoxMoney.InfoBoxText = MewtationsLoc.Translate("label_coin_infobox_text");
+		this.ShowInfoBoxFood.InfoBoxTitle = MewtationsLoc.Translate("cardtype_food");
+		this.ShowInfoBoxFood.InfoBoxText = MewtationsLoc.Translate("label_food_infobox", new LocParam[]
 		{
 			LocParam.Create("foodicon", Icons.Food),
 			LocParam.Create("required_food_count", requiredFoodCount.ToString()),
 			LocParam.Create("food_count", foodCount.ToString())
 		});
 		this.CardText.text = string.Format("{0}/{1} {2}", cardCount, maxCardCount, Icons.Card);
-		this.ShowInfoBoxCard.InfoBoxTitle = SokLoc.Translate("label_card_cap");
-		this.ShowInfoBoxCard.InfoBoxText = SokLoc.Translate("label_cards_infobox", new LocParam[]
+		this.ShowInfoBoxCard.InfoBoxTitle = MewtationsLoc.Translate("label_card_cap");
+		this.ShowInfoBoxCard.InfoBoxText = MewtationsLoc.Translate("label_cards_infobox", new LocParam[]
 		{
 			LocParam.Create("cardicon", Icons.Card),
 			LocParam.Create("card_count", cardCount.ToString()),
@@ -953,7 +953,7 @@ public class GameScreen : SokScreen
 		{
 			this.FoodText.color = (this.redBlink ? ColorManager.instance.RedTextColor : ColorManager.instance.TextColor);
 			ShowInfoBox showInfoBoxFood = this.ShowInfoBoxFood;
-			showInfoBoxFood.InfoBoxText = showInfoBoxFood.InfoBoxText + ". " + SokLoc.Translate("label_food_infobox_warning", new LocParam[] { LocParam.Create("foodicon", Icons.Food) });
+			showInfoBoxFood.InfoBoxText = showInfoBoxFood.InfoBoxText + ". " + MewtationsLoc.Translate("label_food_infobox_warning", new LocParam[] { LocParam.Create("foodicon", Icons.Food) });
 		}
 		else
 		{
@@ -963,7 +963,7 @@ public class GameScreen : SokScreen
 		{
 			this.CardText.color = (this.redBlink ? ColorManager.instance.RedTextColor : ColorManager.instance.TextColor);
 			ShowInfoBox showInfoBoxCard = this.ShowInfoBoxCard;
-			showInfoBoxCard.InfoBoxText = showInfoBoxCard.InfoBoxText + ". " + SokLoc.Translate("label_cards_infobox_warning", new LocParam[] { LocParam.Create("cardicon", Icons.Card) });
+			showInfoBoxCard.InfoBoxText = showInfoBoxCard.InfoBoxText + ". " + MewtationsLoc.Translate("label_cards_infobox_warning", new LocParam[] { LocParam.Create("cardicon", Icons.Card) });
 		}
 		else
 		{
@@ -971,23 +971,23 @@ public class GameScreen : SokScreen
 		}
 		if (WorldManager.instance.CurrentRunOptions.IsPeacefulMode)
 		{
-			this.TimeText.text = SokLoc.Translate("label_timetext_peaceful", new LocParam[] { LocParam.Create("moon", WorldManager.instance.Time.CurrentMonth.ToString()) });
+			this.TimeText.text = MewtationsLoc.Translate("label_timetext_peaceful", new LocParam[] { LocParam.Create("moon", WorldManager.instance.Time.CurrentMonth.ToString()) });
 		}
 		else if (WorldManager.instance.ForestMoonEnabled)
 		{
-			string text2 = SokLoc.Translate("label_timetext", new LocParam[] { LocParam.Create("moon", "??") });
-			string text3 = SokLoc.Translate("label_wave", new LocParam[] { LocParam.Create("wave", WorldManager.instance.CurrentRunVariables.ForestWave.ToString()) });
+			string text2 = MewtationsLoc.Translate("label_timetext", new LocParam[] { LocParam.Create("moon", "??") });
+			string text3 = MewtationsLoc.Translate("label_wave", new LocParam[] { LocParam.Create("wave", WorldManager.instance.CurrentRunVariables.ForestWave.ToString()) });
 			this.TimeText.text = text2 + " - " + text3;
 		}
 		else
 		{
-			this.TimeText.text = SokLoc.Translate("label_timetext", new LocParam[] { LocParam.Create("moon", WorldManager.instance.Time.CurrentMonth.ToString()) });
+			this.TimeText.text = MewtationsLoc.Translate("label_timetext", new LocParam[] { LocParam.Create("moon", WorldManager.instance.Time.CurrentMonth.ToString()) });
 		}
 		if (this.HappinessText.isActiveAndEnabled)
 		{
 			this.HappinessText.text = string.Format("{0}/{1} {2}", happinessCount, requiredHappinessCount, Icons.Happiness);
-			this.ShowInfoBoxHappiness.InfoBoxTitle = SokLoc.Translate("cardtype_happiness");
-			this.ShowInfoBoxHappiness.InfoBoxText = SokLoc.Translate("label_happiness_infobox", new LocParam[]
+			this.ShowInfoBoxHappiness.InfoBoxTitle = MewtationsLoc.Translate("cardtype_happiness");
+			this.ShowInfoBoxHappiness.InfoBoxText = MewtationsLoc.Translate("label_happiness_infobox", new LocParam[]
 			{
 				LocParam.Create("happinessicon", Icons.Happiness),
 				LocParam.Create("required_happiness_count", requiredHappinessCount.ToString()),
@@ -997,7 +997,7 @@ public class GameScreen : SokScreen
 			{
 				this.HappinessText.color = (this.redBlink ? ColorManager.instance.RedTextColor : ColorManager.instance.TextColor);
 				ShowInfoBox showInfoBoxHappiness = this.ShowInfoBoxHappiness;
-				showInfoBoxHappiness.InfoBoxText = showInfoBoxHappiness.InfoBoxText + ". " + SokLoc.Translate("label_happiness_infobox_warning", new LocParam[] { LocParam.Create("happinessicon", Icons.Happiness) });
+				showInfoBoxHappiness.InfoBoxText = showInfoBoxHappiness.InfoBoxText + ". " + MewtationsLoc.Translate("label_happiness_infobox_warning", new LocParam[] { LocParam.Create("happinessicon", Icons.Happiness) });
 			}
 			else
 			{
@@ -1010,8 +1010,8 @@ public class GameScreen : SokScreen
 			int num = (!Mewtations.Core.LegacyRuntimeFlags.EnableCitiesSystem) ? 0 : CitiesManager.instance.HousingConsumers.Sum<HousingConsumer>((HousingConsumer x) => x.GetHousingSpaceRequired());
 			int num2 = WorldManager.instance.CardQuery.GetCards<Apartment>().Sum<Apartment>((Apartment x) => x.HousingSpace);
 			this.WorkerText.text = string.Format("{0}/{1}{2}", num, num2, Icons.Housing);
-			this.ShowInfoBoxWorker.InfoBoxTitle = SokLoc.Translate("label_info_worker_space_title");
-			this.ShowInfoBoxWorker.InfoBoxText = SokLoc.Translate("label_info_worker_space_text", new LocParam[]
+			this.ShowInfoBoxWorker.InfoBoxTitle = MewtationsLoc.Translate("label_info_worker_space_title");
+			this.ShowInfoBoxWorker.InfoBoxText = MewtationsLoc.Translate("label_info_worker_space_text", new LocParam[]
 			{
 				LocParam.Create("workers", num.ToString()),
 				LocParam.Create("space", num2.ToString()),
@@ -1020,7 +1020,7 @@ public class GameScreen : SokScreen
 			if (num > num2)
 			{
 				ShowInfoBox showInfoBoxWorker = this.ShowInfoBoxWorker;
-				showInfoBoxWorker.InfoBoxText = showInfoBoxWorker.InfoBoxText + ". " + SokLoc.Translate("label_info_worker_space_text_1", new LocParam[] { LocParam.Create("icon", Icons.Housing) });
+				showInfoBoxWorker.InfoBoxText = showInfoBoxWorker.InfoBoxText + ". " + MewtationsLoc.Translate("label_info_worker_space_text_1", new LocParam[] { LocParam.Create("icon", Icons.Housing) });
 				this.WorkerText.color = (this.redBlink ? ColorManager.instance.RedTextColor : ColorManager.instance.TextColor);
 			}
 			else
@@ -1030,8 +1030,8 @@ public class GameScreen : SokScreen
 		}
 		if (this.WellbeingText.isActiveAndEnabled)
 		{
-			this.ShowInfoBoxWellbeing.InfoBoxTitle = SokLoc.Translate("label_wellbeing");
-			this.ShowInfoBoxWellbeing.InfoBoxText = SokLoc.Translate("label_wellbeing_infobox_" + cityState.ToString().ToLower());
+			this.ShowInfoBoxWellbeing.InfoBoxTitle = MewtationsLoc.Translate("label_wellbeing");
+			this.ShowInfoBoxWellbeing.InfoBoxText = MewtationsLoc.Translate("label_wellbeing_infobox_" + cityState.ToString().ToLower());
 			this.WellbeingText.text = string.Format("{0} {1}", wellbeing, Icons.Wellbeing);
 			if (CitiesManager.instance.Wellbeing < 10)
 			{
@@ -1044,8 +1044,8 @@ public class GameScreen : SokScreen
 		}
 		if (this.ShowInfoBoxDollar.gameObject.activeSelf)
 		{
-			this.ShowInfoBoxDollar.InfoBoxTitle = SokLoc.Translate("label_dollar");
-			this.ShowInfoBoxDollar.InfoBoxText = SokLoc.Translate("label_dollar_infobox", new LocParam[]
+			this.ShowInfoBoxDollar.InfoBoxTitle = MewtationsLoc.Translate("label_dollar");
+			this.ShowInfoBoxDollar.InfoBoxText = MewtationsLoc.Translate("label_dollar_infobox", new LocParam[]
 			{
 				LocParam.Create("amount", WorldManager.instance.Economy.GetDollarCount(true).ToString()),
 				LocParam.Create("icon", Icons.Dollar)
@@ -1057,7 +1057,7 @@ public class GameScreen : SokScreen
 		if (boosterpackData != null)
 		{
 			int num3 = QuestManager.instance.RemainingQuestCountToComplete(boosterpackData);
-			this.NextPackToUnlockText.text = SokLoc.Translate("label_complete_more_quests", new LocParam[] { LocParam.Plural("remaining", num3) });
+			this.NextPackToUnlockText.text = MewtationsLoc.Translate("label_complete_more_quests", new LocParam[] { LocParam.Plural("remaining", num3) });
 		}
 		GameCard gameCard = null;
 		if (WorldManager.instance.DraggingCard != null)
@@ -1083,7 +1083,7 @@ public class GameScreen : SokScreen
 			if (boosterpack != null)
 			{
 				this.InfoTitle.text = boosterpack.Name ?? "";
-				this.InfoText.text = SokLoc.Translate("label_click_this_pack");
+				this.InfoText.text = MewtationsLoc.Translate("label_click_this_pack");
 			}
 			else
 			{
@@ -1108,7 +1108,7 @@ public class GameScreen : SokScreen
 						{
 							text5,
 							"\\d<i>",
-							SokLoc.Translate("label_at_end_moon"),
+							MewtationsLoc.Translate("label_at_end_moon"),
 							"</i>\n",
 							requirementDescription
 						});
@@ -1137,7 +1137,7 @@ public class GameScreen : SokScreen
 				}
 				else if (gameCard.CardData.GetValue() == -1)
 				{
-					text4 = SokLoc.Translate("label_cant_be_sold");
+					text4 = MewtationsLoc.Translate("label_cant_be_sold");
 				}
 			}
 			else
@@ -1156,7 +1156,7 @@ public class GameScreen : SokScreen
 				}
 				else
 				{
-					this.InfoTitle.text = SokLoc.Translate("label_stack_of_cards");
+					this.InfoTitle.text = MewtationsLoc.Translate("label_stack_of_cards");
 					this.InfoText.text = gameCard.GetStackSummary();
 					string text6 = "";
 					if (allCardsInStack.Any<GameCard>((GameCard x) => x.CardData.RequirementHolders.Count > 0) && WorldManager.instance.GetCurrentBoardSafe().Id == "cities")
@@ -1188,7 +1188,7 @@ public class GameScreen : SokScreen
 								if (flag)
 								{
 									flag = false;
-									text6 = text6 + "\\d<i>" + SokLoc.Translate("label_at_end_moon") + "</i>";
+									text6 = text6 + "\\d<i>" + MewtationsLoc.Translate("label_at_end_moon") + "</i>";
 								}
 								else
 								{
@@ -1203,7 +1203,7 @@ public class GameScreen : SokScreen
 									}
 									else
 									{
-										text7 = string.Format("{0}x {1}", num4, SokLoc.Translate(cardData.NameTerm));
+										text7 = string.Format("{0}x {1}", num4, MewtationsLoc.Translate(cardData.NameTerm));
 									}
 									text6 = string.Concat(new string[] { text6, "\n<i>(", text7, ")</i>\n", requirementDescription2 });
 								}
@@ -1226,7 +1226,7 @@ public class GameScreen : SokScreen
 					}
 					if (cardData2 != null)
 					{
-						text4 = SokLoc.Translate("label_cant_be_sold");
+						text4 = MewtationsLoc.Translate("label_cant_be_sold");
 						if (WorldManager.instance.NearbyCardTarget is BuyBoosterBox)
 						{
 							BuyBoosterBox buyBoosterBox2 = (BuyBoosterBox)WorldManager.instance.NearbyCardTarget;
@@ -1235,7 +1235,7 @@ public class GameScreen : SokScreen
 					else if (WorldManager.instance.NearbyCardTarget is SellBox)
 					{
 						TextMeshProUGUI infoText2 = this.InfoText;
-						infoText2.text = infoText2.text + "\n" + SokLoc.Translate("label_drop_to_sell", new LocParam[] { LocParam.Create("value", stackValue.ToValueString(WorldManager.instance.CurrentBoard)) });
+						infoText2.text = infoText2.text + "\n" + MewtationsLoc.Translate("label_drop_to_sell", new LocParam[] { LocParam.Create("value", stackValue.ToValueString(WorldManager.instance.CurrentBoard)) });
 					}
 					else
 					{

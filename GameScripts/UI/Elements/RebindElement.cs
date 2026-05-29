@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -170,7 +170,7 @@ public class RebindElement : MonoBehaviour
 		{
 			return;
 		}
-		this.ActionName.text = SokLoc.Translate("control_" + inputAction.name);
+		this.ActionName.text = MewtationsLoc.Translate("control_" + inputAction.name);
 		this.SetBindingButton.TextMeshPro.text = inputAction.GetBindingDisplayString(num, (InputBinding.DisplayStringOptions)0);
 	}
 

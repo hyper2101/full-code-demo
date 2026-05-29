@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -13,7 +13,7 @@ public class CutsceneStep_SetText : CutsceneStep
 		}
 		if (!string.IsNullOrEmpty(this.TitleTerm))
 		{
-			CutsceneStep.Title = SokLoc.Translate(this.TitleTerm);
+			CutsceneStep.Title = MewtationsLoc.Translate(this.TitleTerm);
 		}
 		else
 		{
@@ -21,7 +21,7 @@ public class CutsceneStep_SetText : CutsceneStep
 		}
 		if (!string.IsNullOrEmpty(this.TextTerm))
 		{
-			CutsceneStep.Text = SokLoc.Translate(this.TextTerm);
+			CutsceneStep.Text = MewtationsLoc.Translate(this.TextTerm);
 		}
 		else
 		{
@@ -29,7 +29,7 @@ public class CutsceneStep_SetText : CutsceneStep
 		}
 		if (this.WaitForClick)
 		{
-			yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate(this.ButtonTerm));
+			yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate(this.ButtonTerm));
 			yield break;
 		}
 		yield break;

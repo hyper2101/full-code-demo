@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,7 +14,7 @@ public class Subprint
 			{
 				return this.statusOverride;
 			}
-			return SokLoc.Translate(this.StatusTerm);
+			return MewtationsLoc.Translate(this.StatusTerm);
 		}
 	}
 

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CardopediaScreen : SokScreen
+public class CardopediaScreen : MewtationsScreen
 {
 	private void Awake()
 	{
@@ -34,7 +34,7 @@ public class CardopediaScreen : SokScreen
 				}
 			}
 		});
-		SokLoc.instance.LanguageChanged += this.Instance_LanguageChanged;
+		MewtationsLoc.instance.LanguageChanged += this.Instance_LanguageChanged;
 		this.AddTabListeners();
 		this.CardopediaBackground = GameCamera.instance.transform.Find("CardopediaBackground");
 		this.TargetCardPos = GameCamera.instance.transform.Find("TargetCardPos");
@@ -48,9 +48,9 @@ public class CardopediaScreen : SokScreen
 
 	private void OnDestroy()
 	{
-		if (SokLoc.instance != null)
+		if (MewtationsLoc.instance != null)
 		{
-			SokLoc.instance.LanguageChanged -= this.Instance_LanguageChanged;
+			MewtationsLoc.instance.LanguageChanged -= this.Instance_LanguageChanged;
 		}
 	}
 
@@ -516,11 +516,11 @@ public class CardopediaScreen : SokScreen
 			}
 			else
 			{
-				this.CardDescription.text = SokLoc.Translate("label_card_not_found");
+				this.CardDescription.text = MewtationsLoc.Translate("label_card_not_found");
 			}
 		}
 		this.SearchField.gameObject.SetActive(!InputController.instance.CurrentSchemeIsController && !this.SearchDisabled);
-		this.CardFoundAmount.text = SokLoc.Translate("label_cards_found", new LocParam[]
+		this.CardFoundAmount.text = MewtationsLoc.Translate("label_cards_found", new LocParam[]
 		{
 			LocParam.Create("found", this.totalFoundCount.ToString()),
 			LocParam.Create("total", this.currentTotalCardCount.ToString())

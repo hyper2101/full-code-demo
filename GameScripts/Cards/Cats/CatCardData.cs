@@ -1535,7 +1535,7 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
             desc += "\n";
         }
 
-        desc += "<i>" + SokLoc.Translate(this.DescriptionTerm) + "</i>";
+        desc += "<i>" + MewtationsLoc.Translate(this.DescriptionTerm) + "</i>";
         this.descriptionOverride = desc;
         base.UpdateCardText();
     }

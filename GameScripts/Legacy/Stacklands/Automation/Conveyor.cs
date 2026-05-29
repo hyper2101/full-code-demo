@@ -161,7 +161,7 @@ using UnityEngine;
 		if (cardData != null && this.InputCardHasConveyableCard(cardData))
 		{
 			CardData inputCardConveyablePrefab = this.GetInputCardConveyablePrefab(cardData);
-			string text = SokLoc.Translate("card_conveyor_status", new LocParam[] { LocParam.Create("resource", inputCardConveyablePrefab.Name) });
+			string text = MewtationsLoc.Translate("card_conveyor_status", new LocParam[] { LocParam.Create("resource", inputCardConveyablePrefab.Name) });
 			this.MyGameCard.StartTimer(this.TotalTime, new TimerAction(this.LoadCard), text, base.GetActionId("LoadCard"), true, false, false);
 		}
 		else

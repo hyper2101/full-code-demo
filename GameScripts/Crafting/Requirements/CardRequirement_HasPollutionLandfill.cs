@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 [Serializable]
 public class CardRequirement_HasPollutionLandfill : CardRequirement
@@ -6,13 +6,13 @@ public class CardRequirement_HasPollutionLandfill : CardRequirement
 	public override string RequirementDescriptionNeed(int multiplier)
 	{
 		string text = string.Format("{0}", this.Amount * multiplier);
-		return SokLoc.Translate("label_requirement_has_pollution_landfill", new LocParam[] { LocParam.Create("amount", text) });
+		return MewtationsLoc.Translate("label_requirement_has_pollution_landfill", new LocParam[] { LocParam.Create("amount", text) });
 	}
 
 	public override string RequirementDescriptionNeedNegative(int multiplier)
 	{
 		string text = string.Format("{0}", this.Amount * multiplier);
-		return SokLoc.Translate("label_requirement_has_pollution_landfill_negative", new LocParam[] { LocParam.Create("amount", text) });
+		return MewtationsLoc.Translate("label_requirement_has_pollution_landfill_negative", new LocParam[] { LocParam.Create("amount", text) });
 	}
 
 	public override bool Satisfied(GameCard card)

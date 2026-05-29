@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class CombatableHarvestable : CardData
@@ -7,7 +7,7 @@ public class CombatableHarvestable : CardData
 	{
 		get
 		{
-			return SokLoc.Translate(this.StatusTerm);
+			return MewtationsLoc.Translate(this.StatusTerm);
 		}
 	}
 

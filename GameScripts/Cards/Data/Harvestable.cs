@@ -10,7 +10,7 @@ public class Harvestable : CardData
 	{
 		get
 		{
-			return SokLoc.Translate(this.StatusTerm);
+			return MewtationsLoc.Translate(this.StatusTerm);
 		}
 	}
 
@@ -35,20 +35,20 @@ public class Harvestable : CardData
 	protected override void Awake()
 	{
 		base.Awake();
-		SokLoc.instance.LanguageChanged += this.UpdateDescription;
+		MewtationsLoc.instance.LanguageChanged += this.UpdateDescription;
 		this.UpdateDescription();
 	}
 
 	private void OnDestroy()
 	{
-		SokLoc.instance.LanguageChanged -= this.UpdateDescription;
+		MewtationsLoc.instance.LanguageChanged -= this.UpdateDescription;
 	}
 
 	private void UpdateDescription()
 	{
 		if (this.MyCardType == CardType.Locations)
 		{
-			this.descriptionOverride = SokLoc.Translate(this.DescriptionTerm, new LocParam[] { LocParam.Create("required_count", this.RequiredVillagerCount.ToString()) }) + "\n\n" + BoosterpackData.GetSummaryFromAllCards(this.MyCardBag.GetCardsInBag(), "label_may_contain");
+			this.descriptionOverride = MewtationsLoc.Translate(this.DescriptionTerm, new LocParam[] { LocParam.Create("required_count", this.RequiredVillagerCount.ToString()) }) + "\n\n" + BoosterpackData.GetSummaryFromAllCards(this.MyCardBag.GetCardsInBag(), "label_may_contain");
 		}
 	}
 

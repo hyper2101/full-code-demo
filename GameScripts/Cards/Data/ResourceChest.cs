@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -56,7 +56,7 @@ public class ResourceChest : CardData
 			CardConnector cardConnector = this.outputConnector;
 			if (((cardConnector != null) ? cardConnector.ConnectedNode : null) != null)
 			{
-				this.MyGameCard.StartTimer(10f, new TimerAction(this.OutputCard), SokLoc.Translate("idea_resourcechest_status_2"), base.GetActionId("OutputCard"), true, false, false);
+				this.MyGameCard.StartTimer(10f, new TimerAction(this.OutputCard), MewtationsLoc.Translate("idea_resourcechest_status_2"), base.GetActionId("OutputCard"), true, false, false);
 				goto IL_0198;
 			}
 		}
@@ -104,10 +104,10 @@ public class ResourceChest : CardData
 		if (!string.IsNullOrEmpty(this.HeldCardId))
 		{
 			CardData cardFromId = WorldManager.instance.GameDataLoader.GetCardFromId(this.HeldCardId, true);
-			this.nameOverride = SokLoc.Translate(this.ChestTermOverride, new LocParam[] { LocParam.Create("resource", cardFromId.Name) });
+			this.nameOverride = MewtationsLoc.Translate(this.ChestTermOverride, new LocParam[] { LocParam.Create("resource", cardFromId.Name) });
 			if (this.MyGameCard.IsHovered)
 			{
-				this.descriptionOverride = SokLoc.Translate(this.ChestDescriptionLong, new LocParam[]
+				this.descriptionOverride = MewtationsLoc.Translate(this.ChestDescriptionLong, new LocParam[]
 				{
 					LocParam.Create("resource", cardFromId.Name),
 					LocParam.Create("amount", this.ResourceCount.ToString())

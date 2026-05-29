@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class ControlsScreen : SokScreen
+public class ControlsScreen : MewtationsScreen
 {
 	public bool IsRebinding
 	{
@@ -42,9 +42,9 @@ public class ControlsScreen : SokScreen
 
 	private void CreateRebindElements()
 	{
-		this.MakeLabel(SokLoc.Translate("label_keyboard_mouse"));
+		this.MakeLabel(MewtationsLoc.Translate("label_keyboard_mouse"));
 		this.CreateElementsForScheme("Keyboard&Mouse");
-		this.MakeLabel(SokLoc.Translate("label_controller"));
+		this.MakeLabel(MewtationsLoc.Translate("label_controller"));
 		this.CreateElementsForScheme("Gamepad");
 	}
 
@@ -100,15 +100,15 @@ public class ControlsScreen : SokScreen
 		string text = "";
 		if (this.RebindInfo != null && this.RebindInfo.Action.bindings[this.RebindInfo.BindingIndex].isPartOfComposite)
 		{
-			text = SokLoc.Translate("label_binding", new LocParam[] { LocParam.Create("control", this.RebindInfo.Action.bindings[this.RebindInfo.BindingIndex].name) });
+			text = MewtationsLoc.Translate("label_binding", new LocParam[] { LocParam.Create("control", this.RebindInfo.Action.bindings[this.RebindInfo.BindingIndex].name) });
 		}
 		if (string.IsNullOrEmpty(text))
 		{
-			this.WaitingForInputText.text = SokLoc.Translate("label_waiting_for_input");
+			this.WaitingForInputText.text = MewtationsLoc.Translate("label_waiting_for_input");
 		}
 		else
 		{
-			this.WaitingForInputText.text = text + "\n" + SokLoc.Translate("label_waiting_for_input");
+			this.WaitingForInputText.text = text + "\n" + MewtationsLoc.Translate("label_waiting_for_input");
 		}
 		this.WaitingForInputText.transform.parent.gameObject.SetActive(this.IsRebinding);
 	}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,7 +23,7 @@ public class ArtGallery : Landmark
 			{
 				if (!this.MyGameCard.TimerRunning)
 				{
-					this.MyGameCard.StartTimer(60f, new TimerAction(this.CreatePainting), SokLoc.Translate("card_art_gallery_status_1"), base.GetActionId("CreatePainting"), true, false, false);
+					this.MyGameCard.StartTimer(60f, new TimerAction(this.CreatePainting), MewtationsLoc.Translate("card_art_gallery_status_1"), base.GetActionId("CreatePainting"), true, false, false);
 				}
 			}
 			else

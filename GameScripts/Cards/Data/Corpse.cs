@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class Corpse : CardData
 {
@@ -9,10 +9,10 @@ public class Corpse : CardData
 
 	public override void UpdateCardText()
 	{
-		string text = SokLoc.Translate(this.NameTerm);
+		string text = MewtationsLoc.Translate(this.NameTerm);
 		if (!string.IsNullOrEmpty(this.CustomName))
 		{
-			text = SokLoc.Translate("card_corpse_name_long", new LocParam[] { LocParam.Create("name", this.CustomName) });
+			text = MewtationsLoc.Translate("card_corpse_name_long", new LocParam[] { LocParam.Create("name", this.CustomName) });
 		}
 		this.nameOverride = text;
 	}

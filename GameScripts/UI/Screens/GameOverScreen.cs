@@ -2,7 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 
-public class GameOverScreen : SokScreen
+public class GameOverScreen : MewtationsScreen
 {
 	private void Awake()
 	{
@@ -23,9 +23,9 @@ public class GameOverScreen : SokScreen
 	private void Update()
 	{
 		string text = "";
-		text = text + SokLoc.Translate("label_you_reached_moon", new LocParam[] { LocParam.Create("moon", WorldManager.instance.Time.CurrentMonth.ToString()) }) + "\n";
-		text = text + SokLoc.Translate("label_quests_completed", new LocParam[] { LocParam.Plural("count", WorldManager.instance.QuestsCompleted) }) + "\n";
-		text = text + SokLoc.Translate("label_new_cards_found", new LocParam[] { LocParam.Plural("count", WorldManager.instance.NewCardsFound) }) + "\n";
+		text = text + MewtationsLoc.Translate("label_you_reached_moon", new LocParam[] { LocParam.Create("moon", WorldManager.instance.Time.CurrentMonth.ToString()) }) + "\n";
+		text = text + MewtationsLoc.Translate("label_quests_completed", new LocParam[] { LocParam.Plural("count", WorldManager.instance.QuestsCompleted) }) + "\n";
+		text = text + MewtationsLoc.Translate("label_new_cards_found", new LocParam[] { LocParam.Plural("count", WorldManager.instance.NewCardsFound) }) + "\n";
 		this.StatsText.text = text;
 		this.timer += Time.deltaTime;
 		if (this.timer >= 0.3f)

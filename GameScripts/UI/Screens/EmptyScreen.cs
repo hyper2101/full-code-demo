@@ -1,5 +1,5 @@
-﻿using System;
+using System;
 
-public class EmptyScreen : SokScreen
+public class EmptyScreen : MewtationsScreen
 {
 }

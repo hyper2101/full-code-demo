@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -377,7 +377,7 @@ public class CustomButton : Selectable, IPointerDownHandler, IEventSystemHandler
 
 	public Func<bool> IsSelectableAction;
 
-	public SokScreen parentScreen;
+	public MewtationsScreen parentScreen;
 
 	public bool SetColor = true;
 

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class MainMenu : SokScreen
+public class MainMenu : MewtationsScreen
 {
 	private void StartNewRun()
 	{
@@ -107,15 +107,15 @@ public class MainMenu : SokScreen
 			{
 				text = (WorldManager.instance.CurrentSave.LastPlayedRound.BoardMonths.MainMonth + WorldManager.instance.CurrentSave.LastPlayedRound.BoardMonths.IslandMonth).ToString();
 			}
-			this.ContinueButton.TextMeshPro.text = SokLoc.Translate("label_continue_run", new LocParam[] { LocParam.Create("moon", text) });
+			this.ContinueButton.TextMeshPro.text = MewtationsLoc.Translate("label_continue_run", new LocParam[] { LocParam.Create("moon", text) });
 		}
 		if (WorldManager.instance.IsCitiesDlcActive())
 		{
-			this.UpdateText.text = SokLoc.Translate("label_menu_cities_title");
+			this.UpdateText.text = MewtationsLoc.Translate("label_menu_cities_title");
 		}
 		else
 		{
-			this.UpdateText.text = SokLoc.Translate("label_menu_cities_title_locked");
+			this.UpdateText.text = MewtationsLoc.Translate("label_menu_cities_title_locked");
 		}
 		this.ContinueButton.gameObject.SetActive(WorldManager.instance.CurrentSave.LastPlayedRound != null);
 		Vector3 vector;

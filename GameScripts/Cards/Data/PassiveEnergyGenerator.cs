@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 public class PassiveEnergyGenerator : EnergyGenerator
@@ -7,7 +7,7 @@ public class PassiveEnergyGenerator : EnergyGenerator
 	{
 		if (!this.MyGameCard.TimerRunning && !this.IsDamaged)
 		{
-			this.MyGameCard.StartTimer(this.CycleTime, new TimerAction(this.EndCycle), SokLoc.Translate("card_energy_status_0"), base.GetActionId("EndCycle"), true, false, false);
+			this.MyGameCard.StartTimer(this.CycleTime, new TimerAction(this.EndCycle), MewtationsLoc.Translate("card_energy_status_0"), base.GetActionId("EndCycle"), true, false, false);
 		}
 		base.UpdateCard();
 	}

@@ -4,7 +4,7 @@ public class FinancialCrisis : EventCard
 {
 	protected override void ExecuteEvent()
 	{
-		this.MyGameCard.StartTimer(WorldManager.instance.MonthTime, new TimerAction(this.StopEvent), SokLoc.Translate("label_uh_oh"), base.GetActionId("StopEvent"), true, false, false);
+		this.MyGameCard.StartTimer(WorldManager.instance.MonthTime, new TimerAction(this.StopEvent), MewtationsLoc.Translate("label_uh_oh"), base.GetActionId("StopEvent"), true, false, false);
 		this.EventIsActive = true;
 		WorldManager.instance.Cutscene.QueueCutscene(CitiesCutscenes.CitiesFinancialCrisis());
 	}
@@ -25,7 +25,7 @@ public class FinancialCrisis : EventCard
 	{
 		if (this.MyGameCard != null && this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == base.GetActionId("StopEvent"))
 		{
-			this.descriptionOverride = SokLoc.Translate(this.EventText);
+			this.descriptionOverride = MewtationsLoc.Translate(this.EventText);
 		}
 		base.UpdateCardText();
 	}

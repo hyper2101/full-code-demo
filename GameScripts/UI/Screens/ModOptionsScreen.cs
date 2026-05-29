@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using Steamworks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class ModOptionsScreen : SokScreen
+public class ModOptionsScreen : MewtationsScreen
 {
 	private void Awake()
 	{
@@ -228,9 +228,9 @@ public class ModOptionsScreen : SokScreen
 	{
 		if (!b)
 		{
-			return SokLoc.Translate("label_off");
+			return MewtationsLoc.Translate("label_off");
 		}
-		return SokLoc.Translate("label_on");
+		return MewtationsLoc.Translate("label_on");
 	}
 
 	public static ModOptionsScreen instance;

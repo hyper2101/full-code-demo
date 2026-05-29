@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -9,9 +9,9 @@ public class FontManager : MonoBehaviour
 	{
 		FontManager.instance = this;
 		this.UpdateWorldFontMaterial();
-		if (SokLoc.instance != null)
+		if (MewtationsLoc.instance != null)
 		{
-			SokLoc.instance.LanguageChanged += this.Instance_LanguageChanged;
+			MewtationsLoc.instance.LanguageChanged += this.Instance_LanguageChanged;
 		}
 	}
 
@@ -22,9 +22,9 @@ public class FontManager : MonoBehaviour
 
 	private void OnDestroy()
 	{
-		if (SokLoc.instance != null)
+		if (MewtationsLoc.instance != null)
 		{
-			SokLoc.instance.LanguageChanged -= this.Instance_LanguageChanged;
+			MewtationsLoc.instance.LanguageChanged -= this.Instance_LanguageChanged;
 		}
 	}
 
@@ -40,9 +40,9 @@ public class FontManager : MonoBehaviour
 
 	public void UpdateWorldFontMaterial()
 	{
-		if (SokLoc.instance != null)
+		if (MewtationsLoc.instance != null)
 		{
-			TMP_FontAsset font = this.GetFont(FontType.World, SokLoc.instance.CurrentLanguage);
+			TMP_FontAsset font = this.GetFont(FontType.World, MewtationsLoc.instance.CurrentLanguage);
 			this.WorldFontMaterial.CopyPropertiesFromMaterial(font.material);
 			this.WorldFontMaterial.shader = this.WorldFontShader;
 		}
@@ -50,9 +50,9 @@ public class FontManager : MonoBehaviour
 
 	public TMP_FontAsset GetFont(FontType fontType, string languageOverride = null)
 	{
-		if (SokLoc.instance != null)
+		if (MewtationsLoc.instance != null)
 		{
-			string text = SokLoc.instance.CurrentLanguage;
+			string text = MewtationsLoc.instance.CurrentLanguage;
 			if (!string.IsNullOrEmpty(languageOverride))
 			{
 				text = languageOverride;

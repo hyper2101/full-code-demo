@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class OptionsScreen : SokScreen
+public class OptionsScreen : MewtationsScreen
 {
 	public override bool IsFrameRateUncapped
 	{
@@ -62,7 +62,7 @@ public class OptionsScreen : SokScreen
 		OptionsScreen.LoadSettings();
 		this.MusicSlider.value = OptionsScreen.MusicVol;
 		this.SfxSlider.value = OptionsScreen.SfxVol;
-		SokLoc.instance.LanguageChanged += this.Instance_LanguageChanged;
+		MewtationsLoc.instance.LanguageChanged += this.Instance_LanguageChanged;
 	}
 
 	public void OnMusicVolumeChange(float sliderValue)
@@ -77,9 +77,9 @@ public class OptionsScreen : SokScreen
 
 	private void OnDestroy()
 	{
-		if (SokLoc.instance != null)
+		if (MewtationsLoc.instance != null)
 		{
-			SokLoc.instance.LanguageChanged -= this.Instance_LanguageChanged;
+			MewtationsLoc.instance.LanguageChanged -= this.Instance_LanguageChanged;
 		}
 	}
 
@@ -150,15 +150,15 @@ public class OptionsScreen : SokScreen
 
 	private void SetTexts()
 	{
-		this.ResolutionButton.TextMeshPro.text = SokLoc.Translate("label_resolution", new LocParam[]
+		this.ResolutionButton.TextMeshPro.text = MewtationsLoc.Translate("label_resolution", new LocParam[]
 		{
 			LocParam.Create("width", OptionsScreen.CurrentWidth.ToString()),
 			LocParam.Create("height", OptionsScreen.CurrentHeight.ToString())
 		});
-		this.FullscreenButton.TextMeshPro.text = SokLoc.Translate("label_fullscreen", new LocParam[] { LocParam.Create("on_off", OptionsScreen.YesNo(OptionsScreen.CurrentFullScreen)) });
-		this.FrameRateCapButton.TextMeshPro.text = SokLoc.Translate("label_framerate_cap", new LocParam[] { LocParam.Create("fps_cap", OptionsScreen.FramerateLabel(OptionsScreen.CurrentFrameRate)) });
-		this.UIScaleButton.TextMeshPro.text = SokLoc.Translate("label_ui_scale", new LocParam[] { LocParam.Create("scale", OptionsScreen.UIScaleLabel(OptionsScreen.UIScale.IndexOf(OptionsScreen.CurrentUIScale))) });
-		this.BackButton.TextMeshPro.text = SokLoc.Translate("label_back");
+		this.FullscreenButton.TextMeshPro.text = MewtationsLoc.Translate("label_fullscreen", new LocParam[] { LocParam.Create("on_off", OptionsScreen.YesNo(OptionsScreen.CurrentFullScreen)) });
+		this.FrameRateCapButton.TextMeshPro.text = MewtationsLoc.Translate("label_framerate_cap", new LocParam[] { LocParam.Create("fps_cap", OptionsScreen.FramerateLabel(OptionsScreen.CurrentFrameRate)) });
+		this.UIScaleButton.TextMeshPro.text = MewtationsLoc.Translate("label_ui_scale", new LocParam[] { LocParam.Create("scale", OptionsScreen.UIScaleLabel(OptionsScreen.UIScale.IndexOf(OptionsScreen.CurrentUIScale))) });
+		this.BackButton.TextMeshPro.text = MewtationsLoc.Translate("label_back");
 		this.MusicVolumeText.text = string.Format("{0}%", Mathf.RoundToInt(OptionsScreen.MusicVol * 100f));
 		this.SfxVolumeText.text = string.Format("{0}%", Mathf.RoundToInt(OptionsScreen.SfxVol * 100f));
 	}
@@ -167,9 +167,9 @@ public class OptionsScreen : SokScreen
 	{
 		if (!a)
 		{
-			return SokLoc.Translate("label_off");
+			return MewtationsLoc.Translate("label_off");
 		}
-		return SokLoc.Translate("label_on");
+		return MewtationsLoc.Translate("label_on");
 	}
 
 	public static string FramerateLabel(int i)
@@ -178,29 +178,29 @@ public class OptionsScreen : SokScreen
 		{
 			if (i == -2)
 			{
-				return SokLoc.Translate("label_framerate_unlimited");
+				return MewtationsLoc.Translate("label_framerate_unlimited");
 			}
 			if (i == -1)
 			{
-				return SokLoc.Translate("label_framerate_vsync");
+				return MewtationsLoc.Translate("label_framerate_vsync");
 			}
 		}
 		else
 		{
 			if (i == 30)
 			{
-				return SokLoc.Translate("label_framerate_30");
+				return MewtationsLoc.Translate("label_framerate_30");
 			}
 			if (i == 60)
 			{
-				return SokLoc.Translate("label_framerate_60");
+				return MewtationsLoc.Translate("label_framerate_60");
 			}
 			if (i == 120)
 			{
-				return SokLoc.Translate("label_framerate_120");
+				return MewtationsLoc.Translate("label_framerate_120");
 			}
 		}
-		return SokLoc.Translate("label_framerate_unlimited");
+		return MewtationsLoc.Translate("label_framerate_unlimited");
 	}
 
 	public static string UIScaleLabel(int i)
@@ -209,16 +209,16 @@ public class OptionsScreen : SokScreen
 		switch (i)
 		{
 		case 0:
-			text = SokLoc.Translate("label_ui_scale_100");
+			text = MewtationsLoc.Translate("label_ui_scale_100");
 			break;
 		case 1:
-			text = SokLoc.Translate("label_ui_scale_80");
+			text = MewtationsLoc.Translate("label_ui_scale_80");
 			break;
 		case 2:
-			text = SokLoc.Translate("label_ui_scale_60");
+			text = MewtationsLoc.Translate("label_ui_scale_60");
 			break;
 		default:
-			text = SokLoc.Translate("label_ui_scale_100");
+			text = MewtationsLoc.Translate("label_ui_scale_100");
 			break;
 		}
 		return text;
@@ -230,9 +230,9 @@ public class OptionsScreen : SokScreen
 		OptionsScreen.SfxOn = PlayerPrefs.GetInt("sfxOn", 1) == 1;
 		OptionsScreen.MusicVol = PlayerPrefs.GetFloat("MusicVolume", 0.8f);
 		OptionsScreen.SfxVol = PlayerPrefs.GetFloat("SfxVolume", 0.8f);
-		string languageName = SokLoc.DetermineSystemLanguage().LanguageName;
+		string languageName = MewtationsLoc.DetermineSystemLanguage().LanguageName;
 		string @string = PlayerPrefs.GetString("language", languageName);
-		SokLoc.instance.SetLanguage(@string);
+		MewtationsLoc.instance.SetLanguage(@string);
 		int @int = PlayerPrefs.GetInt("width", -1);
 		int int2 = PlayerPrefs.GetInt("height", -1);
 		OptionsScreen.CurrentFullScreen = PlayerPrefs.GetInt("fullscreen", 1) == 1;
@@ -271,7 +271,7 @@ public class OptionsScreen : SokScreen
 		PlayerPrefs.SetInt("uiScaleIndex", OptionsScreen.UIScale.IndexOf(OptionsScreen.CurrentUIScale));
 		PlayerPrefs.SetInt("width", OptionsScreen.CurrentWidth);
 		PlayerPrefs.SetInt("height", OptionsScreen.CurrentHeight);
-		PlayerPrefs.SetString("language", SokLoc.instance.CurrentLanguage);
+		PlayerPrefs.SetString("language", MewtationsLoc.instance.CurrentLanguage);
 	}
 
 	private static bool IsSameResolution(Resolution a, Resolution b)

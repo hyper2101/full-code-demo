@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class WellbeingGenerator : Landmark, IEnergyConsumer
 {
@@ -16,7 +16,7 @@ public class WellbeingGenerator : Landmark, IEnergyConsumer
 	{
 		if (base.WorkerAmountMet() && !this.MyGameCard.TimerRunning)
 		{
-			this.MyGameCard.StartTimer((float)this.HarvestTime, new TimerAction(this.Complete), SokLoc.Translate(this.StatusTerm), base.GetActionId("Complete"), true, false, false);
+			this.MyGameCard.StartTimer((float)this.HarvestTime, new TimerAction(this.Complete), MewtationsLoc.Translate(this.StatusTerm), base.GetActionId("Complete"), true, false, false);
 		}
 		else if (!base.WorkerAmountMet())
 		{
@@ -40,7 +40,7 @@ public class WellbeingGenerator : Landmark, IEnergyConsumer
 	public void Complete()
 	{
 		CitiesManager.instance.AddWellbeing(this.WellbeingAmountPerCycle);
-		WorldManager.instance.CreateFloatingText(this.MyGameCard, this.WellbeingAmountPerCycle > 0, this.WellbeingAmountPerCycle, SokLoc.Translate(this.StatusResultTerm), Icons.Wellbeing, true, 0, 0f, true);
+		WorldManager.instance.CreateFloatingText(this.MyGameCard, this.WellbeingAmountPerCycle > 0, this.WellbeingAmountPerCycle, MewtationsLoc.Translate(this.StatusResultTerm), Icons.Wellbeing, true, 0, 0f, true);
 	}
 
 	string IEnergyConsumer.GetEnergyConsumptionString()

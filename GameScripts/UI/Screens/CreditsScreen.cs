@@ -1,10 +1,10 @@
-Ôªøusing System;
+using System;
 using System.Linq;
 using System.Text;
 using TMPro;
 using UnityEngine;
 
-public class CreditsScreen : SokScreen
+public class CreditsScreen : MewtationsScreen
 {
 	private void OnEnable()
 	{
@@ -37,7 +37,7 @@ public class CreditsScreen : SokScreen
 	private void AddTitle(string term)
 	{
 		this.sb.Append("<color=#AAAAAA>");
-		this.sb.Append(SokLoc.Translate(term));
+		this.sb.Append(MewtationsLoc.Translate(term));
 		this.sb.Append("</color>");
 		this.sb.AppendLine();
 	}
@@ -66,7 +66,7 @@ public class CreditsScreen : SokScreen
 		this.sb = new StringBuilder();
 		this.sb.Append("<b><size=150%>Stacklands</size></b>");
 		this.sb.AppendLine();
-		this.sb.Append(SokLoc.Translate("credits_sokpop"));
+		this.sb.Append(MewtationsLoc.Translate("credits_sokpop"));
 		this.sb.AppendLine();
 		this.sb.AppendLine();
 		this.AddTitle("credits_aran");
@@ -97,7 +97,7 @@ public class CreditsScreen : SokScreen
 		this.AddName("Manuel Deroulers");
 		this.AddNewLine();
 		this.AddTitle("language_german");
-		this.AddName(new string[] { "Jan Sch√§fer", "Regina Lurz", "Janina Zaghli" });
+		this.AddName(new string[] { "Jan Sch‰fer", "Regina Lurz", "Janina Zaghli" });
 		this.AddNewLine();
 		this.AddTitle("language_italian");
 		this.AddName(new string[] { "Michele Fantoni", "Gian Maria Battistini", "Gaetano Fabozzi" });
@@ -109,13 +109,13 @@ public class CreditsScreen : SokScreen
 		this.AddName(new string[] { "Ziya Sarper Ekim", "Junglim Kim", "Lim Yoon" });
 		this.AddNewLine();
 		this.AddTitle("language_polish");
-		this.AddName("Aleksandra Lubi≈Ñska");
+		this.AddName("Aleksandra Lubinska");
 		this.AddNewLine();
 		this.AddTitle("language_portuguese");
-		this.AddName(new string[] { "F√°bio Ludwig", "Thierry Banhete" });
+		this.AddName(new string[] { "F·bio Ludwig", "Thierry Banhete" });
 		this.AddNewLine();
 		this.AddTitle("language_spanish");
-		this.AddName(new string[] { "Isabel de la Mota Mendiola", "Alba Salgado Rivas", "Pedro Cort√°zar Pagalday" });
+		this.AddName(new string[] { "Isabel de la Mota Mendiola", "Alba Salgado Rivas", "Pedro Cort·zar Pagalday" });
 		this.AddNewLine();
 		this.AddTitle("credits_betatesting");
 		this.AddName("Arjan \"Starchip\" Schipstra");

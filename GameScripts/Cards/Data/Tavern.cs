@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -56,7 +56,7 @@ public class Tavern : CardData
 		Food food;
 		if (base.HasCardOnTop<Food>(out food))
 		{
-			this.MyGameCard.StartTimer(30f, new TimerAction(this.ResearchedFood), SokLoc.Translate("card_tavern_status_0"), base.GetActionId("ResearchedFood"), true, false, false);
+			this.MyGameCard.StartTimer(30f, new TimerAction(this.ResearchedFood), MewtationsLoc.Translate("card_tavern_status_0"), base.GetActionId("ResearchedFood"), true, false, false);
 			return;
 		}
 		this.MyGameCard.CancelTimer(base.GetActionId("ResearchedFood"));

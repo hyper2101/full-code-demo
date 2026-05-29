@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Shapes;
 using UnityEngine;
 
@@ -14,7 +14,7 @@ public class OnOffInteractable : Interactable
 
 	public override string GetTooltipText()
 	{
-		return SokLoc.Translate(this.TooltipTerm);
+		return MewtationsLoc.Translate(this.TooltipTerm);
 	}
 
 	public override void Clicked()
@@ -36,7 +36,7 @@ public class OnOffInteractable : Interactable
 	protected override void Update()
 	{
 		this.MyBoard = this.ParentCard.MyBoard;
-		base.gameObject.name = SokLoc.Translate(this.gameObjectTerm);
+		base.gameObject.name = MewtationsLoc.Translate(this.gameObjectTerm);
 		Vector3 vector = (this.IsHovered ? (this.startScale * 1.1f) : this.startScale);
 		base.transform.localScale = Vector3.Lerp(base.transform.localScale, vector, Time.deltaTime * 12f);
 		if (this.ParentCard.CardData != null)

@@ -7,7 +7,7 @@ public class SadEvent : CardData
 	{
 		if (!TransitionScreen.InTransition && !WorldManager.instance.InAnimation && !this.MyGameCard.TimerRunning)
 		{
-			this.MyGameCard.StartTimer(this.EventTime, new TimerAction(this.StartSadEvent), SokLoc.Translate("new_portal_shaking"), base.GetActionId("StartSadEvent"), true, false, false);
+			this.MyGameCard.StartTimer(this.EventTime, new TimerAction(this.StartSadEvent), MewtationsLoc.Translate("new_portal_shaking"), base.GetActionId("StartSadEvent"), true, false, false);
 		}
 		base.UpdateCard();
 	}

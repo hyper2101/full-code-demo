@@ -80,7 +80,7 @@ public class Boat : CardData
 				}
 				else
 				{
-					this.MyGameCard.StartTimer(this.TravelTime, new TimerAction(this.SailOff), SokLoc.Translate("card_boat_status"), base.GetActionId("SailOff"), true, false, false);
+					this.MyGameCard.StartTimer(this.TravelTime, new TimerAction(this.SailOff), MewtationsLoc.Translate("card_boat_status"), base.GetActionId("SailOff"), true, false, false);
 				}
 			}
 			else
@@ -153,7 +153,7 @@ public class Boat : CardData
 	{
 		EndOfMonthParameters endOfMonthParameters = new EndOfMonthParameters();
 		endOfMonthParameters.SkipSpecialEvents = true;
-		endOfMonthParameters.CutsceneTitle = SokLoc.Translate("label_sailing_off_full");
+		endOfMonthParameters.CutsceneTitle = MewtationsLoc.Translate("label_sailing_off_full");
 		endOfMonthParameters.SkipEndConfirmation = true;
 		this.InSailOffPrompt = true;
 		this.RemoveStacksFromAllBoats();

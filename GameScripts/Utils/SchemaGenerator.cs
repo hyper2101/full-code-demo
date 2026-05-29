@@ -662,7 +662,7 @@ public static class SchemaGenerator
 		jobject.Add("type", "string");
 		string text = "enum";
 		JArray jarray = new JArray();
-		jarray.Add(SokLoc.instance.CurrentLocSet.AllTerms.Select<SokTerm, string>((SokTerm t) => t.Id));
+		jarray.Add(MewtationsLoc.instance.CurrentLocSet.AllTerms.Select<MewtationsTerm, string>((MewtationsTerm t) => t.Id));
 		jobject.Add(text, jarray);
 		return jobject;
 	}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class Composter : CardData
 {
@@ -25,7 +25,7 @@ public class Composter : CardData
 	{
 		if (base.ChildrenMatchingPredicateCount((CardData x) => this.CanHaveCard(x)) >= 5)
 		{
-			this.MyGameCard.StartTimer(60f, new TimerAction(this.Compost), SokLoc.Translate("idea_composting_status"), "compost", true, false, false);
+			this.MyGameCard.StartTimer(60f, new TimerAction(this.Compost), MewtationsLoc.Translate("idea_composting_status"), "compost", true, false, false);
 		}
 		else
 		{

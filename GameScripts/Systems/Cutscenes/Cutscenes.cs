@@ -60,7 +60,7 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		Cutscenes.Title = "";
-		Cutscenes.Text = SokLoc.Translate("label_awakened_something");
+		Cutscenes.Text = MewtationsLoc.Translate("label_awakened_something");
 		List<Tentacle> tentacles = new List<Tentacle>();
 		int num;
 		for (int i = 0; i < 5; i = num + 1)
@@ -71,7 +71,7 @@ public static class Cutscenes
 			yield return new WaitForSeconds(1f);
 			num = i;
 		}
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -80,10 +80,10 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		Cutscenes.Title = "";
-		Cutscenes.Text = SokLoc.Translate("label_awakened_the_kraken");
+		Cutscenes.Text = MewtationsLoc.Translate("label_awakened_the_kraken");
 		CardData cardData = WorldManager.instance.CreateCard(WorldManager.instance.MiddleOfBoard(), "kraken", false, false, true);
 		GameCamera.instance.TargetPositionOverride = new Vector3?(cardData.transform.position);
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -99,11 +99,11 @@ public static class Cutscenes
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		if (justUnlockedPack != null)
 		{
-			Cutscenes.Title = SokLoc.Translate("label_new_pack_unlocked");
-			Cutscenes.Text = SokLoc.Translate("label_pack_now_available", new LocParam[] { LocParam.Create("pack", justUnlockedPack.Name) });
+			Cutscenes.Title = MewtationsLoc.Translate("label_new_pack_unlocked");
+			Cutscenes.Text = MewtationsLoc.Translate("label_pack_now_available", new LocParam[] { LocParam.Create("pack", justUnlockedPack.Name) });
 			yield return new WaitForSeconds(0.5f);
 			GameCamera.instance.TargetPositionOverride = new Vector3?(sellbox.transform.position);
-			yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_continue"));
+			yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_continue"));
 			if (justUnlockedPack.BoosterId == "structures")
 			{
 				QuestManager.instance.SpecialActionComplete("unlocked_all_packs", null);
@@ -129,9 +129,9 @@ public static class Cutscenes
 	public static IEnumerator EveryoneInForestDead()
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		Cutscenes.Title = SokLoc.Translate("label_everyone_in_forest_dead");
-		Cutscenes.Text = SokLoc.Translate("label_everyone_in_forest_dead_text");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_return_to_mainland"));
+		Cutscenes.Title = MewtationsLoc.Translate("label_everyone_in_forest_dead");
+		Cutscenes.Text = MewtationsLoc.Translate("label_everyone_in_forest_dead_text");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_return_to_mainland"));
 		WorldManager.instance.GoToBoard(WorldManager.instance.GetBoardWithId("main"), delegate
 		{
 			Cutscenes.RemoveEnemiesFromBoard("forest");
@@ -144,9 +144,9 @@ public static class Cutscenes
 	public static IEnumerator EveryoneOnIslandDead()
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		Cutscenes.Title = SokLoc.Translate("label_everyone_on_island_dead");
-		Cutscenes.Text = SokLoc.Translate("label_everyone_on_island_dead_text");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_return_to_mainland"));
+		Cutscenes.Title = MewtationsLoc.Translate("label_everyone_on_island_dead");
+		Cutscenes.Text = MewtationsLoc.Translate("label_everyone_on_island_dead_text");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_return_to_mainland"));
 		WorldManager.instance.GoToBoard(WorldManager.instance.GetBoardWithId("main"), delegate
 		{
 			Cutscenes.RemoveEnemiesFromBoard("island");
@@ -159,12 +159,12 @@ public static class Cutscenes
 	public static IEnumerator EveryoneInSpiritWorldDead(string boardId)
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		Cutscenes.Title = SokLoc.Translate("label_everyone_spirit_world_dead");
-		Cutscenes.Text = SokLoc.Translate("label_everyone_spirit_world_dead_text");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Title = SokLoc.Translate("label_everyone_spirit_world_dead");
-		Cutscenes.Text = SokLoc.Translate("label_everyone_spirit_world_dead_text_retry");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		Cutscenes.Title = MewtationsLoc.Translate("label_everyone_spirit_world_dead");
+		Cutscenes.Text = MewtationsLoc.Translate("label_everyone_spirit_world_dead_text");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Title = MewtationsLoc.Translate("label_everyone_spirit_world_dead");
+		Cutscenes.Text = MewtationsLoc.Translate("label_everyone_spirit_world_dead_text_retry");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameBoard currentBoard = WorldManager.instance.GetBoardWithId(boardId);
 		GameBoard boardWithId = WorldManager.instance.GetBoardWithId(WorldManager.instance.CurrentRunVariables.PreviouseBoard);
 		WorldManager.instance.GoToBoard(boardWithId, delegate
@@ -220,9 +220,9 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(mommaCrab.transform.position);
-		Cutscenes.Title = SokLoc.Translate("label_momma_crab_appeared_title");
-		Cutscenes.Text = SokLoc.Translate("label_momma_crab_appeared_text");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+		Cutscenes.Title = MewtationsLoc.Translate("label_momma_crab_appeared_title");
+		Cutscenes.Text = MewtationsLoc.Translate("label_momma_crab_appeared_text");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -232,9 +232,9 @@ public static class Cutscenes
 		Boosterpack boosterpack = WorldManager.instance.CreateBoosterpack(WorldManager.instance.GetRandomSpawnPosition(), "island_intro");
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(boosterpack.transform.position);
-		Cutscenes.Title = SokLoc.Translate("label_island_intro_pack_title");
-		Cutscenes.Text = SokLoc.Translate("label_island_intro_pack_text");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		Cutscenes.Title = MewtationsLoc.Translate("label_island_intro_pack_title");
+		Cutscenes.Text = MewtationsLoc.Translate("label_island_intro_pack_text");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		WorldManager.instance.CurrentSave.GotIslandIntroPack = true;
 		Cutscenes.Stop(false);
 		yield break;
@@ -245,27 +245,27 @@ public static class Cutscenes
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.CenterOnBoard(WorldManager.instance.GetBoardWithId("island"));
 		Cutscenes.Title = "";
-		SokLoc.Translate("label_island_intro_title");
-		Cutscenes.Text = SokLoc.Translate("label_island_intro_1");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Text = SokLoc.Translate("label_island_intro_2");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		MewtationsLoc.Translate("label_island_intro_title");
+		Cutscenes.Text = MewtationsLoc.Translate("label_island_intro_1");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_island_intro_2");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		CardData card = WorldManager.instance.GetCard("rowboat");
 		if (card != null)
 		{
 			GameCamera.instance.TargetPositionOverride = new Vector3?(card.transform.position);
 		}
-		Cutscenes.Text = SokLoc.Translate("label_island_intro_3");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Text = SokLoc.Translate("label_island_intro_4");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_island_intro_3");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_island_intro_4");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCamera.instance.TargetPositionOverride = new Vector3?(WorldManager.instance.CardQuery.GetCard<BaseVillager>().transform.position);
-		Cutscenes.Text = SokLoc.Translate("label_island_intro_5");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_island_intro_5");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCamera.instance.TargetPositionOverride = null;
 		GameCamera.instance.CenterOnBoard(WorldManager.instance.GetBoardWithId("island"));
-		Cutscenes.Text = SokLoc.Translate("label_island_intro_6");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_island_intro_6");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -278,20 +278,20 @@ public static class Cutscenes
 		Cutscenes.Title = "";
 		Spirit spirit = Cutscenes.FindOrCreateSpirit(CurseType.Greed, null);
 		GameCamera.instance.TargetCardOverride = spirit;
-		Cutscenes.Text = SokLoc.Translate("label_greed_intro_1");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_greed_intro_1");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		Royal royal = Cutscenes.FindOrCreateGameCard("royal", WorldManager.instance.MiddleOfBoard()).CardData as Royal;
 		GameCamera.instance.TargetCardOverride = royal;
-		Cutscenes.Text = SokLoc.Translate("label_greed_intro_2");
+		Cutscenes.Text = MewtationsLoc.Translate("label_greed_intro_2");
 		AudioManager.me.PlaySound2D(DemandManager.instance.StartDemandSound, 1f, 0.4f);
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Text = SokLoc.Translate("label_greed_intro_3");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Text = SokLoc.Translate("label_greed_intro_4");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_greed_intro_3");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_greed_intro_4");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCamera.instance.TargetCardOverride = spirit;
-		Cutscenes.Text = SokLoc.Translate("label_greed_intro_5");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_greed_intro_5");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCamera.instance.CenterOnBoard(WorldManager.instance.GetBoardWithId("greed"));
 		spirit.MyGameCard.DestroyCard(false, true);
 		yield return new WaitForSeconds(0.5f);
@@ -307,23 +307,23 @@ public static class Cutscenes
 		Cutscenes.Title = "";
 		Spirit spirit = Cutscenes.FindOrCreateSpirit(CurseType.Happiness, null);
 		GameCamera.instance.TargetCardOverride = spirit;
-		Cutscenes.Text = SokLoc.Translate("label_happiness_intro_1");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_happiness_intro_1");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		Happiness card = WorldManager.instance.CardQuery.GetCard<Happiness>();
 		if (card != null)
 		{
 			GameCamera.instance.TargetPositionOverride = new Vector3?(card.transform.position);
 		}
-		Cutscenes.Text = SokLoc.Translate("label_happiness_intro_2");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Text = SokLoc.Translate("label_happiness_intro_3");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_happiness_intro_2");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_happiness_intro_3");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCamera.instance.TargetCardOverride = WorldManager.instance.CardQuery.GetCard<BaseVillager>();
-		Cutscenes.Text = SokLoc.Translate("label_happiness_intro_4");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_happiness_intro_4");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCamera.instance.TargetCardOverride = spirit;
-		Cutscenes.Text = SokLoc.Translate("label_happiness_intro_5");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_happiness_intro_5");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		spirit.MyGameCard.DestroyCard(false, true);
 		yield return new WaitForSeconds(0.5f);
 		WorldManager.instance.CurrentRunVariables.VisitedHappiness = true;
@@ -336,21 +336,21 @@ public static class Cutscenes
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.CenterOnBoard(WorldManager.instance.GetBoardWithId("death"));
 		Cutscenes.Title = "";
-		SokLoc.Translate("label_death_intro_title");
+		MewtationsLoc.Translate("label_death_intro_title");
 		Spirit spirit = Cutscenes.FindOrCreateSpirit(CurseType.Death, null);
 		GameCamera.instance.TargetCardOverride = spirit;
-		Cutscenes.Text = SokLoc.Translate("label_death_intro_1");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Text = SokLoc.Translate("label_death_intro_2");
+		Cutscenes.Text = MewtationsLoc.Translate("label_death_intro_1");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_death_intro_2");
 		GameCamera.instance.TargetCardOverride = WorldManager.instance.CardQuery.GetCard<BaseVillager>();
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Text = SokLoc.Translate("label_death_intro_3");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Text = SokLoc.Translate("label_death_intro_4");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_death_intro_3");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_death_intro_4");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCamera.instance.TargetCardOverride = spirit;
-		Cutscenes.Text = SokLoc.Translate("label_death_intro_5");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_death_intro_5");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		spirit.MyGameCard.DestroyCard(false, true);
 		yield return new WaitForSeconds(0.5f);
 		WorldManager.instance.CurrentRunVariables.VisitedDeath = true;
@@ -364,17 +364,17 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(temple.transform.position);
-		Cutscenes.Title = SokLoc.Translate("label_goblet_brought_to_temple");
+		Cutscenes.Title = MewtationsLoc.Translate("label_goblet_brought_to_temple");
 		Cutscenes.Text = "";
 		if (!WorldManager.instance.CurrentRunOptions.IsPeacefulMode)
 		{
-			string text = SokLoc.Translate("label_start_the_ritual");
-			string text2 = SokLoc.Translate("label_cancel_the_ritual");
+			string text = MewtationsLoc.Translate("label_start_the_ritual");
+			string text2 = MewtationsLoc.Translate("label_cancel_the_ritual");
 			yield return Cutscenes.WaitForAnswer(new string[] { text, text2 });
 		}
 		else
 		{
-			string text = SokLoc.Translate("label_well_done");
+			string text = MewtationsLoc.Translate("label_well_done");
 			yield return Cutscenes.WaitForAnswer(new string[] { text });
 		}
 		Cutscenes.Title = "";
@@ -404,17 +404,17 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(cathedral.transform.position);
-		Cutscenes.Title = SokLoc.Translate("label_relic_brought_to_cathedral");
+		Cutscenes.Title = MewtationsLoc.Translate("label_relic_brought_to_cathedral");
 		Cutscenes.Text = "";
 		if (!WorldManager.instance.CurrentRunOptions.IsPeacefulMode)
 		{
-			string text = SokLoc.Translate("label_start_the_ritual");
-			string text2 = SokLoc.Translate("label_cancel_the_ritual");
+			string text = MewtationsLoc.Translate("label_start_the_ritual");
+			string text2 = MewtationsLoc.Translate("label_cancel_the_ritual");
 			yield return Cutscenes.WaitForAnswer(new string[] { text, text2 });
 		}
 		else
 		{
-			string text = SokLoc.Translate("label_well_done");
+			string text = MewtationsLoc.Translate("label_well_done");
 			yield return Cutscenes.WaitForAnswer(new string[] { text });
 		}
 		Cutscenes.Title = "";
@@ -444,9 +444,9 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(demon.transform.position);
-		Cutscenes.Title = SokLoc.Translate("label_you_killed_the_demon");
+		Cutscenes.Title = MewtationsLoc.Translate("label_you_killed_the_demon");
 		Cutscenes.Text = "";
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		yield return new WaitForSeconds(1f);
 		demon.MyGameCard.DestroyCard(true, true);
 		if (!WorldManager.instance.CurrentSave.GotIslandIntroPack)
@@ -461,15 +461,15 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(demon.transform.position);
-		Cutscenes.Title = SokLoc.Translate("label_you_killed_the_demon_lord");
+		Cutscenes.Title = MewtationsLoc.Translate("label_you_killed_the_demon_lord");
 		Cutscenes.Text = "";
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		yield return new WaitForSeconds(1f);
 		demon.MyGameCard.DestroyCard(true, true);
 		yield return new WaitForSeconds(1f);
-		Cutscenes.Title = SokLoc.Translate("label_completed_main_quest");
-		Cutscenes.Text = SokLoc.Translate("label_keep_playing");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		Cutscenes.Title = MewtationsLoc.Translate("label_completed_main_quest");
+		Cutscenes.Text = MewtationsLoc.Translate("label_keep_playing");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -478,9 +478,9 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(well.transform.position);
-		Cutscenes.Title = SokLoc.Translate("card_wishing_well_name");
-		Cutscenes.Text = SokLoc.Translate("card_wishing_well_wish_1");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		Cutscenes.Title = MewtationsLoc.Translate("card_wishing_well_name");
+		Cutscenes.Text = MewtationsLoc.Translate("card_wishing_well_wish_1");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -489,9 +489,9 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(well.transform.position);
-		Cutscenes.Title = SokLoc.Translate("card_wishing_well_name");
-		Cutscenes.Text = SokLoc.Translate("card_wishing_well_wish_2");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		Cutscenes.Title = MewtationsLoc.Translate("card_wishing_well_name");
+		Cutscenes.Text = MewtationsLoc.Translate("card_wishing_well_wish_2");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -500,9 +500,9 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(well.transform.position);
-		Cutscenes.Title = SokLoc.Translate("card_wishing_well_name");
-		Cutscenes.Text = SokLoc.Translate("card_wishing_well_wish_5");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		Cutscenes.Title = MewtationsLoc.Translate("card_wishing_well_name");
+		Cutscenes.Text = MewtationsLoc.Translate("card_wishing_well_wish_5");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -511,9 +511,9 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(well.transform.position);
-		Cutscenes.Title = SokLoc.Translate("card_wishing_well_name");
-		Cutscenes.Text = SokLoc.Translate("card_wishing_well_wish_10");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		Cutscenes.Title = MewtationsLoc.Translate("card_wishing_well_name");
+		Cutscenes.Text = MewtationsLoc.Translate("card_wishing_well_wish_10");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -522,9 +522,9 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(well.transform.position);
-		Cutscenes.Title = SokLoc.Translate("card_wishing_well_name");
-		Cutscenes.Text = SokLoc.Translate("card_wishing_well_wish_20");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		Cutscenes.Title = MewtationsLoc.Translate("card_wishing_well_name");
+		Cutscenes.Text = MewtationsLoc.Translate("card_wishing_well_wish_20");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -533,9 +533,9 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(well.transform.position);
-		Cutscenes.Title = SokLoc.Translate("card_wishing_well_name");
-		Cutscenes.Text = SokLoc.Translate("card_wishing_well_wish_50");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		Cutscenes.Title = MewtationsLoc.Translate("card_wishing_well_name");
+		Cutscenes.Text = MewtationsLoc.Translate("card_wishing_well_wish_50");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -693,27 +693,27 @@ public static class Cutscenes
 		Cutscenes.Title = "";
 		if (curseType == CurseType.Happiness)
 		{
-			Cutscenes.Text = SokLoc.Translate("label_spirit_outro_0_happiness");
+			Cutscenes.Text = MewtationsLoc.Translate("label_spirit_outro_0_happiness");
 		}
 		if (curseType == CurseType.Greed)
 		{
-			Cutscenes.Text = SokLoc.Translate("label_spirit_outro_0_greed");
+			Cutscenes.Text = MewtationsLoc.Translate("label_spirit_outro_0_greed");
 		}
 		if (curseType == CurseType.Death)
 		{
-			Cutscenes.Text = SokLoc.Translate("label_spirit_outro_0_death");
+			Cutscenes.Text = MewtationsLoc.Translate("label_spirit_outro_0_death");
 		}
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Text = SokLoc.Translate("label_spirit_outro_1");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_spirit_outro_1");
 		Spirit spirit = Cutscenes.FindOrCreateSpirit(curseType, null);
 		GameCamera.instance.TargetCardOverride = spirit;
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Text = SokLoc.Translate("label_spirit_outro_2");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Text = SokLoc.Translate("label_spirit_outro_3");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		Cutscenes.Text = SokLoc.Translate("label_spirit_outro_4");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_spirit_outro_2");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_spirit_outro_3");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_spirit_outro_4");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -721,11 +721,11 @@ public static class Cutscenes
 	public static IEnumerator ReturnToBoardCutscene()
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		Cutscenes.Text = SokLoc.Translate("label_happiness_return_0");
+		Cutscenes.Text = MewtationsLoc.Translate("label_happiness_return_0");
 		yield return Cutscenes.WaitForAnswer(new string[]
 		{
-			SokLoc.Translate("label_spirit_outro_choice_0"),
-			SokLoc.Translate("label_spirit_outro_choice_1")
+			MewtationsLoc.Translate("label_spirit_outro_choice_0"),
+			MewtationsLoc.Translate("label_spirit_outro_choice_1")
 		});
 		if (WorldManager.instance.ContinueButtonIndex == 1)
 		{
@@ -739,15 +739,15 @@ public static class Cutscenes
 	{
 		if (curseType == CurseType.Death)
 		{
-			return SokLoc.Translate("card_death_curse_name");
+			return MewtationsLoc.Translate("card_death_curse_name");
 		}
 		if (curseType == CurseType.Greed)
 		{
-			return SokLoc.Translate("card_greed_curse_name");
+			return MewtationsLoc.Translate("card_greed_curse_name");
 		}
 		if (curseType == CurseType.Happiness)
 		{
-			return SokLoc.Translate("card_happiness_curse_name");
+			return MewtationsLoc.Translate("card_happiness_curse_name");
 		}
 		throw new ArgumentException("curseType");
 	}
@@ -755,12 +755,12 @@ public static class Cutscenes
 	public static IEnumerator AltarIntro(Altar altar, CurseType curseType)
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		Cutscenes.Title = SokLoc.Translate("label_altar_cutscene_title");
+		Cutscenes.Title = MewtationsLoc.Translate("label_altar_cutscene_title");
 		GameCamera.instance.TargetCardOverride = altar;
 		GameCamera.instance.Screenshake = 0.5f;
 		yield return new WaitForSeconds(2f);
 		Cutscenes.Title = "...";
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		WorldManager.instance.CreateSmoke(altar.transform.position);
 		altar.MyGameCard.Child.DestroyCard(false, true);
 		yield return new WaitForSeconds(1f);
@@ -768,11 +768,11 @@ public static class Cutscenes
 		if ((curseType == CurseType.Death && WorldManager.instance.CurrentSave.FinishedDeath) || (curseType == CurseType.Happiness && WorldManager.instance.CurrentSave.FinishedHappiness))
 		{
 			Cutscenes.Title = "";
-			Cutscenes.Text = SokLoc.Translate("label_altar_cutscene_mainland");
+			Cutscenes.Text = MewtationsLoc.Translate("label_altar_cutscene_mainland");
 			yield return Cutscenes.WaitForAnswer(new string[]
 			{
-				SokLoc.Translate("label_altar_run_board", new LocParam[] { LocParam.Create("curse", Cutscenes.GetCurseName(curseType)) }),
-				SokLoc.Translate("label_altar_run_redo")
+				MewtationsLoc.Translate("label_altar_run_board", new LocParam[] { LocParam.Create("curse", Cutscenes.GetCurseName(curseType)) }),
+				MewtationsLoc.Translate("label_altar_run_redo")
 			});
 			if (WorldManager.instance.ContinueButtonIndex == 0)
 			{
@@ -808,18 +808,18 @@ public static class Cutscenes
 			CS$<>8__locals1.spirit = Cutscenes.FindOrCreateSpirit(curseType, new Vector3?(altar.transform.position));
 			CS$<>8__locals1.spirit.CreateBackgroundPlane();
 			GameCamera.instance.TargetCardOverride = CS$<>8__locals1.spirit;
-			yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_wow"));
+			yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_wow"));
 			Cutscenes.Title = "";
-			Cutscenes.Text = SokLoc.Translate("label_altar_cutscene_text", new LocParam[] { LocParam.Create("spirit", CS$<>8__locals1.spirit.FullName) });
+			Cutscenes.Text = MewtationsLoc.Translate("label_altar_cutscene_text", new LocParam[] { LocParam.Create("spirit", CS$<>8__locals1.spirit.FullName) });
 			yield return Cutscenes.WaitForAnswer(new string[]
 			{
-				SokLoc.Translate("label_altar_cutscene_help_true"),
-				SokLoc.Translate("label_altar_cutscene_help_false")
+				MewtationsLoc.Translate("label_altar_cutscene_help_true"),
+				MewtationsLoc.Translate("label_altar_cutscene_help_false")
 			});
 			if (WorldManager.instance.ContinueButtonIndex == 0)
 			{
-				Cutscenes.Text = SokLoc.Translate("label_altar_cutscene_help_spirit_true");
-				yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+				Cutscenes.Text = MewtationsLoc.Translate("label_altar_cutscene_help_spirit_true");
+				yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 				Cutscenes.Stop(true);
 				WorldManager.instance.StartCursePlaythrough(curseType, delegate
 				{
@@ -829,8 +829,8 @@ public static class Cutscenes
 			}
 			else
 			{
-				Cutscenes.Text = SokLoc.Translate("label_altar_cutscene_help_spirit_false");
-				yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+				Cutscenes.Text = MewtationsLoc.Translate("label_altar_cutscene_help_spirit_false");
+				yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 				GameCamera.instance.TargetCardOverride = null;
 				CS$<>8__locals1.spirit.MyGameCard.DestroyCard(false, true);
 				yield return new WaitForSeconds(0.5f);
@@ -853,11 +853,11 @@ public static class Cutscenes
 		{
 			unhappiness.MyGameCard.DestroyCard(false, true);
 		}
-		Cutscenes.Title = SokLoc.Translate("label_sadness_demon_title");
-		Cutscenes.Text = SokLoc.Translate("label_sadness_demon_title");
+		Cutscenes.Title = MewtationsLoc.Translate("label_sadness_demon_title");
+		Cutscenes.Text = MewtationsLoc.Translate("label_sadness_demon_title");
 		CardData cardData = WorldManager.instance.CreateCard(WorldManager.instance.GetRandomSpawnPosition(), "sadness_demon", true, false, true);
 		GameCamera.instance.TargetCardOverride = cardData;
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		Cutscenes.Stop(false);
 		yield break;
 	}
@@ -866,9 +866,9 @@ public static class Cutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(shaman.transform.position);
-		Cutscenes.Title = SokLoc.Translate("label_shaman_leaving_title");
-		Cutscenes.Text = SokLoc.Translate("label_shaman_leaving_text");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		Cutscenes.Title = MewtationsLoc.Translate("label_shaman_leaving_title");
+		Cutscenes.Text = MewtationsLoc.Translate("label_shaman_leaving_text");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		Cutscenes.Text = "";
 		WorldManager.instance.CreateSmoke(shaman.transform.position);
 		shaman.MyGameCard.DestroyCard(false, true);
@@ -886,8 +886,8 @@ public static class Cutscenes
 		GameCamera.instance.TargetCardOverride = spirit;
 		yield return new WaitForSeconds(1f);
 		Cutscenes.Title = "";
-		Cutscenes.Text = SokLoc.Translate("label_altar_cutscene_good_luck", new LocParam[] { LocParam.Create("spirit", spirit.FullName) });
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+		Cutscenes.Text = MewtationsLoc.Translate("label_altar_cutscene_good_luck", new LocParam[] { LocParam.Create("spirit", spirit.FullName) });
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		spirit.MyGameCard.DestroyCard(false, true);
 		yield return new WaitForSeconds(0.5f);
 		Cutscenes.Stop(false);

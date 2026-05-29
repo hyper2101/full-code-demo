@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +8,7 @@ public class GoblinAttack : CardData
 	{
 		if (!this.MyGameCard.TimerRunning)
 		{
-			this.MyGameCard.StartTimer(30f, new TimerAction(this.SpawnCreature), SokLoc.Translate("card_event_goblin_attack_status_1"), base.GetActionId("SpawnCreature"), true, false, false);
+			this.MyGameCard.StartTimer(30f, new TimerAction(this.SpawnCreature), MewtationsLoc.Translate("card_event_goblin_attack_status_1"), base.GetActionId("SpawnCreature"), true, false, false);
 		}
 		base.UpdateCard();
 	}

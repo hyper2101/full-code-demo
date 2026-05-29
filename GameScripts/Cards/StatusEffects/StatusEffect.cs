@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -9,7 +9,7 @@ public class StatusEffect
 	{
 		get
 		{
-			return SokLoc.Translate(this.NameTerm);
+			return MewtationsLoc.Translate(this.NameTerm);
 		}
 	}
 
@@ -17,7 +17,7 @@ public class StatusEffect
 	{
 		get
 		{
-			return SokLoc.Translate(this.DescriptionTerm);
+			return MewtationsLoc.Translate(this.DescriptionTerm);
 		}
 	}
 
@@ -25,7 +25,7 @@ public class StatusEffect
 	{
 		get
 		{
-			return SokLoc.Translate(this.LoreTerm);
+			return MewtationsLoc.Translate(this.LoreTerm);
 		}
 	}
 

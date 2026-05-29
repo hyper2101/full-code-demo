@@ -53,11 +53,11 @@ public class DebugScreen : MonoBehaviour
 		this.EffectButton.Image.color = (this.EffectRect.gameObject.activeInHierarchy ? ColorManager.instance.BackgroundColor : ColorManager.instance.InactiveBackgroundColor);
 		this.SavesButton.Image.color = (this.SavesRect.gameObject.activeInHierarchy ? ColorManager.instance.BackgroundColor : ColorManager.instance.InactiveBackgroundColor);
 		this.CutscenesButton.Image.color = (this.CutscenesRect.gameObject.activeInHierarchy ? ColorManager.instance.BackgroundColor : ColorManager.instance.InactiveBackgroundColor);
-		this.EndlessMoonButton.TextMeshPro.text = SokLoc.Translate("label_debug_endless_moon", new LocParam[] { LocParam.Create("on_off", DebugScreen.YesNo(WorldManager.instance.DebugEndlessMoonEnabled)) });
-		this.PeacefulModeButton.TextMeshPro.text = SokLoc.Translate("label_debug_toggle_peaceful_mode", new LocParam[] { LocParam.Create("on_off", DebugScreen.YesNo(WorldManager.instance.CurrentRunOptions.IsPeacefulMode)) });
-		this.NoFoodButton.TextMeshPro.text = SokLoc.Translate("label_debug_toggle_no_food", new LocParam[] { LocParam.Create("on_off", DebugScreen.YesNo(WorldManager.instance.DebugNoFoodEnabled)) });
-		this.NeedVillagersButton.TextMeshPro.text = SokLoc.Translate("label_debug_need_villagers", new LocParam[] { LocParam.Create("on_off", DebugScreen.YesNo(WorldManager.instance.DebugDontNeedVillagers)) });
-		this.NoEnergyButton.TextMeshPro.text = SokLoc.Translate("label_debug_no_energy", new LocParam[] { LocParam.Create("on_off", DebugScreen.YesNo(WorldManager.instance.DebugNoEnergyEnabled)) });
+		this.EndlessMoonButton.TextMeshPro.text = MewtationsLoc.Translate("label_debug_endless_moon", new LocParam[] { LocParam.Create("on_off", DebugScreen.YesNo(WorldManager.instance.DebugEndlessMoonEnabled)) });
+		this.PeacefulModeButton.TextMeshPro.text = MewtationsLoc.Translate("label_debug_toggle_peaceful_mode", new LocParam[] { LocParam.Create("on_off", DebugScreen.YesNo(WorldManager.instance.CurrentRunOptions.IsPeacefulMode)) });
+		this.NoFoodButton.TextMeshPro.text = MewtationsLoc.Translate("label_debug_toggle_no_food", new LocParam[] { LocParam.Create("on_off", DebugScreen.YesNo(WorldManager.instance.DebugNoFoodEnabled)) });
+		this.NeedVillagersButton.TextMeshPro.text = MewtationsLoc.Translate("label_debug_need_villagers", new LocParam[] { LocParam.Create("on_off", DebugScreen.YesNo(WorldManager.instance.DebugDontNeedVillagers)) });
+		this.NoEnergyButton.TextMeshPro.text = MewtationsLoc.Translate("label_debug_no_energy", new LocParam[] { LocParam.Create("on_off", DebugScreen.YesNo(WorldManager.instance.DebugNoEnergyEnabled)) });
 	}
 
 	private void Awake()
@@ -424,9 +424,9 @@ public class DebugScreen : MonoBehaviour
 	{
 		if (!a)
 		{
-			return SokLoc.Translate("label_off");
+			return MewtationsLoc.Translate("label_off");
 		}
-		return SokLoc.Translate("label_on");
+		return MewtationsLoc.Translate("label_on");
 	}
 
 	private void UpdateSaveElements()

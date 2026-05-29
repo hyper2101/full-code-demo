@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -46,7 +46,7 @@ public class Chest : CardData
 				}
 			}
 		}
-		this.descriptionOverride = SokLoc.Translate(this.ChestTerm, new LocParam[]
+		this.descriptionOverride = MewtationsLoc.Translate(this.ChestTerm, new LocParam[]
 		{
 			LocParam.Create("count", this.CoinCount.ToString()),
 			LocParam.Create("max_count", this.MaxCoinCount.ToString()),

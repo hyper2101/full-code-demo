@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Shapes;
 using TMPro;
 using UnityEngine;
@@ -34,13 +34,13 @@ public class SellBox : CardTarget
 		imageSpriteRenderer.sprite = instance.GetCurrencyIcon(boardCurrency);
 		if (WorldManager.instance.CurrentBoard != null)
 		{
-			this.SellText.text = SokLoc.Translate(WorldManager.instance.CurrentBoard.BoardOptions.SellBoxTerm);
-			base.gameObject.name = SokLoc.Translate(WorldManager.instance.CurrentBoard.BoardOptions.SellBoxTerm);
+			this.SellText.text = MewtationsLoc.Translate(WorldManager.instance.CurrentBoard.BoardOptions.SellBoxTerm);
+			base.gameObject.name = MewtationsLoc.Translate(WorldManager.instance.CurrentBoard.BoardOptions.SellBoxTerm);
 		}
 		else
 		{
-			this.SellText.text = SokLoc.Translate("label_sell");
-			base.gameObject.name = SokLoc.Translate("label_sellbox_title");
+			this.SellText.text = MewtationsLoc.Translate("label_sell");
+			base.gameObject.name = MewtationsLoc.Translate("label_sellbox_title");
 		}
 		if (WorldManager.instance.CurrentBoard != null)
 		{
@@ -67,9 +67,9 @@ public class SellBox : CardTarget
 	{
 		if (WorldManager.instance.CurrentBoard != null)
 		{
-			return SokLoc.Translate(WorldManager.instance.CurrentBoard.BoardOptions.SellBoxDescription);
+			return MewtationsLoc.Translate(WorldManager.instance.CurrentBoard.BoardOptions.SellBoxDescription);
 		}
-		return SokLoc.Translate("label_sellbox_description", new LocParam[] { Extensions.LocParam_Action("sell") });
+		return MewtationsLoc.Translate("label_sellbox_description", new LocParam[] { Extensions.LocParam_Action("sell") });
 	}
 
 	public Transform GoldSpawnPosition;

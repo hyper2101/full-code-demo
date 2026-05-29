@@ -100,13 +100,13 @@ public class Royal : CardData
 			{
 				if (demandById.IsFinalDemand)
 				{
-					this.descriptionOverride = SokLoc.Translate("card_royal_description_demand_2");
+					this.descriptionOverride = MewtationsLoc.Translate("card_royal_description_demand_2");
 					return;
 				}
 				this.descriptionOverride = DemandManager.instance.GetDemandStartDescription(demandById, activeDemand);
 				if (demandById.Amount > 1)
 				{
-					this.descriptionOverride = this.descriptionOverride + "\n\n" + SokLoc.Translate("label_greed_given", new LocParam[] { LocParam.Create("given", string.Format("{0}/{1}", activeDemand.AmountGiven, demandById.Amount)) });
+					this.descriptionOverride = this.descriptionOverride + "\n\n" + MewtationsLoc.Translate("label_greed_given", new LocParam[] { LocParam.Create("given", string.Format("{0}/{1}", activeDemand.AmountGiven, demandById.Amount)) });
 					return;
 				}
 			}

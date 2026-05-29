@@ -18,14 +18,14 @@ public class WishingWell : CardData
 	{
 		if (this.WishCount > 0)
 		{
-			this.descriptionOverride = SokLoc.Translate("card_wishing_well_description_long", new LocParam[]
+			this.descriptionOverride = MewtationsLoc.Translate("card_wishing_well_description_long", new LocParam[]
 			{
 				LocParam.Plural("amount", this.WishCount),
 				LocParam.Create("count", this.WishCost.ToString())
 			});
 			return;
 		}
-		this.descriptionOverride = SokLoc.Translate("card_wishing_well_description", new LocParam[] { LocParam.Create("count", this.WishCost.ToString()) });
+		this.descriptionOverride = MewtationsLoc.Translate("card_wishing_well_description", new LocParam[] { LocParam.Create("count", this.WishCost.ToString()) });
 	}
 
 	public override void UpdateCard()

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class StatusEffect_Space : StatusEffect
@@ -31,7 +31,7 @@ public class StatusEffect_Space : StatusEffect
 	{
 		get
 		{
-			return SokLoc.Translate("statuseffect_space_description", new LocParam[] { LocParam.Create("amount", this.apartment.FreeSpace.ToString()) });
+			return MewtationsLoc.Translate("statuseffect_space_description", new LocParam[] { LocParam.Create("amount", this.apartment.FreeSpace.ToString()) });
 		}
 	}
 

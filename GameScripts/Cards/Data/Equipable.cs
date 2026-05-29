@@ -53,11 +53,11 @@ public class Equipable : CardData
 
 	private string GetAdvancedEquipableInfo()
 	{
-		string text = SokLoc.Translate("label_combat_speed");
-		string text2 = SokLoc.Translate("label_hit_chance");
-		string text3 = SokLoc.Translate("label_damage");
-		string text4 = SokLoc.Translate("label_defence");
-		string text5 = SokLoc.Translate("label_health");
+		string text = MewtationsLoc.Translate("label_combat_speed");
+		string text2 = MewtationsLoc.Translate("label_hit_chance");
+		string text3 = MewtationsLoc.Translate("label_damage");
+		string text4 = MewtationsLoc.Translate("label_defence");
+		string text5 = MewtationsLoc.Translate("label_health");
 		string text6 = "";
 		if (this.MyStats.MaxHealth != 0)
 		{
@@ -137,7 +137,7 @@ public class Equipable : CardData
 			return this._equipableInfo;
 		}
 		string text = "";
-		text += SokLoc.Translate("label_itemlevel", new LocParam[] { LocParam.Create("level", Mathf.RoundToInt(this.MyStats.ItemLevel).ToString()) });
+		text += MewtationsLoc.Translate("label_itemlevel", new LocParam[] { LocParam.Create("level", Mathf.RoundToInt(this.MyStats.ItemLevel).ToString()) });
 		text += "\\d<size=90%>";
 		string text2 = this.MyStats.SummarizeSpecialHits();
 		if (text2.Length > 0)
@@ -156,16 +156,16 @@ public class Equipable : CardData
 
 	public string GetEquipableCombatLevel()
 	{
-		return "" + SokLoc.Translate("label_itemlevel", new LocParam[] { LocParam.Create("level", Mathf.RoundToInt(this.MyStats.ItemLevel).ToString()) });
+		return "" + MewtationsLoc.Translate("label_itemlevel", new LocParam[] { LocParam.Create("level", Mathf.RoundToInt(this.MyStats.ItemLevel).ToString()) });
 	}
 
 	public override void UpdateCard()
 	{
 		if (this.Level > 0)
 		{
-			this.nameOverride = string.Format("{0}  (+{1})", SokLoc.Translate(this.NameTerm), this.Level);
+			this.nameOverride = string.Format("{0}  (+{1})", MewtationsLoc.Translate(this.NameTerm), this.Level);
 		}
-		this.descriptionOverride = SokLoc.Translate(this.DescriptionTerm) + "\n\n<i>" + this.GetEquipableInfo() + "</i>";
+		this.descriptionOverride = MewtationsLoc.Translate(this.DescriptionTerm) + "\n\n<i>" + this.GetEquipableInfo() + "</i>";
 		this.MyGameCard.SpecialIcon.sprite = this.GetIconForEquipableType(this.EquipableType);
 		this.MyGameCard.ShowSpecialIcon = true;
 		base.UpdateCard();

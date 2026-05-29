@@ -307,7 +307,7 @@ public class WorldManager : MonoBehaviour
 
 		Shader.SetGlobalFloat("_WorldSizeIncrease", 0f);
 		Shader.SetGlobalFloat("_WorldSizeIncreaseNormalized", 0f);
-		SokLoc.instance.LanguageChanged += this.OnLanguageChange;
+		MewtationsLoc.instance.LanguageChanged += this.OnLanguageChange;
 		Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 		this.InitializeBaseVillagerSpeedRules();
 	}
@@ -445,9 +445,9 @@ public class WorldManager : MonoBehaviour
 
 	private void OnDestroy()
 	{
-		if (SokLoc.instance != null)
+		if (MewtationsLoc.instance != null)
 		{
-			SokLoc.instance.LanguageChanged -= this.OnLanguageChange;
+			MewtationsLoc.instance.LanguageChanged -= this.OnLanguageChange;
 		}
 	}
 
@@ -589,7 +589,7 @@ public class WorldManager : MonoBehaviour
 		Debug.Log("Completed quest " + quest.Id);
 		if (GameScreen.instance != null && quest.QuestLocation == this.CurrentBoard.Location)
 		{
-			GameScreen.instance.AddNotification(SokLoc.Translate("label_quest_completed"), quest.Description, delegate
+			GameScreen.instance.AddNotification(MewtationsLoc.Translate("label_quest_completed"), quest.Description, delegate
 			{
 				GameScreen.instance.ScrollToQuest(quest);
 			});
@@ -3192,7 +3192,7 @@ public class WorldManager : MonoBehaviour
 		AudioManager.me.PlaySound2D(AudioManager.me.EndOfMoon, 0.8f, 0.2f);
 		if (param.CutsceneTitle == null)
 		{
-			this.CutsceneTitle = SokLoc.Translate("label_end_of_moon", new LocParam[] { LocParam.Create("moon", (this.CurrentMonth - 1).ToString()) });
+			this.CutsceneTitle = MewtationsLoc.Translate("label_end_of_moon", new LocParam[] { LocParam.Create("moon", (this.CurrentMonth - 1).ToString()) });
 		}
 		else
 		{
@@ -3213,7 +3213,7 @@ public class WorldManager : MonoBehaviour
 		}
 		if (param.CutsceneTitle == null)
 		{
-			this.CutsceneTitle = SokLoc.Translate("label_start_of_moon", new LocParam[] { LocParam.Create("moon", this.CurrentMonth.ToString()) });
+			this.CutsceneTitle = MewtationsLoc.Translate("label_start_of_moon", new LocParam[] { LocParam.Create("moon", this.CurrentMonth.ToString()) });
 		}
 		else
 		{
@@ -3225,7 +3225,7 @@ public class WorldManager : MonoBehaviour
 		}
 		if (param.CutsceneTitle == null)
 		{
-			this.CutsceneTitle = SokLoc.Translate("label_start_of_moon", new LocParam[] { LocParam.Create("moon", this.CurrentMonth.ToString()) });
+			this.CutsceneTitle = MewtationsLoc.Translate("label_start_of_moon", new LocParam[] { LocParam.Create("moon", this.CurrentMonth.ToString()) });
 		}
 		else
 		{
@@ -3234,7 +3234,7 @@ public class WorldManager : MonoBehaviour
 		this.CutsceneText = "";
 		if (!param.SkipEndConfirmation)
 		{
-			yield return this.WaitForContinueClicked(SokLoc.Translate("label_start_new_moon"));
+			yield return this.WaitForContinueClicked(MewtationsLoc.Translate("label_start_new_moon"));
 		}
 		GameCanvas.instance.SetScreen<GameScreen>();
 		if (param.OnDone != null)
@@ -3277,7 +3277,7 @@ public class WorldManager : MonoBehaviour
 		}
 		if (param.CutsceneTitle == null)
 		{
-			this.CutsceneTitle = SokLoc.Translate("label_end_of_moon", new LocParam[] { LocParam.Create("moon", (this.CurrentMonth - 1).ToString()) });
+			this.CutsceneTitle = MewtationsLoc.Translate("label_end_of_moon", new LocParam[] { LocParam.Create("moon", (this.CurrentMonth - 1).ToString()) });
 		}
 		else
 		{
@@ -3375,20 +3375,20 @@ public class WorldManager : MonoBehaviour
 			{
 				Vector3 randomSpawnPosition = this.GetRandomSpawnPosition();
 				GameCamera.instance.TargetPositionOverride = new Vector3?(randomSpawnPosition);
-				this.CutsceneTitle = SokLoc.Translate("label_goblin_conflict_title");
-				this.CutsceneText = SokLoc.Translate("label_goblin_conflict_text");
+				this.CutsceneTitle = MewtationsLoc.Translate("label_goblin_conflict_title");
+				this.CutsceneText = MewtationsLoc.Translate("label_goblin_conflict_text");
 				this.CreateCard(randomSpawnPosition, "event_goblin_attack", true, true, true);
-				yield return this.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+				yield return this.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 				GameCamera.instance.TargetPositionOverride = null;
 			}
 			this.CutsceneBoardView = true;
 			CutsceneScreen.instance.CanMoveScreen = true;
 			int num2 = Mewtations.Core.LegacyCitiesHooks.Wellbeing - previousWellbeing;
-			this.CutsceneTitle = SokLoc.Translate("label_end_of_moon_cities_wellbeing");
+			this.CutsceneTitle = MewtationsLoc.Translate("label_end_of_moon_cities_wellbeing");
 			string text = Mathf.Abs(num2).ToString();
 			if (num2 > 0)
 			{
-				this.CutsceneText = SokLoc.Translate("label_end_of_moon_cities_gained", new LocParam[]
+				this.CutsceneText = MewtationsLoc.Translate("label_end_of_moon_cities_gained", new LocParam[]
 				{
 					LocParam.Create("amount", text),
 					LocParam.Create("icon", Icons.Wellbeing)
@@ -3396,11 +3396,11 @@ public class WorldManager : MonoBehaviour
 			}
 			else if (num2 == 0)
 			{
-				this.CutsceneText = SokLoc.Translate("label_end_of_moon_cities_same", new LocParam[] { LocParam.Create("icon", Icons.Wellbeing) });
+				this.CutsceneText = MewtationsLoc.Translate("label_end_of_moon_cities_same", new LocParam[] { LocParam.Create("icon", Icons.Wellbeing) });
 			}
 			else
 			{
-				this.CutsceneText = SokLoc.Translate("label_end_of_moon_cities_lost", new LocParam[]
+				this.CutsceneText = MewtationsLoc.Translate("label_end_of_moon_cities_lost", new LocParam[]
 				{
 					LocParam.Create("amount", text),
 					LocParam.Create("icon", Icons.Wellbeing)
@@ -3408,12 +3408,12 @@ public class WorldManager : MonoBehaviour
 			}
 			if (num2 != 0)
 			{
-				this.CutsceneText = this.CutsceneText + ", " + SokLoc.Translate("label_hover_status_wellbeing");
+				this.CutsceneText = this.CutsceneText + ", " + MewtationsLoc.Translate("label_hover_status_wellbeing");
 			}
-			yield return this.WaitForContinueClicked(SokLoc.Translate((num2 >= 0) ? "label_nice" : "label_uh_oh"));
+			yield return this.WaitForContinueClicked(MewtationsLoc.Translate((num2 >= 0) ? "label_nice" : "label_uh_oh"));
 			if (param.CutsceneTitle == null)
 			{
-				this.CutsceneTitle = SokLoc.Translate("label_start_of_moon", new LocParam[] { LocParam.Create("moon", this.CurrentMonth.ToString()) });
+				this.CutsceneTitle = MewtationsLoc.Translate("label_start_of_moon", new LocParam[] { LocParam.Create("moon", this.CurrentMonth.ToString()) });
 			}
 			else
 			{
@@ -3422,18 +3422,18 @@ public class WorldManager : MonoBehaviour
 			this.CutsceneText = "";
 			if (!param.SkipEndConfirmation)
 			{
-				yield return this.WaitForContinueClicked(SokLoc.Translate("label_start_new_moon"));
+				yield return this.WaitForContinueClicked(MewtationsLoc.Translate("label_start_new_moon"));
 			}
 			GameCamera.instance.TargetPositionOverride = null;
 		}
 		else
 		{
 			lostGame = true;
-			this.CutsceneTitle = SokLoc.Translate("label_cities_game_over_title");
-			this.CutsceneText = SokLoc.Translate("label_cities_game_over_text");
-			yield return this.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
-			this.CutsceneText = SokLoc.Translate("label_cities_game_over_text_1");
-			yield return this.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+			this.CutsceneTitle = MewtationsLoc.Translate("label_cities_game_over_title");
+			this.CutsceneText = MewtationsLoc.Translate("label_cities_game_over_text");
+			yield return this.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
+			this.CutsceneText = MewtationsLoc.Translate("label_cities_game_over_text_1");
+			yield return this.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 			GameCamera.instance.TargetPositionOverride = null;
 		}
 		CutsceneScreen.instance.CanMoveScreen = false;
@@ -3481,8 +3481,8 @@ public class WorldManager : MonoBehaviour
 			if (this.CurrentMonth % 4 == 0)
 			{
 				AudioManager.me.PlaySound2D(AudioManager.me.EndOfMoon, 0.5f, 0.5f);
-				this.CutsceneTitle = SokLoc.Translate("label_weather_report_title");
-				this.CutsceneText = SokLoc.Translate("label_weather_report_text");
+				this.CutsceneTitle = MewtationsLoc.Translate("label_weather_report_title");
+				this.CutsceneText = MewtationsLoc.Translate("label_weather_report_text");
 				GameCamera.instance.TargetPositionOverride = new Vector3?(this.MiddleOfBoard());
 				yield return new WaitForSeconds(0.5f);
 				Boosterpack pack = this.CreateBoosterpack(this.MiddleOfBoard(), "cities_weather");
@@ -3495,7 +3495,7 @@ public class WorldManager : MonoBehaviour
 					yield return new WaitForSeconds(0.2f);
 					num3 = i;
 				}
-				yield return this.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+				yield return this.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 				GameCamera.instance.TargetPositionOverride = null;
 				pack = null;
 			}

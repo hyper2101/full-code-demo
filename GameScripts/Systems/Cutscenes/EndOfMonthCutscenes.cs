@@ -181,10 +181,10 @@ public static class EndOfMonthCutscenes
 		}
 		foreach (BaseVillager baseVillager2 in list2)
 		{
-			EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_uh_oh");
-			EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_villager_sick", new LocParam[] { LocParam.Create("villager", baseVillager2.Name) });
+			EndOfMonthCutscenes.CutsceneTitle = MewtationsLoc.Translate("label_uh_oh");
+			EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_villager_sick", new LocParam[] { LocParam.Create("villager", baseVillager2.Name) });
 			GameCamera.instance.TargetCardOverride = baseVillager2;
-			yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+			yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		}
 		List<BaseVillager>.Enumerator enumerator2 = default(List<BaseVillager>.Enumerator);
 		yield break;
@@ -194,9 +194,9 @@ public static class EndOfMonthCutscenes
 	public static IEnumerator AgeVillagers(List<BaseVillager> villagersToAge)
 	{
 		if (!WorldManager.LegacyFoodTaxEnabled) yield break;
-		EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_villager_age_birthday");
+		EndOfMonthCutscenes.CutsceneTitle = MewtationsLoc.Translate("label_villager_age_birthday");
 		EndOfMonthCutscenes.CutsceneText = "";
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_age_villagers"));
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_age_villagers"));
 		WorldManager.instance.EndOfMonthSpeedup = 0f;
 		int num;
 		for (int i = 0; i < villagersToAge.Count; i = num + 1)
@@ -211,7 +211,7 @@ public static class EndOfMonthCutscenes
 				if (newLifeStage == LifeStage.Dead)
 				{
 					QuestManager.instance.SpecialActionComplete("villager_old_age_dead", null);
-					EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_villager_old_age_death", new LocParam[] { LocParam.Create("villager", baseVill.Name) });
+					EndOfMonthCutscenes.CutsceneTitle = MewtationsLoc.Translate("label_villager_old_age_death", new LocParam[] { LocParam.Create("villager", baseVill.Name) });
 					yield return WorldManager.instance.KillVillagerCoroutine(baseVill, null, null, true);
 					if (!WorldManager.instance.CheckAllVillagersDead())
 					{
@@ -264,9 +264,9 @@ public static class EndOfMonthCutscenes
 	public static IEnumerator KillAnimals(List<Animal> AnimalsToAge)
 	{
 		if (!WorldManager.LegacyFoodTaxEnabled) yield break;
-		EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_animal_die");
+		EndOfMonthCutscenes.CutsceneTitle = MewtationsLoc.Translate("label_animal_die");
 		EndOfMonthCutscenes.CutsceneText = "";
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		WorldManager.instance.EndOfMonthSpeedup = 4f;
 		int num;
 		for (int i = 0; i < AnimalsToAge.Count; i = num + 1)
@@ -275,7 +275,7 @@ public static class EndOfMonthCutscenes
 			WorldManager.instance.EndOfMonthSpeedup += 1f;
 			if (WorldManager.instance.Time.CurrentMonth - animal.CreationMonth >= 5)
 			{
-				EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_villager_old_age_death", new LocParam[] { LocParam.Create("villager", animal.Name) });
+				EndOfMonthCutscenes.CutsceneTitle = MewtationsLoc.Translate("label_villager_old_age_death", new LocParam[] { LocParam.Create("villager", animal.Name) });
 				yield return WorldManager.instance.KillVillagerCoroutine(animal, null, null, false);
 			}
 			yield return new WaitForSeconds(EndOfMonthCutscenes.CalculateWaitFromSpeedup(WorldManager.instance.EndOfMonthSpeedup));
@@ -329,10 +329,10 @@ public static class EndOfMonthCutscenes
 	public static IEnumerator FeedVillagers()
 	{
 		if (!WorldManager.LegacyFoodTaxEnabled) yield break;
-		EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_time_to_eat");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_feed_villagers"));
+		EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_time_to_eat");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_feed_villagers"));
 		WorldManager.instance.InEatingAnimation = true;
-		EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_eating");
+		EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_eating");
 		int requiredFoodCount = WorldManager.instance.GetRequiredFoodCount();
 		List<CardData> cardsToFeed = EndOfMonthCutscenes.GetCardsToFeed();
 		List<CardData> fedCards = new List<CardData>();
@@ -443,12 +443,12 @@ public static class EndOfMonthCutscenes
 		int humansToDie = unfedVillagers.Count;
 		if (num2 <= 0)
 		{
-			EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_everyone_fed");
+			EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_everyone_fed");
 		}
 		else
 		{
 			EndOfMonthCutscenes.SetStarvingHumanStatus(humansToDie);
-			yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+			yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 			for (int i = 0; i < unfedVillagers.Count; i = num + 1)
 			{
 				CardData cardData2 = unfedVillagers[i];
@@ -464,8 +464,8 @@ public static class EndOfMonthCutscenes
 				WorldManager.instance.VillagersStarvedAtEndOfMoon = true;
 				if (WorldManager.instance.CurrentBoard.Id == "main")
 				{
-					EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_everyone_starved");
-					yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_game_over"));
+					EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_everyone_starved");
+					yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_game_over"));
 					GameCanvas.instance.SetScreen<GameOverScreen>();
 					WorldManager.instance.currentAnimationRoutine = null;
 				}
@@ -535,8 +535,8 @@ public static class EndOfMonthCutscenes
 
 	public static IEnumerator HappinessWarning()
 	{
-		EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_happiness_warning", new LocParam[] { LocParam.Create("count", WorldManager.instance.GetRequiredHappinessCount().ToString()) });
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_happiness_warning", new LocParam[] { LocParam.Create("count", WorldManager.instance.GetRequiredHappinessCount().ToString()) });
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		yield break;
 	}
 
@@ -544,8 +544,8 @@ public static class EndOfMonthCutscenes
 	{
 		CardData cardData = WorldManager.instance.CreateCard(WorldManager.instance.GetRandomSpawnPosition(), "villager", true, false, true);
 		GameCamera.instance.TargetPositionOverride = new Vector3?(cardData.transform.position);
-		EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_new_villager_happiness");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_new_villager_happiness");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		yield break;
 	}
 
@@ -553,23 +553,23 @@ public static class EndOfMonthCutscenes
 	{
 		CardData cardData = WorldManager.instance.CreateCard(WorldManager.instance.GetRandomSpawnPosition(), "villager", true, false, true);
 		GameCamera.instance.TargetPositionOverride = new Vector3?(cardData.transform.position);
-		EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_new_villager");
-		EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_new_villager_death");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		EndOfMonthCutscenes.CutsceneTitle = MewtationsLoc.Translate("label_new_villager");
+		EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_new_villager_death");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		yield break;
 	}
 
 	public static IEnumerator IndustrialRevolutionEvent()
 	{
-		EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_cutscene_industrial_revolution_title");
-		EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_cutscene_industrial_revolution_text");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		EndOfMonthCutscenes.CutsceneTitle = MewtationsLoc.Translate("label_cutscene_industrial_revolution_title");
+		EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_cutscene_industrial_revolution_text");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		CardData cardData = WorldManager.instance.CreateCard(WorldManager.instance.GetRandomSpawnPosition(), "event_industrial_revolution", true, false, true);
 		WorldManager.instance.CreateSmoke(cardData.Position);
 		GameCamera.instance.TargetPositionOverride = new Vector3?(cardData.transform.position);
-		EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_cutscene_industrial_revolution_title");
-		EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_cutscene_industrial_revolution_text_1");
-		yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		EndOfMonthCutscenes.CutsceneTitle = MewtationsLoc.Translate("label_cutscene_industrial_revolution_title");
+		EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_cutscene_industrial_revolution_text_1");
+		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		yield break;
 	}
 
@@ -601,7 +601,7 @@ public static class EndOfMonthCutscenes
 	public static IEnumerator UseHappiness()
 	{
 		if (!WorldManager.LegacyFoodTaxEnabled) yield break;
-		EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_giving_happiness");
+		EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_giving_happiness");
 		List<CardData> list = EndOfMonthCutscenes.CardsThatNeedHappiness();
 		List<GameCard> happinessProviders = EndOfMonthCutscenes.GetHappinessProviders();
 		List<ValueTuple<CardData, int>> unhappyCards = new List<ValueTuple<CardData, int>>();
@@ -702,8 +702,8 @@ public static class EndOfMonthCutscenes
 		{
 			WorldManager.instance.CurrentRunVariables.VillagersHappyMonthCount = 0;
 			WorldManager.instance.CurrentRunVariables.VillagersUnhappyMonthCount++;
-			EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_not_everyone_happy");
-			yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+			EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_not_everyone_happy");
+			yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 			foreach (ValueTuple<CardData, int> valueTuple in unhappyCards)
 			{
 				if (valueTuple.Item1 is BaseVillager)
@@ -749,8 +749,8 @@ public static class EndOfMonthCutscenes
 			WorldManager.instance.VillagersAngryAtEndOfMoon = true;
 			if (WorldManager.instance.CurrentBoard.Id == "main")
 			{
-				EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_everyone_angry");
-				yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_game_over"));
+				EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_everyone_angry");
+				yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_game_over"));
 				GameCanvas.instance.SetScreen<GameOverScreen>();
 				WorldManager.instance.currentAnimationRoutine = null;
 			}
@@ -777,7 +777,7 @@ public static class EndOfMonthCutscenes
 
 	private static void SetStarvingHumanStatus(int deathCount)
 	{
-		EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_starving_humans", new LocParam[] { LocParam.Plural("count", deathCount) });
+		EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_starving_humans", new LocParam[] { LocParam.Plural("count", deathCount) });
 	}
 
 	private static bool AnyCardCanBeSold()
@@ -819,8 +819,8 @@ public static class EndOfMonthCutscenes
 		}
 		if (num > 0)
 		{
-			EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_too_many_cards", new LocParam[] { LocParam.Plural("count", num) });
-			string text = SokLoc.Translate("label_sell_x_cards", new LocParam[] { LocParam.Plural("count", num) });
+			EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_too_many_cards", new LocParam[] { LocParam.Plural("count", num) });
+			string text = MewtationsLoc.Translate("label_sell_x_cards", new LocParam[] { LocParam.Plural("count", num) });
 			yield return Cutscenes.WaitForContinueClicked(text);
 			WorldManager.instance.RemovingCards = true;
 			while (WorldManager.instance.GetCardCount() > WorldManager.instance.GetMaxCardCount(WorldManager.instance.CurrentBoard))
@@ -831,13 +831,13 @@ public static class EndOfMonthCutscenes
 				{
 					break;
 				}
-				EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_too_many_cards", new LocParam[] { LocParam.Plural("count", num2) });
-				EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_sell_cards_to_continue");
+				EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_too_many_cards", new LocParam[] { LocParam.Plural("count", num2) });
+				EndOfMonthCutscenes.CutsceneTitle = MewtationsLoc.Translate("label_sell_cards_to_continue");
 				yield return null;
 			}
 			int num3 = Mathf.Max(0, WorldManager.instance.GetCardCount() - WorldManager.instance.GetMaxCardCount(WorldManager.instance.CurrentBoard));
-			EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_too_many_cards", new LocParam[] { LocParam.Plural("count", num3) });
-			EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_sell_cards_to_continue");
+			EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_too_many_cards", new LocParam[] { LocParam.Plural("count", num3) });
+			EndOfMonthCutscenes.CutsceneTitle = MewtationsLoc.Translate("label_sell_cards_to_continue");
 			WorldManager.instance.RemovingCards = false;
 		}
 		yield break;
@@ -880,76 +880,76 @@ public static class EndOfMonthCutscenes
 			CardData cardData;
 			if (WorldManager.instance.CurrentRunVariables.StrangePortalSpawns % 4 == 0)
 			{
-				EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_strange_portal_appeared_strong");
+				EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_strange_portal_appeared_strong");
 				cardData = WorldManager.instance.CreateCard(randomSpawnPosition, "rare_portal", true, false, true);
 			}
 			else
 			{
 				cardData = WorldManager.instance.CreateCard(randomSpawnPosition, "strange_portal", true, false, true);
 			}
-			EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_strange_portal_appeared");
+			EndOfMonthCutscenes.CutsceneTitle = MewtationsLoc.Translate("label_strange_portal_appeared");
 			if (cardData != null)
 			{
 				GameCamera.instance.TargetPositionOverride = new Vector3?(cardData.transform.position);
 			}
 			yield return new WaitForSeconds(2f);
 			GameCamera.instance.TargetPositionOverride = null;
-			yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+			yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		}
 		if (spawnPirateBoat)
 		{
 			WorldManager.instance.ShowContinueButton = false;
 			Vector3 randomSpawnPosition2 = WorldManager.instance.GetRandomSpawnPosition();
 			CardData cardData2 = WorldManager.instance.CreateCard(randomSpawnPosition2, "pirate_boat", true, false, true);
-			EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_pirate_boat_appeared");
+			EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_pirate_boat_appeared");
 			GameCamera.instance.TargetPositionOverride = new Vector3?(cardData2.transform.position);
 			yield return new WaitForSeconds(2f);
 			GameCamera.instance.TargetPositionOverride = null;
 			WorldManager.instance.CurrentRunVariables.PirateBoatsSpawned++;
-			yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+			yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		}
 		if (spawnTravellingCart)
 		{
 			WorldManager.instance.ShowContinueButton = false;
 			Vector3 randomSpawnPosition3 = WorldManager.instance.GetRandomSpawnPosition();
 			CardData cardData3 = WorldManager.instance.CreateCard(randomSpawnPosition3, "travelling_cart", true, false, true);
-			EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_travelling_cart_appeared");
+			EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_travelling_cart_appeared");
 			GameCamera.instance.TargetPositionOverride = new Vector3?(cardData3.transform.position);
 			yield return new WaitForSeconds(2f);
 			GameCamera.instance.TargetPositionOverride = null;
-			yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+			yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		}
 		if (spawnShaman)
 		{
-			EndOfMonthCutscenes.CutsceneTitle = SokLoc.Translate("label_shaman_intro_title");
+			EndOfMonthCutscenes.CutsceneTitle = MewtationsLoc.Translate("label_shaman_intro_title");
 			WorldManager.instance.CurrentRunVariables.ShamanVisited = true;
 			WorldManager.instance.ShowContinueButton = false;
 			Vector3 randomPos = WorldManager.instance.GetRandomSpawnPosition();
 			GameCamera.instance.TargetPositionOverride = new Vector3?(randomPos);
-			EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_shaman_intro");
+			EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_shaman_intro");
 			yield return new WaitForSeconds(2f);
 			CardData cardData4 = WorldManager.instance.CreateCard(randomPos, "shaman", true, false, true);
 			AudioManager.me.PlaySound2D(AudioManager.me.ShamanSpawn, 1f, 0.2f);
 			WorldManager.instance.CreateSmoke(randomPos);
 			GameCamera.instance.TargetPositionOverride = new Vector3?(cardData4.transform.position);
-			EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_shaman_appeared");
-			yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_wow"));
+			EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_shaman_appeared");
+			yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_wow"));
 			if (!WorldManager.instance.CurrentRunVariables.VisitedIsland || !QuestManager.instance.AnyIslandQuestComplete())
 			{
 				if (WorldManager.instance.CurrentRunOptions.IsPeacefulMode)
 				{
-					EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_shaman_intro_peaceful");
+					EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_shaman_intro_peaceful");
 				}
 				else
 				{
-					EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_shaman_intro_demon");
+					EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_shaman_intro_demon");
 				}
-				yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
-				EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_shaman_intro_island");
-				yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+				yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
+				EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_shaman_intro_island");
+				yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 			}
-			EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_shaman_intro_cursed");
-			yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+			EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_shaman_intro_cursed");
+			yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 			GameCamera.instance.TargetPositionOverride = null;
 			randomPos = default(Vector3);
 		}
@@ -958,11 +958,11 @@ public static class EndOfMonthCutscenes
 			WorldManager.instance.ShowContinueButton = false;
 			Vector3 randomSpawnPosition4 = WorldManager.instance.GetRandomSpawnPosition();
 			CardData cardData5 = WorldManager.instance.CreateCard(randomSpawnPosition4, "sad_event", true, false, true);
-			EndOfMonthCutscenes.CutsceneText = SokLoc.Translate("label_sad_event_appeared");
+			EndOfMonthCutscenes.CutsceneText = MewtationsLoc.Translate("label_sad_event_appeared");
 			GameCamera.instance.TargetPositionOverride = new Vector3?(cardData5.transform.position);
 			yield return new WaitForSeconds(2f);
 			GameCamera.instance.TargetPositionOverride = null;
-			yield return Cutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+			yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		}
 		yield break;
 	}

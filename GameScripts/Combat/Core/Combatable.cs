@@ -186,27 +186,27 @@ public class Combatable : CardData
 	{
 		if (this.ProcessedAttackType == AttackType.Melee)
 		{
-			return SokLoc.Translate("label_melee_title");
+			return MewtationsLoc.Translate("label_melee_title");
 		}
 		if (this.ProcessedAttackType == AttackType.Ranged)
 		{
-			return SokLoc.Translate("label_ranged_title");
+			return MewtationsLoc.Translate("label_ranged_title");
 		}
 		if (this.ProcessedAttackType == AttackType.Magic)
 		{
-			return SokLoc.Translate("label_magic_title");
+			return MewtationsLoc.Translate("label_magic_title");
 		}
 		if (this.ProcessedAttackType == AttackType.Air)
 		{
-			return SokLoc.Translate("label_air_title");
+			return MewtationsLoc.Translate("label_air_title");
 		}
 		if (this.ProcessedAttackType == AttackType.Foot)
 		{
-			return SokLoc.Translate("label_foot_title");
+			return MewtationsLoc.Translate("label_foot_title");
 		}
 		if (this.ProcessedAttackType == AttackType.Armour)
 		{
-			return SokLoc.Translate("label_armour_title");
+			return MewtationsLoc.Translate("label_armour_title");
 		}
 		return "";
 	}
@@ -215,27 +215,27 @@ public class Combatable : CardData
 	{
 		if (this.ProcessedAttackType == AttackType.Melee)
 		{
-			return SokLoc.Translate("label_melee_description");
+			return MewtationsLoc.Translate("label_melee_description");
 		}
 		if (this.ProcessedAttackType == AttackType.Ranged)
 		{
-			return SokLoc.Translate("label_ranged_description");
+			return MewtationsLoc.Translate("label_ranged_description");
 		}
 		if (this.ProcessedAttackType == AttackType.Magic)
 		{
-			return SokLoc.Translate("label_magic_description");
+			return MewtationsLoc.Translate("label_magic_description");
 		}
 		if (this.ProcessedAttackType == AttackType.Air)
 		{
-			return SokLoc.Translate("label_air_description");
+			return MewtationsLoc.Translate("label_air_description");
 		}
 		if (this.ProcessedAttackType == AttackType.Foot)
 		{
-			return SokLoc.Translate("label_foot_description");
+			return MewtationsLoc.Translate("label_foot_description");
 		}
 		if (this.ProcessedAttackType == AttackType.Armour)
 		{
-			return SokLoc.Translate("label_armour_description");
+			return MewtationsLoc.Translate("label_armour_description");
 		}
 		return "";
 	}
@@ -244,27 +244,27 @@ public class Combatable : CardData
 	{
 		if (this.ProcessedAttackType == AttackType.Melee)
 		{
-			return SokLoc.Translate("label_melee_lore");
+			return MewtationsLoc.Translate("label_melee_lore");
 		}
 		if (this.ProcessedAttackType == AttackType.Ranged)
 		{
-			return SokLoc.Translate("label_ranged_lore");
+			return MewtationsLoc.Translate("label_ranged_lore");
 		}
 		if (this.ProcessedAttackType == AttackType.Magic)
 		{
-			return SokLoc.Translate("label_magic_lore");
+			return MewtationsLoc.Translate("label_magic_lore");
 		}
 		if (this.ProcessedAttackType == AttackType.Air)
 		{
-			return SokLoc.Translate("label_air_lore");
+			return MewtationsLoc.Translate("label_air_lore");
 		}
 		if (this.ProcessedAttackType == AttackType.Foot)
 		{
-			return SokLoc.Translate("label_foot_lore");
+			return MewtationsLoc.Translate("label_foot_lore");
 		}
 		if (this.ProcessedAttackType == AttackType.Armour)
 		{
-			return SokLoc.Translate("label_armour_lore");
+			return MewtationsLoc.Translate("label_armour_lore");
 		}
 		return "";
 	}
@@ -408,7 +408,7 @@ public class Combatable : CardData
 
 	public override void UpdateCardText()
 	{
-		this.descriptionOverride = SokLoc.Translate(this.DescriptionTerm);
+		this.descriptionOverride = MewtationsLoc.Translate(this.DescriptionTerm);
 		this.descriptionOverride = this.descriptionOverride + "\n\n<i>" + this.GetCombatableDescription() + "</i>";
 		if (AdvancedSettingsScreen.AdvancedCombatStatsEnabled || GameCanvas.instance.CurrentScreen is CardopediaScreen)
 		{
@@ -895,7 +895,7 @@ public class Combatable : CardData
 		string text = "";
 		if (this.MyGameCard != null && !this.MyGameCard.IsDemoCard)
 		{
-			text = text + SokLoc.Translate("label_health_info", new LocParam[]
+			text = text + MewtationsLoc.Translate("label_health_info", new LocParam[]
 			{
 				LocParam.Create("health", this.HealthPoints.ToString()),
 				LocParam.Create("maxhealth", this.ProcessedCombatStats.MaxHealth.ToString())
@@ -905,12 +905,12 @@ public class Combatable : CardData
 		int num2 = Mathf.RoundToInt(this.ProcessedCombatStats.CombatLevel);
 		if (num2 != num)
 		{
-			text = text + SokLoc.Translate("label_base_combatlevel", new LocParam[] { LocParam.Create("level", num.ToString()) }) + "\n";
-			text += SokLoc.Translate("label_total_combatlevel", new LocParam[] { LocParam.Create("level", num2.ToString()) });
+			text = text + MewtationsLoc.Translate("label_base_combatlevel", new LocParam[] { LocParam.Create("level", num.ToString()) }) + "\n";
+			text += MewtationsLoc.Translate("label_total_combatlevel", new LocParam[] { LocParam.Create("level", num2.ToString()) });
 		}
 		else
 		{
-			text += SokLoc.Translate("label_combatlevel", new LocParam[] { LocParam.Create("level", num2.ToString()) });
+			text += MewtationsLoc.Translate("label_combatlevel", new LocParam[] { LocParam.Create("level", num2.ToString()) });
 		}
 		string text2 = this.ProcessedCombatStats.SummarizeSpecialHits();
 		if (text2.Length > 0)
@@ -923,16 +923,16 @@ public class Combatable : CardData
 
 	public string GetCombatableDescriptionAdvanced()
 	{
-		string text = SokLoc.Translate("label_combat_speed");
-		string text2 = SokLoc.Translate("label_hit_chance");
-		string text3 = SokLoc.Translate("label_damage");
-		string text4 = SokLoc.Translate("label_defence");
+		string text = MewtationsLoc.Translate("label_combat_speed");
+		string text2 = MewtationsLoc.Translate("label_hit_chance");
+		string text3 = MewtationsLoc.Translate("label_damage");
+		string text4 = MewtationsLoc.Translate("label_defence");
 		CombatStats processedCombatStats = this.ProcessedCombatStats;
 		string attackSpeedTranslation = processedCombatStats.GetAttackSpeedTranslation();
 		string attackDamageTranslation = processedCombatStats.GetAttackDamageTranslation();
 		string hitChanceTranslation = processedCombatStats.GetHitChanceTranslation();
 		string defenceTranslation = processedCombatStats.GetDefenceTranslation();
-		string text5 = SokLoc.Translate("label_seconds_format", new LocParam[] { LocParam.Create("seconds", processedCombatStats.AttackSpeed.ToString()) });
+		string text5 = MewtationsLoc.Translate("label_seconds_format", new LocParam[] { LocParam.Create("seconds", processedCombatStats.AttackSpeed.ToString()) });
 		return string.Format("<size=80%>{0} {1} ({2})\n{3} {4} ({5}%)\n{6} {7} ({8})\n{9}: {10} ({11})</size>", new object[]
 		{
 			text,

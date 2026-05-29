@@ -18,7 +18,7 @@ public class IndustrialRevolution : CardData
 			}
 			if (!this.MyGameCard.TimerRunning)
 			{
-				this.MyGameCard.StartTimer(10f, new TimerAction(this.ShowModal), SokLoc.Translate("label_go_to_cities"), base.GetActionId("ShowModal"), true, false, false);
+				this.MyGameCard.StartTimer(10f, new TimerAction(this.ShowModal), MewtationsLoc.Translate("label_go_to_cities"), base.GetActionId("ShowModal"), true, false, false);
 			}
 		}
 		else

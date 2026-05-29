@@ -15,7 +15,7 @@ public class Boosterpack : Draggable
 			{
 				return this.PackData.nameOverride;
 			}
-			return SokLoc.Translate(this.PackData.NameTerm);
+			return MewtationsLoc.Translate(this.PackData.NameTerm);
 		}
 	}
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -60,7 +60,7 @@ public class StatusEffectElement : Hoverable
 
 	public override string GetTitle()
 	{
-		return SokLoc.Translate("label_status_effect", new LocParam[] { LocParam.Create("status", this.MyStatusEffect.Name) });
+		return MewtationsLoc.Translate("label_status_effect", new LocParam[] { LocParam.Create("status", this.MyStatusEffect.Name) });
 	}
 
 	public override string GetDescription()

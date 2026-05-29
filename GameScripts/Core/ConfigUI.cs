@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 public class ConfigUI
@@ -9,7 +9,7 @@ public class ConfigUI
 		{
 			return this.Name;
 		}
-		return SokLoc.Translate(this.NameTerm);
+		return MewtationsLoc.Translate(this.NameTerm);
 	}
 
 	public string GetTooltip()
@@ -18,7 +18,7 @@ public class ConfigUI
 		{
 			return this.Tooltip;
 		}
-		return SokLoc.Translate(this.TooltipTerm);
+		return MewtationsLoc.Translate(this.TooltipTerm);
 	}
 
 	public string Name;

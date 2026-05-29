@@ -18,7 +18,7 @@ public class Shaman : CardData
 	{
 		if (this.MyGameCard.Child != null && !this.MyGameCard.TimerRunning)
 		{
-			this.MyGameCard.StartTimer(this.TalkTime, new TimerAction(this.Talking), SokLoc.Translate("card_shaman_status"), base.GetActionId("Talking"), true, false, false);
+			this.MyGameCard.StartTimer(this.TalkTime, new TimerAction(this.Talking), MewtationsLoc.Translate("card_shaman_status"), base.GetActionId("Talking"), true, false, false);
 		}
 		if (this.MyGameCard.Child == null && this.MyGameCard.TimerRunning)
 		{

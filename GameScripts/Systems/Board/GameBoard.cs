@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -89,7 +89,7 @@ public class GameBoard : MonoBehaviour
 	{
 		get
 		{
-			return SokLoc.Translate("board_" + this.Id + "_name");
+			return MewtationsLoc.Translate("board_" + this.Id + "_name");
 		}
 	}
 

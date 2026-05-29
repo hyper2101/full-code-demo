@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,19 +22,19 @@ public class University : CardData
 	{
 		if (this.AllInventionsFound())
 		{
-			this.descriptionOverride = SokLoc.Translate("card_university_description_completed");
+			this.descriptionOverride = MewtationsLoc.Translate("card_university_description_completed");
 			return;
 		}
 		if (this.CoinCount > 0)
 		{
-			this.descriptionOverride = SokLoc.Translate("card_university_description_long", new LocParam[]
+			this.descriptionOverride = MewtationsLoc.Translate("card_university_description_long", new LocParam[]
 			{
 				LocParam.Create("count", this.CoinCount.ToString()),
 				LocParam.Create("max_count", this.InventionCost.ToString())
 			});
 			return;
 		}
-		this.descriptionOverride = SokLoc.Translate("card_university_description", new LocParam[] { LocParam.Create("max_count", this.InventionCost.ToString()) });
+		this.descriptionOverride = MewtationsLoc.Translate("card_university_description", new LocParam[] { LocParam.Create("max_count", this.InventionCost.ToString()) });
 	}
 
 	public override void UpdateCard()
@@ -76,7 +76,7 @@ public class University : CardData
 			}
 			if (this.CoinCount == this.InventionCost)
 			{
-				this.MyGameCard.StartTimer(10f, new TimerAction(this.GiveInvention), SokLoc.Translate("card_university_status"), base.GetActionId("GiveInvention"), true, false, false);
+				this.MyGameCard.StartTimer(10f, new TimerAction(this.GiveInvention), MewtationsLoc.Translate("card_university_status"), base.GetActionId("GiveInvention"), true, false, false);
 			}
 		}
 		if (this.AllInventionsFound())

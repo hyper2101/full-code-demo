@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class Academy : Landmark
 {
@@ -34,7 +34,7 @@ public class Academy : Landmark
 				}
 				if (!this.MyGameCard.TimerRunningInStack)
 				{
-					this.MyGameCard.StartTimer(this.EducationTime, new TimerAction(this.EducateWorkers), SokLoc.Translate("card_academy_status"), base.GetActionId("EducateWorkers"), true, false, false);
+					this.MyGameCard.StartTimer(this.EducationTime, new TimerAction(this.EducateWorkers), MewtationsLoc.Translate("card_academy_status"), base.GetActionId("EducateWorkers"), true, false, false);
 					goto IL_0118;
 				}
 				goto IL_0118;

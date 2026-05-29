@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,7 +27,7 @@ public class FishTrap : CardData
 		Food food;
 		if (base.HasCardOnTop<Food>(out food))
 		{
-			this.MyGameCard.StartTimer(this.FishTime, new TimerAction(this.CompleteFishing), SokLoc.Translate("card_fish_trap_status"), "complete_fishing", true, false, false);
+			this.MyGameCard.StartTimer(this.FishTime, new TimerAction(this.CompleteFishing), MewtationsLoc.Translate("card_fish_trap_status"), "complete_fishing", true, false, false);
 		}
 		else
 		{

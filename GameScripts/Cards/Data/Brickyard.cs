@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class Brickyard : CardData
 {
@@ -11,7 +11,7 @@ public class Brickyard : CardData
 	{
 		if (base.ChildrenMatchingPredicateCount((CardData c) => c.Id == "stone" || c.Id == "sandstone") >= 2)
 		{
-			this.MyGameCard.StartTimer(10f, new TimerAction(this.CompleteMaking), SokLoc.Translate("card_brickyard_status"), base.GetActionId("CompleteMaking"), true, false, false);
+			this.MyGameCard.StartTimer(10f, new TimerAction(this.CompleteMaking), MewtationsLoc.Translate("card_brickyard_status"), base.GetActionId("CompleteMaking"), true, false, false);
 		}
 		else
 		{

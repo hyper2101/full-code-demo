@@ -23,16 +23,16 @@ public class Landfill : SewerCard
 	{
 		if (this.IsOverflowing)
 		{
-			this.nameOverride = SokLoc.Translate("card_overflowing_landfill_name");
-			this.descriptionOverride = SokLoc.Translate("card_overflowing_landfill_description");
+			this.nameOverride = MewtationsLoc.Translate("card_overflowing_landfill_name");
+			this.descriptionOverride = MewtationsLoc.Translate("card_overflowing_landfill_description");
 			return;
 		}
 		if (this.StoredPollution <= 0)
 		{
-			this.descriptionOverride = SokLoc.Translate("card_landfill_description", new LocParam[] { LocParam.Create("amount", this.PollutionOverflowMin.ToString()) });
+			this.descriptionOverride = MewtationsLoc.Translate("card_landfill_description", new LocParam[] { LocParam.Create("amount", this.PollutionOverflowMin.ToString()) });
 			return;
 		}
-		this.descriptionOverride = SokLoc.Translate("card_landfill_description_long", new LocParam[]
+		this.descriptionOverride = MewtationsLoc.Translate("card_landfill_description_long", new LocParam[]
 		{
 			LocParam.Create("amount", this.PollutionOverflowMin.ToString()),
 			LocParam.Create("current", this.StoredPollution.ToString())
@@ -70,7 +70,7 @@ public class Landfill : SewerCard
 			}
 			if (!this.MyGameCard.TimerRunning && this.StoredPollution > 0)
 			{
-				this.MyGameCard.StartTimer(60f, new TimerAction(this.DumpPollution), SokLoc.Translate("card_landfill_status_1", new LocParam[] { LocParam.Create("amount", this.PollutionRemovalRate.ToString()) }), base.GetActionId("DumpPollution"), true, false, false);
+				this.MyGameCard.StartTimer(60f, new TimerAction(this.DumpPollution), MewtationsLoc.Translate("card_landfill_status_1", new LocParam[] { LocParam.Create("amount", this.PollutionRemovalRate.ToString()) }), base.GetActionId("DumpPollution"), true, false, false);
 			}
 			if (this.StoredPollution >= this.PollutionOverflowMin / 2)
 			{
@@ -91,7 +91,7 @@ public class Landfill : SewerCard
 			this.MyGameCard.CancelTimer(base.GetActionId("DumpPollution"));
 			if (!this.MyGameCard.TimerRunning)
 			{
-				this.MyGameCard.StartTimer(120f, new TimerAction(this.ResolveOverflow), SokLoc.Translate("card_landfill_status_2"), base.GetActionId("ResolveOverflow"), true, false, false);
+				this.MyGameCard.StartTimer(120f, new TimerAction(this.ResolveOverflow), MewtationsLoc.Translate("card_landfill_status_2"), base.GetActionId("ResolveOverflow"), true, false, false);
 			}
 		}
 		this.MyGameCard.SpecialIcon.sprite = SpriteManager.instance.PollutionIcon;

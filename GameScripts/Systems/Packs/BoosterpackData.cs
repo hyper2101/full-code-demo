@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,7 +14,7 @@ public class BoosterpackData : ScriptableObject
 			{
 				return this.nameOverride;
 			}
-			return SokLoc.Translate(this.NameTerm);
+			return MewtationsLoc.Translate(this.NameTerm);
 		}
 	}
 
@@ -86,11 +86,11 @@ public class BoosterpackData : ScriptableObject
 			string text2 = cardPrefab.FullName;
 			if (cardPrefab.MyCardType == CardType.Ideas)
 			{
-				text2 = SokLoc.Translate("label_an_idea");
+				text2 = MewtationsLoc.Translate("label_an_idea");
 			}
 			if (cardPrefab.MyCardType == CardType.Rumors)
 			{
-				text2 = SokLoc.Translate("label_a_rumor");
+				text2 = MewtationsLoc.Translate("label_a_rumor");
 			}
 			if (!WorldManager.instance.CurrentSave.FoundCardIds.Contains(text))
 			{
@@ -108,7 +108,7 @@ public class BoosterpackData : ScriptableObject
 		string text4 = "";
 		if (!string.IsNullOrEmpty(prefix))
 		{
-			text4 = SokLoc.Translate(prefix) + "\n";
+			text4 = MewtationsLoc.Translate(prefix) + "\n";
 		}
 		if (num > 0)
 		{
@@ -118,7 +118,7 @@ public class BoosterpackData : ScriptableObject
 				"  ",
 				Icons.Circle,
 				" ",
-				SokLoc.Translate("label_undiscovered_cards", new LocParam[] { LocParam.Plural("count", num) }),
+				MewtationsLoc.Translate("label_undiscovered_cards", new LocParam[] { LocParam.Plural("count", num) }),
 				"\n"
 			});
 		}
@@ -150,11 +150,11 @@ public class BoosterpackData : ScriptableObject
 			string text2 = cardFromId.FullName;
 			if (cardFromId.MyCardType == CardType.Ideas)
 			{
-				text2 = SokLoc.Translate("label_an_idea");
+				text2 = MewtationsLoc.Translate("label_an_idea");
 			}
 			if (cardFromId.MyCardType == CardType.Rumors)
 			{
-				text2 = SokLoc.Translate("label_a_rumor");
+				text2 = MewtationsLoc.Translate("label_a_rumor");
 			}
 			if (!list2.Contains(text2))
 			{

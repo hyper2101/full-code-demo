@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -39,8 +39,8 @@ public class FoodWarehouse : Food
 		if (!string.IsNullOrEmpty(this.HeldCardId))
 		{
 			Food food = WorldManager.instance.GameDataLoader.GetCardFromId(this.HeldCardId, true) as Food;
-			this.nameOverride = SokLoc.Translate("card_food_warehouse_name_long", new LocParam[] { LocParam.Create("food", WorldManager.instance.GameDataLoader.GetCardFromId(this.HeldCardId, true).Name) });
-			this.descriptionOverride = SokLoc.Translate("card_food_warehouse_description_long", new LocParam[]
+			this.nameOverride = MewtationsLoc.Translate("card_food_warehouse_name_long", new LocParam[] { LocParam.Create("food", WorldManager.instance.GameDataLoader.GetCardFromId(this.HeldCardId, true).Name) });
+			this.descriptionOverride = MewtationsLoc.Translate("card_food_warehouse_description_long", new LocParam[]
 			{
 				LocParam.Create("food", WorldManager.instance.GameDataLoader.GetCardFromId(this.HeldCardId, true).Name),
 				LocParam.Create("amount", (this.FoodValue / food.FoodValue).ToString())
@@ -48,7 +48,7 @@ public class FoodWarehouse : Food
 		}
 		else
 		{
-			this.nameOverride = SokLoc.Translate("card_food_warehouse_name");
+			this.nameOverride = MewtationsLoc.Translate("card_food_warehouse_name");
 			this.descriptionOverride = null;
 		}
 		if (this.outputConnector == null)
@@ -60,7 +60,7 @@ public class FoodWarehouse : Food
 			CardConnector cardConnector = this.outputConnector;
 			if (((cardConnector != null) ? cardConnector.ConnectedNode : null) != null)
 			{
-				this.MyGameCard.StartTimer(10f, new TimerAction(this.OutputCard), SokLoc.Translate("idea_resourcechest_status_2"), base.GetActionId("OutputCard"), true, false, false);
+				this.MyGameCard.StartTimer(10f, new TimerAction(this.OutputCard), MewtationsLoc.Translate("idea_resourcechest_status_2"), base.GetActionId("OutputCard"), true, false, false);
 				goto IL_0232;
 			}
 		}

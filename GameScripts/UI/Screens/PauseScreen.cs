@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using UnityEngine;
 
-public class PauseScreen : SokScreen
+public class PauseScreen : MewtationsScreen
 {
 	public override bool IsFrameRateUncapped
 	{

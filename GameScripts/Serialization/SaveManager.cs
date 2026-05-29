@@ -147,7 +147,7 @@ public class SaveManager : MonoBehaviour
 		int num = WorldManager.instance.CardDataPrefabs.Count<CardData>((CardData x) => !x.HideFromCardopedia);
 		string text = Mathf.FloorToInt((float)(saveGame.FoundCardIds.Count + count2) / (float)(num + count) * 100f).ToString() + "%";
 		string text2 = saveGame.LastSavedUtc.ToString("yyyy-MM-dd");
-		return SokLoc.Translate("label_save_game", new LocParam[]
+		return MewtationsLoc.Translate("label_save_game", new LocParam[]
 		{
 			LocParam.Create("save_index", (int.Parse(saveGame.SaveId) + 1).ToString()),
 			LocParam.Create("percentage", text),

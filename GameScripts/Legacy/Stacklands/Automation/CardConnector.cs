@@ -198,19 +198,19 @@ using UnityEngine;
 				{
 					string text = ((this.CardDirection == CardDirection.input) ? "label_connection_type_input" : "label_connection_type_output");
 					string text2 = ((this.ConnectionType == ConnectionType.LV) ? "label_connection_low_voltage" : "label_connection_high_voltage");
-					GameScreen.InfoBoxText = SokLoc.Translate("label_connector_info");
-					GameScreen.InfoBoxTitle = SokLoc.Translate(text2) + " " + SokLoc.Translate(text);
+					GameScreen.InfoBoxText = MewtationsLoc.Translate("label_connector_info");
+					GameScreen.InfoBoxTitle = MewtationsLoc.Translate(text2) + " " + MewtationsLoc.Translate(text);
 				}
 				else if (this.ConnectionType == ConnectionType.Sewer)
 				{
-					GameScreen.InfoBoxText = SokLoc.Translate("label_connector_info");
-					GameScreen.InfoBoxTitle = SokLoc.Translate("label_connection_sewer");
+					GameScreen.InfoBoxText = MewtationsLoc.Translate("label_connector_info");
+					GameScreen.InfoBoxTitle = MewtationsLoc.Translate("label_connection_sewer");
 				}
 				else if (this.ConnectionType == ConnectionType.Transport)
 				{
 					string text3 = ((this.CardDirection == CardDirection.input) ? "label_connection_type_input" : "label_connection_type_output");
-					GameScreen.InfoBoxText = SokLoc.Translate("label_connector_info");
-					GameScreen.InfoBoxTitle = SokLoc.Translate("label_connection_transport") + " " + SokLoc.Translate(text3);
+					GameScreen.InfoBoxText = MewtationsLoc.Translate("label_connector_info");
+					GameScreen.InfoBoxTitle = MewtationsLoc.Translate("label_connection_transport") + " " + MewtationsLoc.Translate(text3);
 				}
 			}
 		}

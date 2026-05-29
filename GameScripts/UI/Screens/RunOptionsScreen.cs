@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RunOptionsScreen : SokScreen
+public class RunOptionsScreen : MewtationsScreen
 {
 	private void Start()
 	{
@@ -97,21 +97,21 @@ public class RunOptionsScreen : SokScreen
 		{
 			but.ButtonEnabled = true;
 			but.TooltipText = "";
-			but.TextMeshPro.text = SokLoc.Translate(mainTerm, new LocParam[] { LocParam.Create("on_off", RunOptionsScreen.YesNo(curseEnabled)) });
+			but.TextMeshPro.text = MewtationsLoc.Translate(mainTerm, new LocParam[] { LocParam.Create("on_off", RunOptionsScreen.YesNo(curseEnabled)) });
 			return;
 		}
 		but.ButtonEnabled = false;
-		but.TextMeshPro.text = SokLoc.Translate("label_enable_curse_unknown");
-		but.TooltipText = SokLoc.Translate("label_beat_curse_to_unlock");
+		but.TextMeshPro.text = MewtationsLoc.Translate("label_enable_curse_unknown");
+		but.TooltipText = MewtationsLoc.Translate("label_beat_curse_to_unlock");
 	}
 
 	public static string YesNo(bool a)
 	{
 		if (!a)
 		{
-			return SokLoc.Translate("label_off");
+			return MewtationsLoc.Translate("label_off");
 		}
-		return SokLoc.Translate("label_on");
+		return MewtationsLoc.Translate("label_on");
 	}
 
 	public CustomButton ShortMoon;

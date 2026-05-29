@@ -56,7 +56,7 @@ using UnityEngine;
 	{
 		if (!string.IsNullOrEmpty(this.FilteredCard))
 		{
-			this.nameOverride = SokLoc.Translate(this.NameOverride, new LocParam[] { LocParam.Create("card", WorldManager.instance.GameDataLoader.GetCardFromId(this.FilteredCard, true).Name) });
+			this.nameOverride = MewtationsLoc.Translate(this.NameOverride, new LocParam[] { LocParam.Create("card", WorldManager.instance.GameDataLoader.GetCardFromId(this.FilteredCard, true).Name) });
 			return;
 		}
 		this.nameOverride = null;

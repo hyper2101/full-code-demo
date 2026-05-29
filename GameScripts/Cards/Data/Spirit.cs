@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class Spirit : CardData
@@ -61,7 +61,7 @@ public class Spirit : CardData
 		{
 			if (!this.IsReturning)
 			{
-				this.MyGameCard.StartTimer(30f, new TimerAction(this.LeaveWithSpirit), SokLoc.Translate("card_spirit_status_1"), base.GetActionId("LeaveWithSpirit"), true, false, false);
+				this.MyGameCard.StartTimer(30f, new TimerAction(this.LeaveWithSpirit), MewtationsLoc.Translate("card_spirit_status_1"), base.GetActionId("LeaveWithSpirit"), true, false, false);
 				return;
 			}
 		}

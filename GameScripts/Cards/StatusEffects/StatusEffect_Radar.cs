@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class StatusEffect_Radar : StatusEffect
@@ -31,7 +31,7 @@ public class StatusEffect_Radar : StatusEffect
 	{
 		get
 		{
-			return SokLoc.Translate("statuseffect_radar_description", new LocParam[] { LocParam.Create("amount", (CitiesManager.instance.NextConflictMonth - 1).ToString()) });
+			return MewtationsLoc.Translate("statuseffect_radar_description", new LocParam[] { LocParam.Create("amount", (CitiesManager.instance.NextConflictMonth - 1).ToString()) });
 		}
 	}
 

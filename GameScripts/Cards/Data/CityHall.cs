@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -53,7 +53,7 @@ public class CityHall : Landmark
 		}
 		if (this.DollarAmount > 0)
 		{
-			this.descriptionOverride = SokLoc.Translate("card_city_hall_description_long", new LocParam[] { LocParam.Create("amount", this.DollarAmount.ToString()) });
+			this.descriptionOverride = MewtationsLoc.Translate("card_city_hall_description_long", new LocParam[] { LocParam.Create("amount", this.DollarAmount.ToString()) });
 		}
 		base.UpdateCard();
 	}

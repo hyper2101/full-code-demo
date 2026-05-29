@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 public class Charity : CardData
@@ -26,7 +26,7 @@ public class Charity : CardData
 		base.GetChildrenMatchingPredicate((CardData x) => x is Gold, this.golds);
 		if (this.golds.Count >= this.RequiredCoins)
 		{
-			this.MyGameCard.StartTimer(this.GenerationTime, new TimerAction(this.CompleteCharity), SokLoc.Translate("card_charity_status_active"), "complete_charity", true, false, false);
+			this.MyGameCard.StartTimer(this.GenerationTime, new TimerAction(this.CompleteCharity), MewtationsLoc.Translate("card_charity_status_active"), "complete_charity", true, false, false);
 		}
 		else
 		{
@@ -37,7 +37,7 @@ public class Charity : CardData
 
 	public override void UpdateCardText()
 	{
-		this.descriptionOverride = SokLoc.Translate("card_charity_description", new LocParam[] { LocParam.Create("amount", this.RequiredCoins.ToString()) });
+		this.descriptionOverride = MewtationsLoc.Translate("card_charity_description", new LocParam[] { LocParam.Create("amount", this.RequiredCoins.ToString()) });
 		base.UpdateCardText();
 	}
 

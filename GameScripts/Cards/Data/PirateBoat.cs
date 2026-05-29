@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -64,14 +64,14 @@ public class PirateBoat : CardData
 		}
 		if (!this.MyGameCard.TimerRunning)
 		{
-			this.MyGameCard.StartTimer(this.SpawnTime, new TimerAction(this.SpawnPirates), SokLoc.Translate("card_pirate_boat_name"), base.GetActionId("SpawnPirates"), true, false, false);
+			this.MyGameCard.StartTimer(this.SpawnTime, new TimerAction(this.SpawnPirates), MewtationsLoc.Translate("card_pirate_boat_name"), base.GetActionId("SpawnPirates"), true, false, false);
 		}
 		base.UpdateCard();
 	}
 
 	public override void UpdateCardText()
 	{
-		this.descriptionOverride = SokLoc.Translate("card_pirate_boat_status", new LocParam[] { LocParam.Create("count", this.Demand.ToString()) });
+		this.descriptionOverride = MewtationsLoc.Translate("card_pirate_boat_status", new LocParam[] { LocParam.Create("count", this.Demand.ToString()) });
 	}
 
 	[TimedAction("spawn_pirates")]

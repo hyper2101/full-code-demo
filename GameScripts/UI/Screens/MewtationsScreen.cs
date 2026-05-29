@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using UnityEngine;
 
-public class SokScreen : MonoBehaviour
+public class MewtationsScreen : MonoBehaviour
 {
 	public RectTransform Rect
 	{

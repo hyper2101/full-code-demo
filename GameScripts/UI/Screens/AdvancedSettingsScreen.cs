@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using UnityEngine;
 
-public class AdvancedSettingsScreen : SokScreen
+public class AdvancedSettingsScreen : MewtationsScreen
 {
 	private void Awake()
 	{
@@ -19,7 +19,7 @@ public class AdvancedSettingsScreen : SokScreen
 
 	private void Update()
 	{
-		this.AdvancedCombatStatsButton.TextMeshPro.text = SokLoc.Translate("label_advanced_combat", new LocParam[] { LocParam.Create("on_off", OptionsScreen.YesNo(AdvancedSettingsScreen.AdvancedCombatStatsEnabled)) });
+		this.AdvancedCombatStatsButton.TextMeshPro.text = MewtationsLoc.Translate("label_advanced_combat", new LocParam[] { LocParam.Create("on_off", OptionsScreen.YesNo(AdvancedSettingsScreen.AdvancedCombatStatsEnabled)) });
 	}
 
 	private void OnApplicationQuit()

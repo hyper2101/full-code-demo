@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class EventCard : CardData
@@ -7,7 +7,7 @@ public class EventCard : CardData
 	{
 		if (!this.MyGameCard.TimerRunning)
 		{
-			this.MyGameCard.StartTimer(this.PreEventTime, new TimerAction(this.StartEvent), SokLoc.Translate(this.PreEventText), base.GetActionId("StartEvent"), true, false, false);
+			this.MyGameCard.StartTimer(this.PreEventTime, new TimerAction(this.StartEvent), MewtationsLoc.Translate(this.PreEventText), base.GetActionId("StartEvent"), true, false, false);
 		}
 		if (this.IsPositiveEvent)
 		{

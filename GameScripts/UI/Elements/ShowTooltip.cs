@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class ShowTooltip : MonoBehaviour
@@ -12,7 +12,7 @@ public class ShowTooltip : MonoBehaviour
 			{
 				if (!string.IsNullOrEmpty(this.MyTooltipTerm))
 				{
-					Tooltip.Text = SokLoc.Translate(this.MyTooltipTerm);
+					Tooltip.Text = MewtationsLoc.Translate(this.MyTooltipTerm);
 					return;
 				}
 				Tooltip.Text = this.MyTooltipText;

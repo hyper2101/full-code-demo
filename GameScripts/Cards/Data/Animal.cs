@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class Animal : Mob
@@ -131,7 +131,7 @@ public class Animal : Mob
 		{
 			if (this.IsOld)
 			{
-				this.nameOverride = SokLoc.Translate("card_animal_old_name", new LocParam[] { LocParam.Create("name", this.CustomName) });
+				this.nameOverride = MewtationsLoc.Translate("card_animal_old_name", new LocParam[] { LocParam.Create("name", this.CustomName) });
 			}
 			else
 			{
@@ -140,11 +140,11 @@ public class Animal : Mob
 		}
 		else if (this.IsOld)
 		{
-			this.nameOverride = SokLoc.Translate(this.NameTerm + "_old");
+			this.nameOverride = MewtationsLoc.Translate(this.NameTerm + "_old");
 		}
 		else
 		{
-			this.nameOverride = SokLoc.Translate(this.NameTerm);
+			this.nameOverride = MewtationsLoc.Translate(this.NameTerm);
 		}
 		base.UpdateCardText();
 	}
@@ -183,7 +183,7 @@ public class Animal : Mob
 		CardData cardData;
 		if (base.HasCardOnTop("wheat", out cardData) && !this.InAnimalPen)
 		{
-			this.MyGameCard.StartTimer(5f, new TimerAction(this.EatWheat), SokLoc.Translate("card_animal_eating_status"), "eat_wheat", true, false, false);
+			this.MyGameCard.StartTimer(5f, new TimerAction(this.EatWheat), MewtationsLoc.Translate("card_animal_eating_status"), "eat_wheat", true, false, false);
 		}
 		else
 		{

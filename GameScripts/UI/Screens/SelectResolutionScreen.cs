@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SelectResolutionScreen : SokScreen
+public class SelectResolutionScreen : MewtationsScreen
 {
 	private void Start()
 	{

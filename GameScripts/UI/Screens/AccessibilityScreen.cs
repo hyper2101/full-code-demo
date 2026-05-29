@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using UnityEngine;
 
-public class AccessibilityScreen : SokScreen
+public class AccessibilityScreen : MewtationsScreen
 {
 	private void Awake()
 	{
@@ -62,12 +62,12 @@ public class AccessibilityScreen : SokScreen
 
 	private void Update()
 	{
-		this.AutoPauseWhenUsingControllerButton.TextMeshPro.text = SokLoc.Translate("label_auto_pause_controller") + " " + OptionsScreen.YesNo(AccessibilityScreen.AutoPauseWhenUsingController);
-		this.AutoPauseWhenUsingKeyboardMouseButton.TextMeshPro.text = SokLoc.Translate("label_auto_pause_keyboardmouse") + " " + OptionsScreen.YesNo(AccessibilityScreen.AutoPauseWhenUsingKeyboardMouse);
-		this.ScreenShakeButton.TextMeshPro.text = SokLoc.Translate("label_screenshake_enabled") + ": " + OptionsScreen.YesNo(AccessibilityScreen.ScreenshakeEnabled);
-		this.ClickToDragButton.TextMeshPro.text = SokLoc.Translate("label_clicktodrag_enabled") + ": " + OptionsScreen.YesNo(AccessibilityScreen.ClickToDragEnabled);
-		this.DisablePausedTextButton.TextMeshPro.text = SokLoc.Translate("label_disable_paused_text", new LocParam[] { LocParam.Create("on_off", OptionsScreen.YesNo(AccessibilityScreen.FlashingPausedEnabled)) });
-		this.ClickToDragButton.TooltipText = SokLoc.Translate("label_clicktodrag_tooltip");
+		this.AutoPauseWhenUsingControllerButton.TextMeshPro.text = MewtationsLoc.Translate("label_auto_pause_controller") + " " + OptionsScreen.YesNo(AccessibilityScreen.AutoPauseWhenUsingController);
+		this.AutoPauseWhenUsingKeyboardMouseButton.TextMeshPro.text = MewtationsLoc.Translate("label_auto_pause_keyboardmouse") + " " + OptionsScreen.YesNo(AccessibilityScreen.AutoPauseWhenUsingKeyboardMouse);
+		this.ScreenShakeButton.TextMeshPro.text = MewtationsLoc.Translate("label_screenshake_enabled") + ": " + OptionsScreen.YesNo(AccessibilityScreen.ScreenshakeEnabled);
+		this.ClickToDragButton.TextMeshPro.text = MewtationsLoc.Translate("label_clicktodrag_enabled") + ": " + OptionsScreen.YesNo(AccessibilityScreen.ClickToDragEnabled);
+		this.DisablePausedTextButton.TextMeshPro.text = MewtationsLoc.Translate("label_disable_paused_text", new LocParam[] { LocParam.Create("on_off", OptionsScreen.YesNo(AccessibilityScreen.FlashingPausedEnabled)) });
+		this.ClickToDragButton.TooltipText = MewtationsLoc.Translate("label_clicktodrag_tooltip");
 	}
 
 	public CustomButton BackButton;

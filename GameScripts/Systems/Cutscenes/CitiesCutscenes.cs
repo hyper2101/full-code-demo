@@ -44,8 +44,8 @@ public static class CitiesCutscenes
 		CitiesCutscenes.Title = "";
 		GameCard spirit = CitiesCutscenes.FindOrCreateGameCard("greed_spirit", null);
 		GameCamera.instance.TargetPositionOverride = new Vector3?(spirit.transform.position);
-		CitiesCutscenes.Text = SokLoc.Translate("label_greed_outro_wear_crown");
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		CitiesCutscenes.Text = MewtationsLoc.Translate("label_greed_outro_wear_crown");
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		spirit.DestroyCard(false, true);
 		CitiesCutscenes.Stop(false);
 		yield break;
@@ -54,13 +54,13 @@ public static class CitiesCutscenes
 	public static IEnumerator CitiesFinancialCrisis()
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		CitiesCutscenes.Title = SokLoc.Translate("cutscene_cities_financial_crisis_title");
+		CitiesCutscenes.Title = MewtationsLoc.Translate("cutscene_cities_financial_crisis_title");
 		GameCard gameCard = CitiesCutscenes.FindOrCreateGameCard("financial_crisis", null);
 		GameCamera.instance.TargetCardOverride = gameCard;
-		CitiesCutscenes.Text = SokLoc.Translate("cutscene_cities_financial_crisis_text");
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
-		CitiesCutscenes.Text = SokLoc.Translate("cutscene_cities_financial_crisis_text_1");
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		CitiesCutscenes.Text = MewtationsLoc.Translate("cutscene_cities_financial_crisis_text");
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
+		CitiesCutscenes.Text = MewtationsLoc.Translate("cutscene_cities_financial_crisis_text_1");
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		CitiesCutscenes.Stop(false);
 		yield break;
 	}
@@ -81,9 +81,9 @@ public static class CitiesCutscenes
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCard gameCard = CitiesCutscenes.FindOrCreateGameCard("earthquake", null);
 		GameCamera.instance.TargetCardOverride = gameCard;
-		CitiesCutscenes.Title = SokLoc.Translate("label_cities_earthquake_title");
-		CitiesCutscenes.Text = SokLoc.Translate("label_cities_earthquake_text");
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+		CitiesCutscenes.Title = MewtationsLoc.Translate("label_cities_earthquake_title");
+		CitiesCutscenes.Text = MewtationsLoc.Translate("label_cities_earthquake_text");
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		List<GameCard> cardsToDamage = CitiesCutscenes.GetCardsToDamage();
 		foreach (GameCard gameCard2 in cardsToDamage)
 		{
@@ -97,8 +97,8 @@ public static class CitiesCutscenes
 		}
 		List<GameCard>.Enumerator enumerator = default(List<GameCard>.Enumerator);
 		GameCamera.instance.TargetCardOverride = null;
-		CitiesCutscenes.Text = SokLoc.Translate("label_cities_earthquake_text_1");
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		CitiesCutscenes.Text = MewtationsLoc.Translate("label_cities_earthquake_text_1");
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		origin.DestroyCard(true, true);
 		CitiesCutscenes.Stop(false);
 		yield break;
@@ -108,11 +108,11 @@ public static class CitiesCutscenes
 	public static IEnumerator CitiesDrought(GameCard origin)
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		CitiesCutscenes.Title = SokLoc.Translate("label_cities_drought_title");
-		CitiesCutscenes.Text = SokLoc.Translate("label_cities_drought_text");
+		CitiesCutscenes.Title = MewtationsLoc.Translate("label_cities_drought_title");
+		CitiesCutscenes.Text = MewtationsLoc.Translate("label_cities_drought_text");
 		GameCard gameCard = CitiesCutscenes.FindOrCreateGameCard("drought", null);
 		GameCamera.instance.TargetCardOverride = gameCard;
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		List<GameCard> list = (from x in WorldManager.instance.CardQuery.GetAllCardsOnBoard(WorldManager.instance.CurrentBoard.Id)
 			where x.CardData is Farmland && !x.CardData.IsDamaged
 			select x).ToList<GameCard>();
@@ -132,8 +132,8 @@ public static class CitiesCutscenes
 		}
 		List<GameCard>.Enumerator enumerator = default(List<GameCard>.Enumerator);
 		GameCamera.instance.TargetCardOverride = null;
-		CitiesCutscenes.Text = SokLoc.Translate("label_cities_drought_text_1");
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		CitiesCutscenes.Text = MewtationsLoc.Translate("label_cities_drought_text_1");
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		origin.DestroyCard(true, true);
 		CitiesCutscenes.Stop(false);
 		yield break;
@@ -143,11 +143,11 @@ public static class CitiesCutscenes
 	public static IEnumerator CitiesWildFire(GameCard origin)
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		CitiesCutscenes.Title = SokLoc.Translate("label_cities_wildfire_title");
-		CitiesCutscenes.Text = SokLoc.Translate("label_cities_wildfire_text");
+		CitiesCutscenes.Title = MewtationsLoc.Translate("label_cities_wildfire_title");
+		CitiesCutscenes.Text = MewtationsLoc.Translate("label_cities_wildfire_text");
 		GameCard gameCard = CitiesCutscenes.FindOrCreateGameCard("wildfire", null);
 		GameCamera.instance.TargetCardOverride = gameCard;
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		List<GameCard> cardsToDamage = CitiesCutscenes.GetCardsToDamage();
 		foreach (GameCard gameCard2 in cardsToDamage)
 		{
@@ -160,8 +160,8 @@ public static class CitiesCutscenes
 		}
 		List<GameCard>.Enumerator enumerator = default(List<GameCard>.Enumerator);
 		GameCamera.instance.TargetCardOverride = null;
-		CitiesCutscenes.Text = SokLoc.Translate("label_cities_wildfire_text_1");
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		CitiesCutscenes.Text = MewtationsLoc.Translate("label_cities_wildfire_text_1");
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		origin.DestroyCard(true, true);
 		CitiesCutscenes.Stop(false);
 		yield break;
@@ -172,17 +172,17 @@ public static class CitiesCutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(laboratory.transform.position);
-		CitiesCutscenes.Text = SokLoc.Translate("label_dino_laboratory");
+		CitiesCutscenes.Text = MewtationsLoc.Translate("label_dino_laboratory");
 		CitiesCutscenes.Title = "";
 		if (!WorldManager.instance.CurrentRunOptions.IsPeacefulMode)
 		{
-			string text = SokLoc.Translate("label_start_dino");
-			string text2 = SokLoc.Translate("label_cancel_dino");
+			string text = MewtationsLoc.Translate("label_start_dino");
+			string text2 = MewtationsLoc.Translate("label_cancel_dino");
 			yield return CitiesCutscenes.WaitForAnswer(new string[] { text, text2 });
 		}
 		else
 		{
-			string text = SokLoc.Translate("label_well_done");
+			string text = MewtationsLoc.Translate("label_well_done");
 			yield return CitiesCutscenes.WaitForAnswer(new string[] { text });
 		}
 		if (WorldManager.instance.ContinueButtonIndex == 0)
@@ -211,9 +211,9 @@ public static class CitiesCutscenes
 		ParticleCollider collider = origin.CardData as ParticleCollider;
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetCardOverride = origin;
-		CitiesCutscenes.Title = SokLoc.Translate("cutscene_cities_particle_collider_title");
-		CitiesCutscenes.Text = SokLoc.Translate("cutscene_cities_particle_collider_text");
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("cutscene_cities_particle_collider_switch"));
+		CitiesCutscenes.Title = MewtationsLoc.Translate("cutscene_cities_particle_collider_title");
+		CitiesCutscenes.Text = MewtationsLoc.Translate("cutscene_cities_particle_collider_text");
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("cutscene_cities_particle_collider_switch"));
 		collider.ColliderRunning = true;
 		origin.CardData.DestroyChildrenMatchingPredicateAndRestack((CardData x) => x.Id == "uranium", 2);
 		AudioManager.me.PlaySound2D(AudioManager.me.ColliderRunningSound, 1f, 0.5f);
@@ -223,9 +223,9 @@ public static class CitiesCutscenes
 		collider.ColliderRunning = false;
 		GameCamera.instance.Screenshake = 0f;
 		GameCamera.instance.TargetCardOverride = null;
-		CitiesCutscenes.Text = SokLoc.Translate("cutscene_cities_particle_collider_text_1");
+		CitiesCutscenes.Text = MewtationsLoc.Translate("cutscene_cities_particle_collider_text_1");
 		GameCamera.instance.TargetCardOverride = cardData;
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		collider.CutsceneQueued = false;
 		CitiesCutscenes.Stop(false);
 		yield break;
@@ -236,8 +236,8 @@ public static class CitiesCutscenes
 		CutsceneScreen.instance.IsAdvisorCutscene = true;
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		CitiesCutscenes.Title = "";
-		CitiesCutscenes.Text = SokLoc.Translate("label_greed_outro_wear_crown");
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		CitiesCutscenes.Text = MewtationsLoc.Translate("label_greed_outro_wear_crown");
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		CitiesCutscenes.Stop(false);
 		yield break;
 	}
@@ -321,8 +321,8 @@ public static class CitiesCutscenes
 		GameCamera.instance.TargetCardOverride = null;
 		GameCamera.instance.TargetPositionOverride = null;
 		yield return new WaitForSeconds(2f);
-		CitiesCutscenes.Text = SokLoc.Translate("label_final_demand_merchant");
-		yield return CitiesCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		CitiesCutscenes.Text = MewtationsLoc.Translate("label_final_demand_merchant");
+		yield return CitiesCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		yield break;
 	}
 }

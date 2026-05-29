@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class StatusEffect_NoEnergy : StatusEffect
@@ -15,7 +15,7 @@ public class StatusEffect_NoEnergy : StatusEffect
 	{
 		get
 		{
-			return SokLoc.Translate("statuseffect_no_energy_description");
+			return MewtationsLoc.Translate("statuseffect_no_energy_description");
 		}
 	}
 

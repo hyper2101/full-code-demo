@@ -64,19 +64,19 @@ public static class GreedCutscenes
 		yield return new WaitForSeconds(2f);
 		GreedCutscenes.FindOrCreateGameCard("merchant", new Vector3?(randomPos));
 		WorldManager.instance.CreateSmoke(randomPos);
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_merchant");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_merchant");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		Royal royal = GreedCutscenes.FindOrCreateGameCard("royal", null).CardData as Royal;
 		GreedCutscenes.Title = "";
 		GameCamera.instance.TargetPositionOverride = new Vector3?(royal.transform.position);
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_text");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_text_2");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_text_3");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_text_4");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_text");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_text_2");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_text_3");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_text_4");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		DemandManager.instance.QuestStarted(demand);
 		yield break;
 	}
@@ -88,46 +88,46 @@ public static class GreedCutscenes
 		DragonEgg egg = GreedCutscenes.FindOrCreateGameCard("dragon_egg", null).CardData as DragonEgg;
 		GreedCutscenes.Title = "";
 		GameCamera.instance.TargetPositionOverride = new Vector3?(royal.transform.position);
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_end_text");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_end_text");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GreedCutscenes.Text = "...";
 		GameCamera.instance.TargetPositionOverride = new Vector3?(egg.transform.position);
 		yield return new WaitForSeconds(0.5f);
 		egg.CrackedState = 1;
 		AudioManager.me.PlaySound2D(egg.CrackedSound, Random.Range(1.1f, 1.3f), 0.5f);
 		yield return new WaitForSeconds(0.5f);
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_end_text_2");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_end_text_2");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCamera.instance.TargetPositionOverride = new Vector3?(royal.transform.position);
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_end_text_3");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_end_text_3");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		GreedCutscenes.Text = "...";
 		GameCamera.instance.TargetPositionOverride = new Vector3?(egg.transform.position);
 		yield return new WaitForSeconds(0.5f);
 		egg.CrackedState = 2;
 		AudioManager.me.PlaySound2D(egg.CrackedSound2, Random.Range(1.1f, 1.3f), 0.5f);
 		yield return new WaitForSeconds(0.5f);
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_end_text_4");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_end_text_4");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCamera.instance.TargetPositionOverride = new Vector3?(royal.transform.position);
 		AudioManager.me.PlaySound2D(DemandManager.instance.FailedDemandSound, Random.Range(1.1f, 1.3f), 0.5f);
 		AngryRoyal angryRoyal = WorldManager.instance.ChangeToCard(royal.MyGameCard, "angry_royal") as AngryRoyal;
 		WorldManager.instance.CreateSmoke(royal.Position);
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_end_text_5");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_end_text_5");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCamera.instance.TargetPositionOverride = new Vector3?(egg.transform.position);
 		AudioManager.me.PlaySound2D(egg.CrackedSound2, Random.Range(1.1f, 1.3f), 0.5f);
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_end_text_6");
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_end_text_6");
 		yield return new WaitForSeconds(1f);
 		Combatable dragon = WorldManager.instance.ChangeToCard(egg.MyGameCard, "baby_dragon") as Combatable;
 		WorldManager.instance.CreateSmoke(dragon.transform.position);
 		AudioManager.me.PlaySound2D(dragon.PickupSound, Random.Range(1.1f, 1.3f), 0.4f);
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_end_text_7");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_end_text_7");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		dragon.MyGameCard.CardAnimations.Add(new CardAnimation_FakeMeleeAttack(dragon.MyGameCard, angryRoyal.MyGameCard));
 		AudioManager.me.PlaySound2D(AudioManager.me.Crit, Random.Range(0.8f, 1f), 0.1f);
-		GreedCutscenes.Text = SokLoc.Translate("label_final_demand_end_text_8");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_final_demand_end_text_8");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		yield return new WaitForSeconds(1f);
 		AudioManager.me.PlaySound2D(AudioManager.me.Crit, Random.Range(0.8f, 1f), 0.1f);
 		angryRoyal.DieInCutscene();
@@ -147,8 +147,8 @@ public static class GreedCutscenes
 		GreedCutscenes.Title = "";
 		GameCard spirit = GreedCutscenes.FindOrCreateGameCard("greed_spirit", null);
 		GameCamera.instance.TargetPositionOverride = new Vector3?(spirit.transform.position);
-		GreedCutscenes.Text = SokLoc.Translate("label_greed_outro_wear_crown");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_greed_outro_wear_crown");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		spirit.DestroyCard(false, true);
 		GreedCutscenes.Stop(false);
 		yield break;
@@ -160,12 +160,12 @@ public static class GreedCutscenes
 		GreedCutscenes.Title = "";
 		GameCard gameCard = GreedCutscenes.FindOrCreateGameCard("royal", null);
 		GameCamera.instance.TargetCardOverride = gameCard;
-		GreedCutscenes.Text = SokLoc.Translate("label_greed_new_villager");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
-		GreedCutscenes.Text = SokLoc.Translate("label_greed_new_villager_2");
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_greed_new_villager");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_greed_new_villager_2");
 		CardData cardData = WorldManager.instance.CreateCard(WorldManager.instance.MiddleOfBoard(), "villager", true, false, true);
 		GameCamera.instance.TargetCardOverride = cardData;
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_nice"));
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_nice"));
 		yield break;
 	}
 
@@ -175,15 +175,15 @@ public static class GreedCutscenes
 		GreedCutscenes.Title = "";
 		CardData spirit = WorldManager.instance.CreateCard(WorldManager.instance.MiddleOfBoard(), "greed_spirit", true, true, true);
 		GameCamera.instance.TargetPositionOverride = new Vector3?(spirit.transform.position);
-		GreedCutscenes.Text = SokLoc.Translate("label_greed_lift_curse");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_greed_lift_curse");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCard gameCard = GreedCutscenes.FindOrCreateGameCard("royal_crown", null);
 		GameCamera.instance.TargetCardOverride = gameCard;
-		GreedCutscenes.Text = SokLoc.Translate("label_greed_lift_curse_2");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_greed_lift_curse_2");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCamera.instance.TargetPositionOverride = new Vector3?(WorldManager.instance.CardQuery.GetCard<Curse>().transform.position);
-		GreedCutscenes.Text = SokLoc.Translate("label_greed_lift_curse_3");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_greed_lift_curse_3");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		if (spirit != null)
 		{
 			spirit.MyGameCard.DestroyCard(false, true);
@@ -202,15 +202,15 @@ public static class GreedCutscenes
 		GreedCutscenes.Title = "";
 		CardData spirit = WorldManager.instance.CreateCard(WorldManager.instance.MiddleOfBoard(), "greed_spirit", true, true, true);
 		GameCamera.instance.TargetPositionOverride = new Vector3?(spirit.transform.position);
-		GreedCutscenes.Text = SokLoc.Translate("label_greed_lift_curse_kill_royal");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_greed_lift_curse_kill_royal");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCard gameCard = GreedCutscenes.FindOrCreateGameCard("royal_crown", null);
 		GameCamera.instance.TargetCardOverride = gameCard;
-		GreedCutscenes.Text = SokLoc.Translate("label_greed_lift_curse_2");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_greed_lift_curse_2");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GameCamera.instance.TargetPositionOverride = new Vector3?(WorldManager.instance.CardQuery.GetCard<BaseVillager>().transform.position);
-		GreedCutscenes.Text = SokLoc.Translate("label_greed_lift_curse_3");
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_greed_lift_curse_3");
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		if (spirit != null)
 		{
 			spirit.MyGameCard.DestroyCard(false, true);
@@ -222,7 +222,7 @@ public static class GreedCutscenes
 
 	public static IEnumerator StartDemand(Demand demand)
 	{
-		GreedCutscenes.Title = SokLoc.Translate("greed_quest_demand_title");
+		GreedCutscenes.Title = MewtationsLoc.Translate("greed_quest_demand_title");
 		foreach (GreedAnimationState greedAnimationState in demand.QuestStartAnimationStates)
 		{
 			GreedCutscenes.Title = "";
@@ -234,23 +234,23 @@ public static class GreedCutscenes
 			}
 			if (!string.IsNullOrEmpty(greedAnimationState.TitleTerm))
 			{
-				GreedCutscenes.Title = SokLoc.Translate(greedAnimationState.TitleTerm);
+				GreedCutscenes.Title = MewtationsLoc.Translate(greedAnimationState.TitleTerm);
 			}
 			if (!string.IsNullOrEmpty(greedAnimationState.DescriptionTerm))
 			{
-				GreedCutscenes.Text = SokLoc.Translate(greedAnimationState.DescriptionTerm);
+				GreedCutscenes.Text = MewtationsLoc.Translate(greedAnimationState.DescriptionTerm);
 			}
-			yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate(greedAnimationState.ContinueTerm));
+			yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate(greedAnimationState.ContinueTerm));
 		}
 		List<GreedAnimationState>.Enumerator enumerator = default(List<GreedAnimationState>.Enumerator);
 		GreedCutscenes.Text = DemandManager.instance.GetDemandStartDescription(demand, null);
 		GameCard royal = GreedCutscenes.FindOrCreateGameCard("royal", null);
 		GameCamera.instance.TargetCardOverride = royal;
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		if (demand.BlueprintIds.Any<string>((string id) => !string.IsNullOrEmpty(id) && !WorldManager.instance.HasFoundCard(id)))
 		{
-			GreedCutscenes.Text = SokLoc.Translate("greed_quest_demand_description_not_found");
-			yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+			GreedCutscenes.Text = MewtationsLoc.Translate("greed_quest_demand_description_not_found");
+			yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 			foreach (string text in demand.BlueprintIds)
 			{
 				CardData cardData = WorldManager.instance.CreateCard(royal.transform.position, text, true, true, true);
@@ -266,10 +266,10 @@ public static class GreedCutscenes
 	public static IEnumerator FinishDemandSuccess(DemandEvent demandEvent)
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		GreedCutscenes.Title = SokLoc.Translate("greed_quest_demand_title");
-		GreedCutscenes.Text = SokLoc.Translate("label_demand_complete_start");
+		GreedCutscenes.Title = MewtationsLoc.Translate("greed_quest_demand_title");
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_demand_complete_start");
 		GameCamera.instance.TargetCardOverride = GreedCutscenes.FindOrCreateGameCard("royal", null);
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		foreach (GreedAnimationState greedAnimationState in demandEvent.Demand.QuestSuccessAnimationStates)
 		{
 			GameCard gameCard = GreedCutscenes.FindOrCreateGameCard(greedAnimationState.CameraTargetId, null);
@@ -281,13 +281,13 @@ public static class GreedCutscenes
 			GreedCutscenes.Text = "";
 			if (!string.IsNullOrEmpty(greedAnimationState.TitleTerm))
 			{
-				GreedCutscenes.Title = SokLoc.Translate(greedAnimationState.TitleTerm);
+				GreedCutscenes.Title = MewtationsLoc.Translate(greedAnimationState.TitleTerm);
 			}
 			if (!string.IsNullOrEmpty(greedAnimationState.DescriptionTerm))
 			{
-				GreedCutscenes.Text = SokLoc.Translate(greedAnimationState.DescriptionTerm);
+				GreedCutscenes.Text = MewtationsLoc.Translate(greedAnimationState.DescriptionTerm);
 			}
-			yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+			yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		}
 		List<GreedAnimationState>.Enumerator enumerator = default(List<GreedAnimationState>.Enumerator);
 		GreedCutscenes.Text = DemandManager.instance.GetRandomSuccessDescription(demandEvent.Demand);
@@ -320,8 +320,8 @@ public static class GreedCutscenes
 			}
 			GameCamera.instance.TargetPositionOverride = null;
 			yield return new WaitForSeconds(0.5f);
-			GreedCutscenes.Text = SokLoc.Translate("label_demand_collected");
-			yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+			GreedCutscenes.Text = MewtationsLoc.Translate("label_demand_collected");
+			yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		}
 		else
 		{
@@ -330,8 +330,8 @@ public static class GreedCutscenes
 			{
 				GameCamera.instance.TargetCardOverride = card2;
 			}
-			GreedCutscenes.Text = SokLoc.Translate("label_demand_collected_2");
-			yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+			GreedCutscenes.Text = MewtationsLoc.Translate("label_demand_collected_2");
+			yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		}
 		DemandManager.instance.DemandFinishedSuccess(demandEvent.Demand);
 		yield break;
@@ -341,7 +341,7 @@ public static class GreedCutscenes
 	public static IEnumerator FinishDemandSuccessPreMoon(Demand demand)
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		GreedCutscenes.Title = SokLoc.Translate("greed_quest_demand_title");
+		GreedCutscenes.Title = MewtationsLoc.Translate("greed_quest_demand_title");
 		GreedCutscenes.Text = "";
 		foreach (GreedAnimationState greedAnimationState in demand.QuestSuccessAnimationStates)
 		{
@@ -354,16 +354,16 @@ public static class GreedCutscenes
 			GreedCutscenes.Text = "";
 			if (!string.IsNullOrEmpty(greedAnimationState.TitleTerm))
 			{
-				GreedCutscenes.Title = SokLoc.Translate(greedAnimationState.TitleTerm);
+				GreedCutscenes.Title = MewtationsLoc.Translate(greedAnimationState.TitleTerm);
 			}
 			if (!string.IsNullOrEmpty(greedAnimationState.DescriptionTerm))
 			{
-				GreedCutscenes.Text = SokLoc.Translate(greedAnimationState.DescriptionTerm);
+				GreedCutscenes.Text = MewtationsLoc.Translate(greedAnimationState.DescriptionTerm);
 			}
-			yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+			yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		}
 		List<GreedAnimationState>.Enumerator enumerator = default(List<GreedAnimationState>.Enumerator);
-		GreedCutscenes.Title = SokLoc.Translate("greed_quest_demand_title");
+		GreedCutscenes.Title = MewtationsLoc.Translate("greed_quest_demand_title");
 		GreedCutscenes.Text = DemandManager.instance.GetRandomSuccessDescription(demand);
 		GameCard gameCard2 = GreedCutscenes.FindOrCreateGameCard("royal", null);
 		if (gameCard2 != null)
@@ -371,7 +371,7 @@ public static class GreedCutscenes
 			GameCamera.instance.TargetPositionOverride = new Vector3?(gameCard2.transform.position);
 		}
 		GameCamera.instance.CameraPositionDistanceOverride = null;
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		DemandManager.instance.DemandFinishedSuccess(demand);
 		GreedCutscenes.Stop(false);
 		yield break;
@@ -381,10 +381,10 @@ public static class GreedCutscenes
 	public static IEnumerator FinishDemandFailed(Demand demand)
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		GreedCutscenes.Title = SokLoc.Translate("greed_quest_demand_title");
-		GreedCutscenes.Text = SokLoc.Translate("label_demand_complete_start");
+		GreedCutscenes.Title = MewtationsLoc.Translate("greed_quest_demand_title");
+		GreedCutscenes.Text = MewtationsLoc.Translate("label_demand_complete_start");
 		GameCamera.instance.TargetCardOverride = GreedCutscenes.FindOrCreateGameCard("royal", null);
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		int amountToTake = WorldManager.instance.GetCardCount((CardData x) => x.Id == demand.CardToGet);
 		if (demand.ShouldDestroyOnComplete && amountToTake > 0)
 		{
@@ -418,16 +418,16 @@ public static class GreedCutscenes
 			GreedCutscenes.Text = "";
 			if (!string.IsNullOrEmpty(greedAnimationState.TitleTerm))
 			{
-				GreedCutscenes.Title = SokLoc.Translate(greedAnimationState.TitleTerm);
+				GreedCutscenes.Title = MewtationsLoc.Translate(greedAnimationState.TitleTerm);
 			}
 			if (!string.IsNullOrEmpty(greedAnimationState.DescriptionTerm))
 			{
-				GreedCutscenes.Text = SokLoc.Translate(greedAnimationState.DescriptionTerm);
+				GreedCutscenes.Text = MewtationsLoc.Translate(greedAnimationState.DescriptionTerm);
 			}
-			yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+			yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		}
 		List<GreedAnimationState>.Enumerator enumerator = default(List<GreedAnimationState>.Enumerator);
-		GreedCutscenes.Title = SokLoc.Translate("greed_quest_demand_title");
+		GreedCutscenes.Title = MewtationsLoc.Translate("greed_quest_demand_title");
 		GreedCutscenes.Text = DemandManager.instance.GetRandomFailedDescription(demand);
 		GameCard gameCard2 = GreedCutscenes.FindOrCreateGameCard("royal", null);
 		if (gameCard2 != null)
@@ -435,21 +435,21 @@ public static class GreedCutscenes
 			GameCamera.instance.TargetCardOverride = gameCard2;
 		}
 		GameCamera.instance.CameraPositionDistanceOverride = null;
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 		AudioManager.me.PlaySound2D(DemandManager.instance.FailedDemandSound, 0.9f, 0.3f);
 		if (WorldManager.instance.CurrentRunVariables.PreviousDemandEvents.Count == 0)
 		{
 			GreedCutscenes.Title = "";
-			GreedCutscenes.Text = SokLoc.Translate("label_greed_demand_failed_first_time");
-			yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+			GreedCutscenes.Text = MewtationsLoc.Translate("label_greed_demand_failed_first_time");
+			yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		}
 		else
 		{
 			GreedCutscenes.Title = "";
 			if (WorldManager.instance.CurrentRunOptions.IsPeacefulMode)
 			{
-				GreedCutscenes.Text = SokLoc.Translate("label_greed_demand_failed_fight_peaceful");
-				yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+				GreedCutscenes.Text = MewtationsLoc.Translate("label_greed_demand_failed_fight_peaceful");
+				yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 				float speedup = 1f;
 				int i = 0;
 				int coinsToTake = 3 * DemandManager.instance.GetTimesDemandFailed();
@@ -505,10 +505,10 @@ public static class GreedCutscenes
 			}
 			else
 			{
-				GreedCutscenes.Text = SokLoc.Translate("label_greed_demand_failed_fight");
+				GreedCutscenes.Text = MewtationsLoc.Translate("label_greed_demand_failed_fight");
 				List<Combatable> list = DemandManager.instance.SpawnEnemies();
 				GameCamera.instance.TargetCardOverride = list.FirstOrDefault<Combatable>();
-				yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_uh_oh"));
+				yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_uh_oh"));
 			}
 		}
 		yield break;
@@ -553,20 +553,20 @@ public static class GreedCutscenes
 	{
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameCamera.instance.TargetPositionOverride = new Vector3?(royal.transform.position);
-		GreedCutscenes.Title = SokLoc.Translate("label_try_attack_royal_title");
+		GreedCutscenes.Title = MewtationsLoc.Translate("label_try_attack_royal_title");
 		if (tries < 4)
 		{
-			GreedCutscenes.Text = SokLoc.Translate("label_try_attack_royal_description");
+			GreedCutscenes.Text = MewtationsLoc.Translate("label_try_attack_royal_description");
 		}
 		if (tries >= 4 && tries < 8)
 		{
-			GreedCutscenes.Text = SokLoc.Translate("label_try_attack_royal_description_4");
+			GreedCutscenes.Text = MewtationsLoc.Translate("label_try_attack_royal_description_4");
 		}
 		if (tries == 8)
 		{
-			GreedCutscenes.Text = SokLoc.Translate("label_try_attack_royal_description_8");
+			GreedCutscenes.Text = MewtationsLoc.Translate("label_try_attack_royal_description_8");
 		}
-		yield return GreedCutscenes.WaitForContinueClicked(SokLoc.Translate("label_okay"));
+		yield return GreedCutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
 		GreedCutscenes.Stop(false);
 		yield break;
 	}

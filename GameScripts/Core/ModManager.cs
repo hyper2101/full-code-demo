@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +12,13 @@ public class ModManager : MonoBehaviour
 {
 	private void Awake()
 	{
+		if (!ModdingConfig.Enabled)
+		{
+			UnityEngine.Debug.LogWarning("[Modding] Disabled - Harmony stub active.");
+			UnityEngine.Object.Destroy(base.gameObject);
+			return;
+		}
+
 		if (!PlatformHelper.HasModdingSupport)
 		{
 			Object.Destroy(base.gameObject);
@@ -223,11 +230,11 @@ public class ModManager : MonoBehaviour
 					string locPath = Path.Combine(mod.Path, "localization.tsv");
 					if (File.Exists(locPath))
 					{
-						SokLoc.instance.LoadTermsFromFile(locPath, false);
-						SokLoc.instance.LanguageChanged += delegate
+						MewtationsLoc.instance.LoadTermsFromFile(locPath, false);
+						MewtationsLoc.instance.LanguageChanged += delegate
 						{
 							Debug.Log("Loading localization.tsv for " + mod.Manifest.Id);
-							SokLoc.instance.LoadTermsFromFile(locPath, true);
+							MewtationsLoc.instance.LoadTermsFromFile(locPath, true);
 						};
 					}
 				}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 [Serializable]
 public class CardRequirement_CardsExists : CardRequirement
@@ -8,7 +8,7 @@ public class CardRequirement_CardsExists : CardRequirement
 		CardData cardPrefab = WorldManager.instance.GetCardPrefab(this.CardId, true);
 		cardPrefab.UpdateCardText();
 		string text = string.Format("{0}", this.Amount * multiplier);
-		return SokLoc.Translate("label_requirement_take_card", new LocParam[]
+		return MewtationsLoc.Translate("label_requirement_take_card", new LocParam[]
 		{
 			LocParam.Create("amount", text),
 			LocParam.Create("card", cardPrefab.Name)
@@ -20,7 +20,7 @@ public class CardRequirement_CardsExists : CardRequirement
 		CardData cardPrefab = WorldManager.instance.GetCardPrefab(this.CardId, true);
 		cardPrefab.UpdateCardText();
 		string text = string.Format("{0}", this.Amount * multiplier);
-		return SokLoc.Translate("label_requirement_take_card_negative", new LocParam[]
+		return MewtationsLoc.Translate("label_requirement_take_card_negative", new LocParam[]
 		{
 			LocParam.Create("amount", text),
 			LocParam.Create("card", cardPrefab.Name)

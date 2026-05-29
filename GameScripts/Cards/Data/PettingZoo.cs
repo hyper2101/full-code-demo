@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public class PettingZoo : CardData
 {
@@ -29,7 +29,7 @@ public class PettingZoo : CardData
 	{
 		if (base.ChildrenMatchingPredicateCount((CardData x) => x is Animal) > 0)
 		{
-			this.MyGameCard.StartTimer(this.GenerationTime, new TimerAction(this.CompletePetting), SokLoc.Translate("card_petting_zoo_status_active"), "complete_petting", true, false, false);
+			this.MyGameCard.StartTimer(this.GenerationTime, new TimerAction(this.CompletePetting), MewtationsLoc.Translate("card_petting_zoo_status_active"), "complete_petting", true, false, false);
 		}
 		else
 		{
