@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -52,4 +52,6 @@ public class SavedCard
 	public string WorkerHolderUniqueId;
 
 	public int WorkerIndex;
+
+	public string PersistentDataJson;
 }

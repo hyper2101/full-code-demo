@@ -420,6 +420,12 @@ public class WorldManager : MonoBehaviour
 		saveRound.CitiesWellbeing = Mewtations.Core.LegacyCitiesHooks.Wellbeing;
 		saveRound.CitiesConflictMonth = Mewtations.Core.LegacyCitiesHooks.NextConflictMonth;
 		saveRound.CitiesDisaster = Mewtations.Core.LegacyCitiesHooks.ActiveEvent;
+		
+		if (GameScripts.Systems.Threat.ThreatManager.Instance != null)
+		{
+			saveRound.SavedThreats = GameScripts.Systems.Threat.ThreatManager.Instance.GetSaveData();
+		}
+
 		foreach (BattlefieldContext BattlefieldContext in this.GetAllConflicts())
 		{
 			List<SavedConflict> savedConflicts = saveRound.SavedConflicts;
@@ -3973,6 +3979,10 @@ public class WorldManager : MonoBehaviour
 				cardData.WorkerHolderUniqueId = savedCard.WorkerHolderUniqueId;
 				cardData.WorkerIndex = savedCard.WorkerIndex;
 				cardData.SetExtraCardData(savedCard.ExtraCardData);
+				if (!string.IsNullOrEmpty(savedCard.PersistentDataJson))
+				{
+					cardData.LoadPersistentDataJson(savedCard.PersistentDataJson);
+				}
 				if (savedCard.IsFoil)
 				{
 					cardData.SetFoil();
@@ -4109,6 +4119,12 @@ public class WorldManager : MonoBehaviour
 		{
 			BattlefieldContext.CreateFromSavedConflict(savedConflict);
 		}
+
+		if (GameScripts.Systems.Threat.ThreatManager.Instance != null)
+		{
+			GameScripts.Systems.Threat.ThreatManager.Instance.LoadSaveData(saveRound.SavedThreats);
+		}
+
 		foreach (SavedBooster savedBooster2 in saveRound.SavedBoosters)
 		{
 			Boosterpack boosterpack = this.CreateBoosterpack(savedBooster2.Position, savedBooster2.BoosterId);

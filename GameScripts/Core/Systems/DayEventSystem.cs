@@ -27,6 +27,11 @@ public class DayEventSystem
 
     public void TriggerDayEvent(int day)
     {
+        if (GameScripts.Systems.Threat.ThreatManager.Instance != null)
+        {
+            GameScripts.Systems.Threat.ThreatManager.Instance.OnDayPassed(day);
+        }
+
         if (day == 5)
         {
             Vector3 spawnPos = Vector3.zero;

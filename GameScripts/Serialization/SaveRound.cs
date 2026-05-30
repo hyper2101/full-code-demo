@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 [Serializable]
@@ -17,6 +17,8 @@ public class SaveRound
 	public List<string> GivenCards;
 
 	public int CurrentMonth;
+
+	public List<GameScripts.Systems.Threat.ThreatInstance> SavedThreats = new List<GameScripts.Systems.Threat.ThreatInstance>();
 
 	public int OldCurrentMonth;
 

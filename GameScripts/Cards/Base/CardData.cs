@@ -484,6 +484,11 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 
 	protected virtual bool CanHaveCard(CardData otherCard)
 	{
+		var debtComponent = GetComponent<GameScripts.Systems.Threat.UI.DebtCardComponent>();
+		if (debtComponent != null)
+		{
+			return debtComponent.CanAcceptCard(otherCard);
+		}
 		return false;
 	}
 
@@ -677,11 +682,17 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 			}
 		}
 		this._cachedConnectorString = text;
-		return text;
+			return text;
 	}
 
 	public virtual void UpdateCard()
 	{
+		var debtComponent = GetComponent<GameScripts.Systems.Threat.UI.DebtCardComponent>();
+		if (debtComponent != null)
+		{
+			debtComponent.UpdateDebtLogic();
+		}
+
 		if (this.MyGameCard.IsDemoCard || !this.MyGameCard.MyBoard.IsCurrent)
 		{
 			return;
@@ -1091,6 +1102,15 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 	public void SetExtraCardData(List<ExtraCardData> extraData)
 	{
 		CardData.SetExtraCardData(this, extraData);
+	}
+
+	public virtual string GetPersistentDataJson()
+	{
+		return null;
+	}
+
+	public virtual void LoadPersistentDataJson(string json)
+	{
 	}
 
 	public static void SetExtraCardData(object o, List<ExtraCardData> extraData)

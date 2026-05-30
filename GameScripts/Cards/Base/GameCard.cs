@@ -2343,6 +2343,7 @@ public class GameCard : Draggable, IGameCardOrCardData
 		savedCard.SkipCitiesChecks = this.SkipCitiesChecks;
 		savedCard.SubprintIndex = this.TimerSubprintIndex;
 		savedCard.BoardId = this.MyBoard.Id;
+		savedCard.PersistentDataJson = this.CardData.GetPersistentDataJson();
 		savedCard.StatusEffects = this.CardData.StatusEffects.Select<StatusEffect, SavedStatusEffect>((StatusEffect x) => x.ToSavedStatusEffect()).ToList<SavedStatusEffect>();
 		savedCard.CardConnectors = (from x in this.CardConnectorChildren
 			select x.ToSavedEnergyConnector() into x

@@ -32,6 +32,13 @@ namespace Mewtations.Expedition
         {
             if (IsExpeditionActive) return;
 
+            // Kiểm tra Threat Lock
+            if (GameScripts.Systems.Threat.ThreatManager.Instance != null && GameScripts.Systems.Threat.ThreatManager.Instance.HasActivePenalty(GameScripts.Systems.Threat.ThreatPenaltyType.LockExpedition))
+            {
+                WorldManager.instance.CreateFloatingText(portalCard, false, 0, "Khng th? k?i hnh! Lnh d?a dang b? de d?a.", "", false, 0, 2f, true);
+                return;
+            }
+
             // Phase 2: Check for Exhausted or Recovering cats
             foreach (var cat in cats)
             {
@@ -99,6 +106,33 @@ namespace Mewtations.Expedition
             }
 
             Debug.Log($"[Expedition] Bắt đầu viễn chinh với {cats.Count} mèo. Balo dung tích: {capacity}.");
+        }
+
+        public void AdvanceNode(ExpeditionNode nextNode)
+        {
+            if (!IsExpeditionActive) return;
+
+            ActiveNode = nextNode;
+            // Xử lý logic Node
+            
+            // --- Phase 7: Event Integration (Expedition Ambush) ---
+            // Tạm thời tắt ở Phase này theo yêu cầu để tập trung test Dog Tax
+            /*
+            if (nextNode.Type == NodeType.Resource && UnityEngine.Random.value < 0.1f) // 10% bị phục kích
+            {
+                Debug.Log("Expedition Ambush Event triggered!");
+                if (GameScripts.Systems.Threat.ThreatManager.Instance != null && GameScripts.Systems.Threat.ThreatManager.Instance.CatGodWrathTemplate != null)
+                {
+                    // Giả lập phục kích với data mẫu
+                    GameScripts.Systems.Threat.ThreatManager.Instance.CreateThreat(
+                        GameScripts.Systems.Threat.ThreatManager.Instance.CatGodWrathTemplate, 
+                        GameScripts.Systems.Threat.ThreatSourceType.Expedition, 
+                        RunState.CurrentDifficultyLevel, 
+                        0 // Phục kích ngay lập tức, không có warning
+                    );
+                }
+            }
+            */
         }
 
         public void EnterNode(ExpeditionNode node)

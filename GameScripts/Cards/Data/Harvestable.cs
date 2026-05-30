@@ -143,11 +143,8 @@ public class Harvestable : CardData
         {
             if (worker != null && LaborUtility.IsLaborCapable(worker))
             {
-                float staminaCost = 5f;
-                if (this.Id == "berrybush" || this.Id == "apple_tree") staminaCost = 2f;
-                else if (this.Id == "tree" || this.Id == "wood") staminaCost = 5f;
-                else if (this.Id == "rock" || this.Id == "iron_rock") staminaCost = 8f;
-                LaborUtility.ConsumeLaborStamina(worker, staminaCost);
+                // Sử dụng StaminaCost từ Inspector thay vì hardcode
+                LaborUtility.ConsumeLaborStamina(worker, this.StaminaCost);
             }
         }
 		ICardId cardToGive = this.GetCardToGive();
@@ -192,6 +189,9 @@ public class Harvestable : CardData
 	[Header("Harvestable")]
 	[Term]
 	public string StatusTerm = "";
+
+	[Header("Stamina System")]
+	public float StaminaCost = 5f;
 
 	[ExtraData("amount")]
 	public int Amount = 3;

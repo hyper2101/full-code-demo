@@ -43,6 +43,10 @@ namespace Mewtations.Combat.Core
         public int AntiStallRound = 10;
         public float AntiStallHealPenalty = 0.50f;
 
+        [Header("Stamina Costs")]
+        public int BaseStaminaCostPerRound = 5;
+        public int StaminaCostIncreasePerRound = 1;
+
         private Coroutine _combatCoroutine;
         private Action<CombatResult> _onCombatEnd;
 
@@ -288,7 +292,7 @@ namespace Mewtations.Combat.Core
 
                     CheckCombatEndConditions();
                 // --- END OF ROUND: STAMINA DRAIN & EXHAUSTION ESCALATION ---
-                int staminaCost = 5 + round * 1;
+                int staminaCost = BaseStaminaCostPerRound + round * StaminaCostIncreasePerRound;
                 foreach (var unit in Formation.PlayerUnits.FindAll(u => u.IsAlive))
                 {
                     if (unit.IsExhausted)
