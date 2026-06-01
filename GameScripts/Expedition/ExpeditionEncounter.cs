@@ -237,7 +237,7 @@ namespace Mewtations.Expedition
                 }
 
                 // Unfreeze the board so player can physically interact and collect
-                Time.timeScale = 1f;
+                // Time.timeScale = 1f; (Removed for Expedition V1 Compliance)
 
                 // Spawn resources physically on the board!
                 for (int i = 0; i < lootCount; i++)
@@ -509,7 +509,7 @@ namespace Mewtations.Expedition
             if (GUI.Button(buttonRect, "⚔️ HOÀN THÀNH THU THẬP", buttonStyle))
             {
                 // Freeze the board again
-                Time.timeScale = 0f;
+                // Time.timeScale = 0f; (Removed for Expedition V1 Compliance)
                 
                 OnFinished?.Invoke();
                 

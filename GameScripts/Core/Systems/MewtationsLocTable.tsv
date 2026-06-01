@@ -147,4 +147,6 @@ label_death_intro_1	"Dogma reminds all citizens: instability is the root of suff
 label_death_intro_2	"Spirit Quota violations are punishable by confiscation."	"Mọi hành vi gian lận hay vi phạm Chỉ Tiêu Linh Khí sẽ bị xử phạt nghiêm khắc bằng hình thức tịch thu."
 label_death_intro_3	"Unregistered Mewtations must report to the nearest Overseer."	"Mọi trường hợp dị biến chưa đăng ký kiểm soát linh mạch phải tự giác trình diện Giám Sát Viên ngay lập tức."
 label_death_intro_4	"Most lower-class citizens never achieve their first breakthrough."	"Hầu hết cư dân tầng lớp thấp không bao giờ đạt được cảnh giới đột phá đầu tiên trong cuộc đời họ."
-label_death_intro_5	"Freedom is a high-priced illusion. Under the Dogma, you have order and safety."	"Tự do là một ảo tưởng cực kỳ đắt giá. Dưới sự bảo hộ của Giáo Điều, các ngươi mới có trật tự và sự sinh tồn."
+label_death_intro_5	"Freedom is a high-priced illusion. Under the Dogma, you have order and safety."	"Tự do là một ảo tưởng cực kỳ đắt giá. Dưới sự bảo hộ của Giáo Điều, các ngươi mới có trật tự và sự sinh tồn."exp_reward_title	REWARDS	PHẦN THƯỞNG	REWARDS	REWARDS	REWARDS
+exp_reward_close	CLOSE (Continue Journey)	ĐÓNG (Tiếp tục chuyến đi)	CLOSE	CLOSE	CLOSE
+exp_trash_slot	[ TRASH BIN - DRAG AND DROP TO DELETE PERMANENTLY ]	[ THÙNG RÁC - KÉO THẢ VÀO ĐÂY ĐỂ XÓA VĨNH VIỄN ]	[ TRASH ]	[ TRASH ]	[ TRASH ]

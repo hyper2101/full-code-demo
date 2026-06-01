@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,24 +7,27 @@ namespace Mewtations.Expedition
 {
     public enum RouteTheme
     {
-        Standard,   // Cổ Đạo (Standard route)
-        TaDao,      // Tà Đạo (Moral temptations, sacrifice teammate, +10 Corruption)
-        ThienLoi,   // Thiên Lôi (Kiếp lôi hazard in combat, but +Breakthrough potential)
+        Standard,   // Cá»• Äáº¡o (Standard route)
+        TaDao,      // TÃ  Äáº¡o (Moral temptations, sacrifice teammate, +10 Corruption)
+        ThienLoi,   // ThiÃªn LÃ´i (Kiáº¿p lÃ´i hazard in combat, but +Breakthrough potential)
         ThamLam,    // Tham Lam (Gold doubled, +10 Greed)
-        ThuTrieu    // Thú Triều (Beast swarm, harder combat, rich loot)
+        ThuTrieu,    // ThA Tri?u (Beast swarm, harder combat, rich loot)
+        KhuRungSieuNhien, // Special Map
+        LangVangLai,      // Special Map
+        BaiGiacGiaTu      // Special Map
     }
 
     public enum MemoirType
     {
-        Birth,            // Khởi đầu xuất thân
-        Breakthrough,     // Đột phá tu vi
-        Equip,            // Trang bị thần binh
-        Unequip,          // Tháo trang bị
-        BossKill,         // Trảm sát thủ lĩnh
-        Mutation,         // Tích tụ dị biến linh khí
-        Resurrection,     // Trọng sinh dòng dõi
-        Death,            // Tử trận oanh liệt
-        AppeasementOffer  // Hiến tế xoa dịu
+        Birth,            // Khá»Ÿi Ä‘áº§u xuáº¥t thÃ¢n
+        Breakthrough,     // Äá»™t phÃ¡ tu vi
+        Equip,            // Trang bá»‹ tháº§n binh
+        Unequip,          // ThÃ¡o trang bá»‹
+        BossKill,         // Tráº£m sÃ¡t thá»§ lÄ©nh
+        Mutation,         // TÃ­ch tá»¥ dá»‹ biáº¿n linh khÃ­
+        Resurrection,     // Trá»ng sinh dÃ²ng dÃµi
+        Death,            // Tá»­ tráº­n oanh liá»‡t
+        AppeasementOffer  // Hiáº¿n táº¿ xoa dá»‹u
     }
 
     [Serializable]
@@ -74,25 +77,25 @@ namespace Mewtations.Expedition
             switch (Type)
             {
                 case MemoirType.Birth:
-                    return $"[Ngày {Timestamp}] Khởi đầu: {ParamA}";
+                    return $"[NgÃ y {Timestamp}] Khá»Ÿi Ä‘áº§u: {ParamA}";
                 case MemoirType.Breakthrough:
-                    return $"[Ngày {Timestamp}] Đột phá: Đạt cảnh giới {ParamA}";
+                    return $"[NgÃ y {Timestamp}] Äá»™t phÃ¡: Äáº¡t cáº£nh giá»›i {ParamA}";
                 case MemoirType.Equip:
-                    return $"[Ngày {Timestamp}] Gia trì: Dung hợp linh bảo {ParamA}";
+                    return $"[NgÃ y {Timestamp}] Gia trÃ¬: Dung há»£p linh báº£o {ParamA}";
                 case MemoirType.Unequip:
-                    return $"[Ngày {Timestamp}] Tháo gỡ: Rời bỏ linh bảo {ParamA}";
+                    return $"[NgÃ y {Timestamp}] ThÃ¡o gá»¡: Rá»i bá» linh báº£o {ParamA}";
                 case MemoirType.BossKill:
-                    return $"[Ngày {Timestamp}] Trảm sát: Tiêu diệt thủ lĩnh {ParamA}";
+                    return $"[NgÃ y {Timestamp}] Tráº£m sÃ¡t: TiÃªu diá»‡t thá»§ lÄ©nh {ParamA}";
                 case MemoirType.Mutation:
-                    return $"[Ngày {Timestamp}] Dị biến: Linh khí bạo tàn gây đột biến {ParamA} ({ParamB})";
+                    return $"[NgÃ y {Timestamp}] Dá»‹ biáº¿n: Linh khÃ­ báº¡o tÃ n gÃ¢y Ä‘á»™t biáº¿n {ParamA} ({ParamB})";
                 case MemoirType.Resurrection:
-                    return $"[Ngày {Timestamp}] Kiếp mới: Phục sinh dòng dõi đời thứ {ParamA}";
+                    return $"[NgÃ y {Timestamp}] Kiáº¿p má»›i: Phá»¥c sinh dÃ²ng dÃµi Ä‘á»i thá»© {ParamA}";
                 case MemoirType.Death:
-                    return $"[Ngày {Timestamp}] Tử trận: {ParamA}";
+                    return $"[NgÃ y {Timestamp}] Tá»­ tráº­n: {ParamA}";
                 case MemoirType.AppeasementOffer:
-                    return $"[Ngày {Timestamp}] Tế lễ: Dâng hiến lễ vật xoa dịu thiên địa ({ParamA})";
+                    return $"[NgÃ y {Timestamp}] Táº¿ lá»…: DÃ¢ng hiáº¿n lá»… váº­t xoa dá»‹u thiÃªn Ä‘á»‹a ({ParamA})";
                 default:
-                    return $"[Ngày {Timestamp}] Điển tích: {ParamA}";
+                    return $"[NgÃ y {Timestamp}] Äiá»ƒn tÃ­ch: {ParamA}";
             }
         }
     }
@@ -109,7 +112,7 @@ namespace Mewtations.Expedition
             state.BaseAppeasementGreed = 0;
             state.BaseAppeasementCorruption = 0;
 
-            Debug.Log($"[RiskSystem] Khởi chạy viễn chinh. Greed ban đầu: {state.GreedLevel}%, Corruption ban đầu: {state.CorruptionLevel}%.");
+            Debug.Log($"[RiskSystem] Khá»Ÿi cháº¡y viá»…n chinh. Greed ban Ä‘áº§u: {state.GreedLevel}%, Corruption ban Ä‘áº§u: {state.CorruptionLevel}%.");
         }
 
         public static int CalculateDailyCorpseCorruptionMultiplier(int corpseCount)
@@ -148,30 +151,36 @@ namespace Mewtations.Expedition
             return Mathf.Clamp(rate, 0.10f, 0.90f);
         }
 
-        public static void ApplyAbandonPenalty(Backpack backpack, float retentionRate)
+                public static void ApplyAbandonPenalty(Backpack backpack, float retentionRate, int insuredSlots = 0)
         {
             int originalCount = backpack.ContainedCardIds.Count;
             if (originalCount == 0) return;
 
-            int keepCount = Mathf.Clamp(Mathf.RoundToInt(originalCount * retentionRate), 1, originalCount);
-            
-            // Randomly shuffle item indices to drop items
             List<string> items = new List<string>(backpack.ContainedCardIds);
-            
-            // Shuffle
-            System.Random rnd = new System.Random();
-            items = items.OrderBy(x => rnd.Next()).ToList();
+            int vulnerableCount = Mathf.Max(0, originalCount - insuredSlots);
+            int keepVulnerableCount = Mathf.Clamp(Mathf.RoundToInt(vulnerableCount * retentionRate), 0, vulnerableCount);
 
             backpack.Clear();
-            for (int i = 0; i < keepCount; i++)
-            {
-                backpack.AddItem(items[i]);
+            int keptCount = 0;
+            List<string> vulnerableItems = new List<string>();
+
+            for (int i = 0; i < items.Count; i++) {
+                if (i < insuredSlots) {
+                    backpack.AddItem(items[i]);
+                    keptCount++;
+                } else {
+                    vulnerableItems.Add(items[i]);
+                }
             }
 
-            Debug.Log($"[Extraction] Áp dụng trừng phạt: Chỉ giữ lại {keepCount}/{originalCount} vật phẩm (Tỉ lệ giữ: {retentionRate:P0}).");
-        }
+            System.Random rnd = new System.Random();
+            vulnerableItems = vulnerableItems.OrderBy(x => rnd.Next()).ToList();
 
-        public static void ApplyManualRetreatPenalty(Backpack backpack)
+            for (int i = 0; i < keepVulnerableCount && i < vulnerableItems.Count; i++) {
+                backpack.AddItem(vulnerableItems[i]);
+                keptCount++;
+            }
+                public static void ApplyManualRetreatPenalty(Backpack backpack, int insuredSlots = 0)
         {
             int originalCount = backpack.ContainedCardIds.Count;
             if (originalCount == 0) return;
@@ -180,19 +189,14 @@ namespace Mewtations.Expedition
             backpack.Clear();
 
             int keptCount = 0;
-            foreach (var item in items)
+            for (int i = 0; i < items.Count; i++)
             {
-                if (UnityEngine.Random.value < 0.50f)
+                if (i < insuredSlots || UnityEngine.Random.value < 0.50f)
                 {
-                    backpack.AddItem(item);
+                    backpack.AddItem(items[i]);
                     keptCount++;
                 }
             }
-
-            Debug.Log($"[Extraction] Thuế Nhát Gan: Giữ lại {keptCount}/{originalCount} vật phẩm (Mất ngẫu nhiên 50% bất kể thứ gì).");
-        }
-    }
-
     public static class MutationPersistenceSystem
     {
         public static void ProcessRunVictoryTraits(List<CatCardData> cats)
@@ -201,11 +205,11 @@ namespace Mewtations.Expedition
             {
                 if (cat == null) continue;
 
-                // Song Trọng Dị Biến: limit of max 2 permanent traits
+                // Song Trá»ng Dá»‹ Biáº¿n: limit of max 2 permanent traits
                 int permCount = cat.PermanentTraits.Count;
                 if (permCount >= 2)
                 {
-                    Debug.Log($"[Mutation] {cat.Name} đã đạt cực hạn Song Trọng Dị Biến (2). Không thể tích lũy thêm.");
+                    Debug.Log($"[Mutation] {cat.Name} Ä‘Ã£ Ä‘áº¡t cá»±c háº¡n Song Trá»ng Dá»‹ Biáº¿n (2). KhÃ´ng thá»ƒ tÃ­ch lÅ©y thÃªm.");
                     continue;
                 }
 
@@ -218,9 +222,9 @@ namespace Mewtations.Expedition
                     if (UnityEngine.Random.value <= 0.30f)
                     {
                         cat.AddTrait(mut);
-                        cat.AddMemoir(MemoirType.Mutation, UnstableMutation.GetDisplayName(mut), "Tích hợp dị biến vĩnh hằng (Song Trọng Dị Biến)");
+                        cat.AddMemoir(MemoirType.Mutation, UnstableMutation.GetDisplayName(mut), "TÃ­ch há»£p dá»‹ biáº¿n vÄ©nh háº±ng (Song Trá»ng Dá»‹ Biáº¿n)");
                         permCount++;
-                        Debug.Log($"[Mutation] Đột biến {mut} của {cat.Name} đã dung hợp vĩnh viễn!");
+                        Debug.Log($"[Mutation] Äá»™t biáº¿n {mut} cá»§a {cat.Name} Ä‘Ã£ dung há»£p vÄ©nh viá»…n!");
                     }
                 }
             }
@@ -242,3 +246,5 @@ namespace Mewtations.Expedition
         }
     }
 }
+
+

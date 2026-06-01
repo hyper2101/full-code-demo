@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,6 +13,15 @@ namespace Mewtations.Expedition
 
             List<ExpeditionNode> map = new List<ExpeditionNode>();
             int nextId = 0;
+
+            int pityCounter = 0;
+            if (Mewtations.Legacy.Stacklands.SaveManager.instance != null && Mewtations.Legacy.Stacklands.SaveManager.instance.CurrentSave != null)
+            {
+                pityCounter = Mewtations.Legacy.Stacklands.SaveManager.instance.CurrentSave.ExpeditionSpecialMapPityCounter;
+            }
+            bool injectSpecialMap = pityCounter >= 5;
+            int specialMapLayer = UnityEngine.Random.Range(1, maxLayers - 1);
+            int specialMapPos = -1;
 
             // List of nodes at each layer
             List<List<ExpeditionNode>> layers = new List<List<ExpeditionNode>>();
@@ -50,9 +59,18 @@ namespace Mewtations.Expedition
                 {
                     // Intermediate Layers: 2-3 nodes of mixed types
                     int nodeCount = UnityEngine.Random.Range(2, maxNodesPerLayer + 1);
+                    if (injectSpecialMap && layerIndex == specialMapLayer)
+                    {
+                        specialMapPos = UnityEngine.Random.Range(0, nodeCount);
+                    }
+
                     for (int pos = 0; pos < nodeCount; pos++)
                     {
                         NodeType type = RollNodeType(layerIndex, maxLayers);
+                        if (injectSpecialMap && layerIndex == specialMapLayer && pos == specialMapPos)
+                        {
+                            type = NodeType.SpecialMap;
+                        }
                         var node = new ExpeditionNode(nextId++, layerIndex, pos, type);
                         node.Biome = GetBiomeForLayer(layerIndex);
                         node.Theme = RollRouteTheme(type);
@@ -153,9 +171,28 @@ namespace Mewtations.Expedition
             return bag.Choose();
         }
 
-        private static RouteTheme RollRouteTheme(NodeType type)
+                private static RouteTheme RollRouteTheme(NodeType type)
         {
             if (type == NodeType.Boss || type == NodeType.Lore) return RouteTheme.Standard;
+
+            if (type == NodeType.SpecialMap)
+            {
+                var pool = new List<RouteTheme> { RouteTheme.KhuRungSieuNhien, RouteTheme.LangVangLai, RouteTheme.BaiGiacGiaTu };
+                var bagSP = new WeightedRandomBag<RouteTheme>();
+                List<string> completedMaps = new List<string>();
+                if (Mewtations.Legacy.Stacklands.SaveManager.instance != null && Mewtations.Legacy.Stacklands.SaveManager.instance.CurrentSave != null)
+                {
+                    completedMaps = Mewtations.Legacy.Stacklands.SaveManager.instance.CurrentSave.CompletedSpecialMaps;
+                    if (completedMaps == null) completedMaps = new List<string>();
+                }
+                
+                foreach (var m in pool)
+                {
+                    float weight = completedMaps.Contains(m.ToString()) ? 5f : 100f;
+                    bagSP.AddEntry(m, weight);
+                }
+                return bagSP.Choose();
+            }
 
             var bag = new WeightedRandomBag<RouteTheme>();
             if (type == NodeType.Combat)
@@ -191,3 +228,4 @@ namespace Mewtations.Expedition
         }
     }
 }
+

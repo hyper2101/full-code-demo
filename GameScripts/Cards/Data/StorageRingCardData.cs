@@ -7,6 +7,8 @@ namespace Mewtations.Legacy.Stacklands
 {
     public class StorageRingCardData : CardData
     {
+        public int StorageCapacity = 10;
+        public int InsuredSlots = 0;
         public override bool HasInventory => true;
 
         protected override bool CanHaveCard(CardData otherCard)
@@ -26,10 +28,10 @@ namespace Mewtations.Legacy.Stacklands
             base.UpdateCard();
             if (this.MyGameCard == null) return;
 
-            // Ensure the Ordering container capacity is exactly 30
-            if (this.MyGameCard.InventoryContainer == null || this.MyGameCard.InventoryContainer.GetCapacity() != 30)
+            // Ensure the Ordering container capacity is exactly StorageCapacity
+            if (this.MyGameCard.InventoryContainer == null || this.MyGameCard.InventoryContainer.GetCapacity() != StorageCapacity)
             {
-                this.MyGameCard.SetInventoryContainer(new HiddenInventoryContainer(this.MyGameCard, 30));
+                this.MyGameCard.SetInventoryContainer(new HiddenInventoryContainer(this.MyGameCard, StorageCapacity));
             }
 
             // Handle cards dropped/stacked on top of the Storage Ring
@@ -62,9 +64,9 @@ namespace Mewtations.Legacy.Stacklands
             int itemsCount = this.MyGameCard.InventoryContainer != null ? this.MyGameCard.InventoryContainer.GetChildren().Count : 0;
             bool hasRelic = WorldManager.instance != null && 
                 ShrineCardData.IsRelicActiveInShrine("item_ancient_relic_insurance");
-            string relicStatus = hasRelic ? "\n<color=#00ffcc>🛡️ Cổ Vật Bảo Hiểm kích hoạt: 5 ô đầu tiên được bảo vệ vĩnh viễn!</color>" : "";
+            string relicStatus = hasRelic ? "\n<color=#00ffcc>❖ Cổ Vật Bảo Hiểm kích hoạt: 5 ô đầu tiên được bảo vệ vĩnh viễn!</color>" : "";
 
-            this.descriptionOverride = $"<b>Nhẫn Trữ Vật (Storage Ring)</b>\nSức chứa: {itemsCount} / 30 ô.\nMang vào Combat Prep để trang bị/sử dụng đạo cụ.{relicStatus}\n<i>Phạt mất 50% vật phẩm ngẫu nhiên khi rút lui/thất bại viễn chinh.</i>";
+            this.descriptionOverride = $"<b>Nhẫn Trữ Vật (Storage Ring)</b>\nSức chứa: {itemsCount} / {StorageCapacity} ô.\nMang vào Combat Prep để trang bị/sử dụng đạo cụ.{relicStatus}\n<i>Phạt mất 50% vật phẩm ngẫu nhiên khi rút lui/thất bại viễn chinh.</i>";
         }
     }
 }

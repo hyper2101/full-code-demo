@@ -19,7 +19,8 @@ namespace Mewtations.Expedition
         CampHealer, // Camp service node for healing and debuff cleanse
         CampMerchant, // Camp service node for trading
         CampBlacksmith, // Camp service node for forging
-        Reward      // Generates physical reward cards
+        Reward,     // Generates physical reward cards
+        SpecialMap  // Special Map for pity system
     }
 
     public enum ExpeditionBiome
@@ -56,6 +57,7 @@ namespace Mewtations.Expedition
         public bool IsExhausted;
         public bool IsParalyzed;
         public int ExhaustionLevel;
+        public string ParentCardUniqueId;
         // Optionally store more state like specific status effects if needed for Expedition
     }
 

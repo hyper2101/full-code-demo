@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -40,6 +40,8 @@ namespace Mewtations.Combat.UI
         // Tooltip hover caching
         private object _hoveredObject = null;
         private GameCard _selectedRingItem = null;
+        private GameCard _draggedRingItem = null;
+        private Vector2 _dragMousePosition;
         
         public static GameCard BoardHoveredCat { get; set; }
         public GameCard DraggedRingItem { get; set; }
@@ -1044,7 +1046,16 @@ namespace Mewtations.Combat.UI
             _selectedRingItem = null;
         }
 
-        private void DrawOrderingInventoryUI(float screenWidth, float screenHeight)
+        
+        public void DrawInventoryExternal()
+        {
+            InitializeStyles();
+            float screenWidth = Screen.width;
+            float screenHeight = Screen.height;
+            DrawOrderingInventoryUI(screenWidth, screenHeight);
+        }
+
+        public void DrawOrderingInventoryUI(float screenWidth, float screenHeight)
         {
             GUILayout.BeginVertical(_sidebarCardStyle, GUILayout.ExpandWidth(true));
             
@@ -1153,5 +1164,12 @@ namespace Mewtations.Combat.UI
         {
             return GUILayoutUtility.GetLastRect();
         }
-    }
-}
+            }
+        }
+    } } if (_draggedRingItem != null && Event.current.type == EventType.Repaint)
+            {
+                Rect ghostRect = new Rect(_dragMousePosition.x - 30, _dragMousePosition.y - 30, 60, 60);
+                GUI.Box(ghostRect, _draggedRingItem.CardData.Name, _unitCardStyle);
+            }
+        }
+

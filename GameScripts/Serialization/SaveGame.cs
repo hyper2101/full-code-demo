@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -80,6 +80,7 @@ public class SaveGame
 	public bool GotIslandIntroPack;
 
 	public int ExpeditionSpecialMapPityCounter = 0;
+	public List<string> CompletedSpecialMaps = new List<string>();
 	public int ExpeditionBossRespawnTimer = 0;
 
 	public long LastSavedUtcTicks;
@@ -93,3 +94,4 @@ public class SaveGame
 	public string SaveFormatIdentity = "Mewtations_Dogma";
 	public int SaveDataVersion = 1;
 }
+
