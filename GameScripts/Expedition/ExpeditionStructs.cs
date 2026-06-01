@@ -15,7 +15,11 @@ namespace Mewtations.Expedition
         Altar,      // Cat God's Altar node for sacrifice & purification
         Elite,      // Harder elite fight with special rewards
         Extraction, // Portal node allowing safe retreat and taking all loot home
-        SafeRetreat // Rest node allowing escape with no penalty
+        SafeRetreat,// Rest node allowing escape with no penalty
+        CampHealer, // Camp service node for healing and debuff cleanse
+        CampMerchant, // Camp service node for trading
+        CampBlacksmith, // Camp service node for forging
+        Reward      // Generates physical reward cards
     }
 
     public enum ExpeditionBiome
@@ -41,6 +45,18 @@ namespace Mewtations.Expedition
         InEncounter,
         LootReward,
         EndRun
+    }
+
+    [Serializable]
+    public struct ExpeditionCatState
+    {
+        public string UniqueId;
+        public int HP;
+        public int Stamina;
+        public bool IsExhausted;
+        public bool IsParalyzed;
+        public int ExhaustionLevel;
+        // Optionally store more state like specific status effects if needed for Expedition
     }
 
     [Serializable]
@@ -187,20 +203,60 @@ namespace Mewtations.Expedition
         public bool AddItem(string cardId)
         {
             if (IsFull) return false;
-            ContainedCardIds.Add(cardId);
-            return true;
+            
+            var newCard = WorldManager.instance.CreateCard(Vector3.zero, cardId, false, false, true);
+            if (newCard != null)
+            {
+                newCard.gameObject.SetActive(false);
+                ContainedCardIds.Add(newCard.UniqueId);
+                return true;
+            }
+            return false;
+        }
+
+        public int FindItemIndex(string cardId)
+        {
+            for (int i = 0; i < ContainedCardIds.Count; i++)
+            {
+                var card = WorldManager.instance.GetCardWithUniqueId(ContainedCardIds[i]);
+                if (card != null && card.CardData != null && (card.CardData.Id == cardId || card.CardData.Id.Contains(cardId)))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        public string GetItemIdAt(int index)
+        {
+            if (index >= 0 && index < ContainedCardIds.Count)
+            {
+                var card = WorldManager.instance.GetCardWithUniqueId(ContainedCardIds[index]);
+                return card != null ? card.CardData.Id : "";
+            }
+            return "";
         }
 
         public void RemoveItemAt(int index)
         {
             if (index >= 0 && index < ContainedCardIds.Count)
             {
+                var card = WorldManager.instance.GetCardWithUniqueId(ContainedCardIds[index]);
+                if (card != null)
+                {
+                    card.DestroyCard(true, true);
+                }
                 ContainedCardIds.RemoveAt(index);
             }
         }
 
         public void Clear()
         {
+            foreach(var id in ContainedCardIds)
+            {
+                var card = WorldManager.instance.GetCardWithUniqueId(id);
+                if (card != null) card.DestroyCard(true, true);
+            }
             ContainedCardIds.Clear();
         }
     }

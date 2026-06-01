@@ -8,10 +8,40 @@ using Mewtations.Systems.Labor;
 public enum CatRole { DPS, Tank, ShieldSupport, RageSupport, Debuff, Disruption, Attrition }
 public enum CatElement { None, Fire, Poison, Ice, Lightning }
 public enum CatDomain { Settlement, Expedition, Combat, Dead }
+public enum StaminaVisualState { High, Medium, Low, Exhausted, Paralyzed }
 
 public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
 {
     public Dictionary<Mewtations.Expedition.CatSlotType, Mewtations.Expedition.EquipmentSlotData> EquipmentSlots = new Dictionary<Mewtations.Expedition.CatSlotType, Mewtations.Expedition.EquipmentSlotData>();
+
+    public event System.Action<StaminaVisualState> OnConditionStateChanged;
+    private StaminaVisualState _currentVisualState = StaminaVisualState.High;
+
+    public void RefreshConditionState()
+    {
+        StaminaVisualState newState;
+        if (IsParalyzed) newState = StaminaVisualState.Paralyzed;
+        else if (IsExhausted || Stamina == 0) newState = StaminaVisualState.Exhausted;
+        else
+        {
+            float staminaPercent = (float)Stamina / MaxStamina;
+            if (staminaPercent >= 0.8f) newState = StaminaVisualState.High;
+            else if (staminaPercent >= 0.5f) newState = StaminaVisualState.Medium;
+            else newState = StaminaVisualState.Low;
+        }
+
+        if (newState == StaminaVisualState.Exhausted) AddStatusEffect(new StatusEffect_Exhausted());
+        else RemoveStatusEffect<StatusEffect_Exhausted>();
+
+        if (newState == StaminaVisualState.Paralyzed) AddStatusEffect(new StatusEffect_Paralyzed());
+        else RemoveStatusEffect<StatusEffect_Paralyzed>();
+
+        if (newState != _currentVisualState)
+        {
+            _currentVisualState = newState;
+            OnConditionStateChanged?.Invoke(_currentVisualState);
+        }
+    }
 
     public void InitializeEquipmentSlots()
     {
@@ -552,6 +582,7 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
             }
         }
         UpdateCardText();
+        RefreshConditionState();
     }
 
     [Header("Traits and Mutations")]
@@ -857,16 +888,19 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
                 IsExhausted = false;
                 ExhaustionLevel = 0;
                 this.Stamina = Mathf.Min(this.Stamina + staminaRestore + 30, this.MaxStamina); // Base rest + food
+                RefreshConditionState();
             }
             else 
             {
                 this.Stamina = Mathf.Min(this.Stamina + staminaRestore, this.MaxStamina);
+                RefreshConditionState();
             }
 
             if (cleanExhaust || this.Stamina >= 50)
             {
                 IsExhausted = false;
                 ExhaustionLevel = 0;
+                RefreshConditionState();
             }
             else
             {
@@ -1549,6 +1583,7 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
         {
             this.HealthPoints = 1;
             this.IsParalyzed = true;
+            RefreshConditionState();
             WorldManager.instance.CreateFloatingText(this.MyGameCard, false, 0, "Trọng thương! (Tê liệt)", "", false, 0, 2f, true);
         }
     }

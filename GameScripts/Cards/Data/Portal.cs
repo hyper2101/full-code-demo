@@ -41,7 +41,7 @@ public class Portal : CardData
 
 	private bool CardIsAllowedInPortal(CardData otherCard)
 	{
-		return otherCard.MyCardType == CardType.Humans || otherCard is CatCardData || otherCard.BackpackCapacity > 0 || otherCard.Id.StartsWith("item_ancient_relic_");
+		return otherCard.MyCardType == CardType.Humans || otherCard is CatCardData || otherCard is OrderingCampCardData || otherCard.BackpackCapacity > 0 || otherCard.Id.StartsWith("item_ancient_relic_");
 	}
 
 	public override void UpdateCard()
@@ -99,8 +99,8 @@ public class Portal : CardData
 	{
 		if (!TransitionScreen.InTransition && !WorldManager.instance.InAnimation)
 		{
-			bool hasCats = this.MyGameCard.GetAllCardsInStack().Any(c => c.CardData is CatCardData);
-			if (hasCats)
+			bool hasExpeditionTriggers = this.MyGameCard.GetAllCardsInStack().Any(c => c.CardData is CatCardData || c.CardData is OrderingCampCardData);
+			if (hasExpeditionTriggers)
 			{
 				this.GoAway();
 			}
@@ -135,10 +135,13 @@ public class Portal : CardData
 	private void GoAway()
 	{
 		List<CardData> catsInStack = this.MyGameCard.GetAllCardsInStack().Select(c => c.CardData).Where(d => d is CatCardData).ToList();
-		if (catsInStack.Count > 0)
+		bool hasOrderingCard = this.MyGameCard.GetAllCardsInStack().Any(c => c.CardData is OrderingCampCardData);
+
+		if (catsInStack.Count > 0 || hasOrderingCard)
 		{
 			CardData backpackCard = this.MyGameCard.GetAllCardsInStack().Select(c => c.CardData).FirstOrDefault(d => d.BackpackCapacity > 0);
 			CardData relicCard = this.MyGameCard.GetAllCardsInStack().Select(c => c.CardData).FirstOrDefault(d => d.Id.StartsWith("item_ancient_relic_"));
+			CardData orderingCard = this.MyGameCard.GetAllCardsInStack().Select(c => c.CardData).FirstOrDefault(d => d is OrderingCampCardData);
 			
 			foreach (var cat in catsInStack)
 			{
@@ -158,8 +161,13 @@ public class Portal : CardData
 				relicCard.MyGameCard.RemoveFromStack();
 				relicCard.MyGameCard.gameObject.SetActive(false);
 			}
+			if (orderingCard != null && orderingCard.MyGameCard != null)
+			{
+				orderingCard.MyGameCard.RemoveFromStack();
+				orderingCard.MyGameCard.gameObject.SetActive(false);
+			}
 
-			Mewtations.Expedition.ExpeditionManager.Instance.StartExpedition(this.MyGameCard, catsInStack.Cast<CatCardData>().ToList(), backpackCard, relicCard);
+			Mewtations.Expedition.ExpeditionManager.Instance.StartExpedition(this.MyGameCard, backpackCard, relicCard);
 			return;
 		}
 

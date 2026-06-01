@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class SpriteManager : MonoBehaviour
@@ -54,6 +54,13 @@ public class SpriteManager : MonoBehaviour
 	}
 
 	public static SpriteManager instance;
+
+	[Header("Cat Condition Icons")]
+	public Sprite StaminaHighIcon;
+	public Sprite StaminaMediumIcon;
+	public Sprite StaminaLowIcon;
+	public Sprite ExhaustedIcon;
+	public Sprite ParalyzedIcon;
 
 	public Sprite HealthIcon;
 

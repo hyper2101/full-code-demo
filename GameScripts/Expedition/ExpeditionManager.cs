@@ -23,33 +23,49 @@ namespace Mewtations.Expedition
         public int CurrentMapSeed = 0;
         public CardData RelicCardSource = null; // Cổ vật đang mang theo
 
+        public Dictionary<string, ExpeditionCatState> RuntimeCatStates = new Dictionary<string, ExpeditionCatState>();
+
+        public List<CatCardData> GetExpeditionEligibleCats()
+        {
+            var eligible = new List<CatCardData>();
+            foreach (var gameCard in WorldManager.instance.AllCards)
+            {
+                if (gameCard.MyBoard.IsCurrent && gameCard.CardData is CatCardData cat)
+                {
+                    if (cat.IsParalyzed || cat.IsExhausted || 
+                        cat.CurrentLaborState == Mewtations.Systems.Labor.LaborReadinessState.Exhausted || 
+                        cat.CurrentLaborState == Mewtations.Systems.Labor.LaborReadinessState.Recovering)
+                    {
+                        continue;
+                    }
+                    eligible.Add(cat);
+                }
+            }
+            return eligible;
+        }
+
         private void Awake()
         {
             Instance = this;
         }
 
-                public void StartExpedition(GameCard portalCard, List<CatCardData> cats, CardData backpackCard, CardData relicCard = null)
+           public void StartExpedition(GameCard portalCard, CardData backpackCard, CardData relicCard = null)
         {
             if (IsExpeditionActive) return;
 
             // Kiểm tra Threat Lock
             if (GameScripts.Systems.Threat.ThreatManager.Instance != null && GameScripts.Systems.Threat.ThreatManager.Instance.HasActivePenalty(GameScripts.Systems.Threat.ThreatPenaltyType.LockExpedition))
             {
-                WorldManager.instance.CreateFloatingText(portalCard, false, 0, "Khng th? k?i hnh! Lnh d?a dang b? de d?a.", "", false, 0, 2f, true);
+                WorldManager.instance.CreateFloatingText(portalCard, false, 0, "Không thể khởi hành! Lãnh địa đang bị đe dọa.", "", false, 0, 2f, true);
                 return;
             }
 
-            // Phase 2: Check for Exhausted or Recovering cats
-            foreach (var cat in cats)
+            var cats = GetExpeditionEligibleCats();
+            if (cats.Count == 0)
             {
-                if (cat.CurrentLaborState == Mewtations.Systems.Labor.LaborReadinessState.Exhausted || 
-                    cat.CurrentLaborState == Mewtations.Systems.Labor.LaborReadinessState.Recovering)
-                {
-                    WorldManager.instance.CreateFloatingText(portalCard, false, 0, "?? Khng th? k?i hnh! M?t s? M?o dang ki?t s?c ho?c h?i ph?c.", "", false, 0, 2f, true);
-                    return;
-                }
+                WorldManager.instance.CreateFloatingText(portalCard, false, 0, "Không có mèo nào đủ sức khỏe để đi viễn chinh!", "", false, 0, 2f, true);
+                return;
             }
-
 
             int capacity = (backpackCard != null && backpackCard.BackpackCapacity > 0) ? backpackCard.BackpackCapacity : 10;
             int seed = UnityEngine.Random.Range(0, 100000);
@@ -83,6 +99,27 @@ namespace Mewtations.Expedition
             ActiveCats = cats;
             BackpackCardSource = backpackCard;
 
+            RuntimeCatStates.Clear();
+            foreach (var cat in ActiveCats)
+            {
+                RuntimeCatStates[cat.UniqueId] = new ExpeditionCatState
+                {
+                    UniqueId = cat.UniqueId,
+                    HP = cat.HealthPoints,
+                    Stamina = cat.Stamina,
+                    IsExhausted = cat.IsExhausted,
+                    IsParalyzed = cat.IsParalyzed,
+                    ExhaustionLevel = cat.ExhaustionLevel
+                };
+                
+                // Hide cat from board
+                if (cat.MyGameCard != null)
+                {
+                    cat.MyGameCard.RemoveFromStack();
+                    cat.MyGameCard.gameObject.SetActive(false);
+                }
+            }
+
             CurrentBackpack = new Backpack(capacity);
 
             CurrentMapSeed = seed;
@@ -92,8 +129,8 @@ namespace Mewtations.Expedition
             // Initialize risk stats using non-static base appeasement
             ExpeditionRiskSystem.InitializeRunStats(RunState);
 
-            // Freeze main board by setting TimeScale to 0
-            Time.timeScale = 0f; 
+            // Freeze main board using WorldSimulationPaused
+            WorldManager.WorldSimulationPaused = true;
 
             // Show Expedition Map UI Overlay
             if (ExpeditionMapUI.Instance != null)
@@ -422,7 +459,7 @@ namespace Mewtations.Expedition
                     {
                         if (idx == 0)
                         {
-                            int goldIdx = CurrentBackpack.ContainedCardIds.IndexOf("resource_gold");
+                            int goldIdx = CurrentBackpack.FindItemIndex("resource_gold");
                             if (goldIdx >= 0)
                             {
                                 CurrentBackpack.RemoveItemAt(goldIdx);
@@ -546,7 +583,7 @@ namespace Mewtations.Expedition
                     {
                         if (idx == 0)
                         {
-                            int foodIdx = CurrentBackpack.ContainedCardIds.FindIndex(id => id == "resource_food" || id.Contains("food"));
+                            int foodIdx = CurrentBackpack.FindItemIndex("food");
                             if (foodIdx >= 0)
                             {
                                 CurrentBackpack.RemoveItemAt(foodIdx);
@@ -597,7 +634,7 @@ namespace Mewtations.Expedition
                     {
                         if (idx == 0)
                         {
-                            int goldIdx = CurrentBackpack.ContainedCardIds.IndexOf("resource_gold");
+                            int goldIdx = CurrentBackpack.FindItemIndex("resource_gold");
                             if (goldIdx >= 0)
                             {
                                 CurrentBackpack.RemoveItemAt(goldIdx);
@@ -616,7 +653,7 @@ namespace Mewtations.Expedition
                             if (CurrentBackpack.ContainedCardIds.Count > 0)
                             {
                                 int randIdx = UnityEngine.Random.Range(0, CurrentBackpack.ContainedCardIds.Count);
-                                string removed = CurrentBackpack.ContainedCardIds[randIdx];
+                                string removed = CurrentBackpack.GetItemIdAt(randIdx);
                                 CurrentBackpack.RemoveItemAt(randIdx);
                                 DialogueResult("Hàng Lậu Bị Tịch Thu", $"Để giữ tính mạng, toàn đội giao nộp <b>{removed.Replace("item_", "").Replace("resource_", "")}</b>. Chúng hừ lạnh thu giữ rồi thả đi.");
                             }
@@ -655,7 +692,7 @@ namespace Mewtations.Expedition
                     {
                         if (idx == 0)
                         {
-                            int oreIdx = CurrentBackpack.ContainedCardIds.FindIndex(id => id == "item_iron_ore" || id.Contains("ore"));
+                            int oreIdx = CurrentBackpack.FindItemIndex("ore");
                             if (oreIdx >= 0)
                             {
                                 CurrentBackpack.RemoveItemAt(oreIdx);
@@ -691,7 +728,7 @@ namespace Mewtations.Expedition
                         {
                             if (idx == 0 || idx == 1)
                             {
-                                int goldIdx = CurrentBackpack.ContainedCardIds.IndexOf("resource_gold");
+                                int goldIdx = CurrentBackpack.FindItemIndex("resource_gold");
                                 if (goldIdx >= 0)
                                 {
                                     CurrentBackpack.RemoveItemAt(goldIdx);
@@ -721,7 +758,7 @@ namespace Mewtations.Expedition
                         {
                             if (idx == 0)
                             {
-                                int goldIdx = CurrentBackpack.ContainedCardIds.IndexOf("resource_gold");
+                                int goldIdx = CurrentBackpack.FindItemIndex("resource_gold");
                                 if (goldIdx >= 0)
                                 {
                                     CurrentBackpack.RemoveItemAt(goldIdx);
@@ -740,6 +777,127 @@ namespace Mewtations.Expedition
                         };
                     }
                 }
+            }
+            else if (type == NodeType.CampHealer)
+            {
+                title = "🏕️ CAMP HEALER";
+                text = "Một y sĩ chó già đang ngồi nướng thức ăn. Bằng một mức giá cắt cổ, ông ta sẵn sàng hồi phục hoặc chữa trị cho đội của bạn.\n\n(Lưu ý: Mọi dịch vụ đều sinh nợ tà khí Corruption)";
+                choices = new List<string> {
+                    "Hồi máu toàn đội (+30 HP, Corruption +10)",
+                    "Xóa Tê Liệt & Kiệt Sức toàn đội (Corruption +15)",
+                    "Bỏ qua"
+                };
+                onChoice = (idx) =>
+                {
+                    if (idx == 0)
+                    {
+                        foreach(var cat in ActiveCats) if(cat != null) cat.HealthPoints += 30;
+                        if (RunState != null) RunState.AddCorruption(10);
+                        DialogueResult("Hồi Phục Sinh Lực", "Cả đội đã được hồi máu. Tổ chức Dogma đã ghi sổ nợ (Corruption +10)!");
+                    }
+                    else if (idx == 1)
+                    {
+                        foreach(var cat in ActiveCats) 
+                        {
+                            if(cat != null) 
+                            {
+                                cat.IsParalyzed = false;
+                                cat.IsExhausted = false;
+                            }
+                        }
+                        if (RunState != null) RunState.AddCorruption(15);
+                        DialogueResult("Giải Trừ Trạng Thái", "Mọi trạng thái xấu đã bị loại bỏ. Tổ chức Dogma đã ghi sổ nợ lớn (Corruption +15)!");
+                    }
+                    else
+                    {
+                        CompleteNodeResolution();
+                    }
+                };
+            }
+            else if (type == NodeType.CampMerchant)
+            {
+                title = "🏕️ CAMP MERCHANT";
+                text = "Một thương nhân hắc ám tiếp cận bạn với những vật phẩm thần bí. Đổi 2 Food hoặc 2 Gold để lấy 1 phần thưởng bất kỳ?";
+                choices = new List<string> {
+                    "Mua (Tốn 2 Food/Gold)",
+                    "Bỏ qua"
+                };
+                onChoice = (idx) =>
+                {
+                    if (idx == 0)
+                    {
+                        int foodIdx = CurrentBackpack.FindItemIndex("food");
+                        if (foodIdx >= 0)
+                        {
+                            CurrentBackpack.RemoveItemAt(foodIdx);
+                            CurrentBackpack.AddItem("item_ancient_relic_auto_collect");
+                            DialogueResult("Giao dịch thành công", "Đổi 1 Food lấy Cổ Vật Tự Động Nhặt!");
+                        }
+                        else
+                        {
+                            int goldIdx = CurrentBackpack.FindItemIndex("resource_gold");
+                            if (goldIdx >= 0)
+                            {
+                                CurrentBackpack.RemoveItemAt(goldIdx);
+                                CurrentBackpack.AddItem("item_ancient_relic_auto_farm");
+                                DialogueResult("Giao dịch thành công", "Đổi 1 Gold lấy Cổ Vật Tự Động Thu Hoạch!");
+                            }
+                            else
+                            {
+                                DialogueResult("Không đủ tiền", "Thương nhân hừ lạnh vì bạn không có đủ vật phẩm trao đổi!");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        CompleteNodeResolution();
+                    }
+                };
+            }
+            else if (type == NodeType.CampBlacksmith)
+            {
+                title = "🏕️ CAMP BLACKSMITH";
+                text = "Lò rèn của một thợ rèn lang thang.\n\nTốn 2 Quặng Sắt để cường hóa tạm thời sức mạnh cho cả đội (+5 HP Max, +10 Stamina Max)?";
+                choices = new List<string> {
+                    "Rèn Trang Bị (Tốn 2 Sắt)",
+                    "Bỏ qua"
+                };
+                onChoice = (idx) =>
+                {
+                    if (idx == 0)
+                    {
+                        int oreIdx1 = CurrentBackpack.FindItemIndex("ore");
+                        if (oreIdx1 >= 0)
+                        {
+                            CurrentBackpack.RemoveItemAt(oreIdx1);
+                            foreach(var cat in ActiveCats) { if(cat != null) { cat.HealthPoints += 5; cat.Stamina += 10; } }
+                            DialogueResult("Cường Hóa", "Cả đội được nâng cấp áo giáp và vũ khí tạm thời!");
+                        }
+                        else
+                        {
+                            DialogueResult("Thiếu Quặng Sắt", "Thợ rèn lắc đầu, bạn không có đủ quặng sắt (Ore).");
+                        }
+                    }
+                    else
+                    {
+                        CompleteNodeResolution();
+                    }
+                };
+            }
+            else if (type == NodeType.Reward)
+            {
+                title = "🎁 REWARD NODE";
+                text = "Trước mắt bạn là một rương kho báu khổng lồ bị bỏ hoang. Ai đó đã gom rất nhiều vật phẩm vào đây.";
+                choices = new List<string> {
+                    "Mở Rương!"
+                };
+                onChoice = (idx) =>
+                {
+                    CurrentBackpack.AddItem("resource_gold");
+                    CurrentBackpack.AddItem("resource_food");
+                    CurrentBackpack.AddItem("item_ancient_relic_auto_heal");
+                    DialogueResult("Thu Hoạch Bất Ngờ", "Đã gom toàn bộ vật phẩm trong rương vào balo!");
+                };
             }
             else if (type == NodeType.Lore)
             {
@@ -999,19 +1157,29 @@ namespace Mewtations.Expedition
             if (Mewtations.Dialogue.DialogueSystem.Instance != null) Mewtations.Dialogue.DialogueSystem.Instance.HideWindow();
 
             // Resume base board time
-            Time.timeScale = 1f;
+            WorldManager.WorldSimulationPaused = false;
 
             if (PortalCardSource != null)
             {
                 Vector3 spawnPos = PortalCardSource.transform.position + Vector3.back * 1.5f;
 
-                                // Return cats to base board and clear active temporary mutations
+                // Return cats to base board and clear active temporary mutations
                 foreach (var cat in ActiveCats)
                 {
                     if (cat != null)
                     {
                         cat.ClearMutations(); // Mutations cleared upon returning to base!
                         
+                        // Apply state from RuntimeCatStates
+                        if (RuntimeCatStates.TryGetValue(cat.UniqueId, out var state))
+                        {
+                            cat.HealthPoints = state.HP;
+                            cat.Stamina = state.Stamina;
+                            cat.IsExhausted = state.IsExhausted;
+                            cat.IsParalyzed = state.IsParalyzed;
+                            cat.ExhaustionLevel = state.ExhaustionLevel;
+                        }
+
                         // Phase 3: Expedition Aftermath (Exhaustion Debt)
                         int staminaDebt = 20; // Base stamina cost of going on an expedition
                         if (RunState != null) {
@@ -1021,13 +1189,13 @@ namespace Mewtations.Expedition
                         
                         // Adding Memoirs
                         if (cat.Stamina == 0) {
-                            cat.AddMemoir("Tr? v? trong tr?ng thi ki?t s?c! (Exhausted Return)");
+                            cat.AddMemoir("Trở về trong trạng thái kiệt sức! (Exhausted Return)");
                         }
                         if (RunState != null && RunState.CorruptionLevel > 50) {
-                            cat.AddMemoir("Tr? v? v?i t kh (Corrupted Return)");
+                            cat.AddMemoir("Trở về với tà khí (Corrupted Return)");
                         }
                         if (isManualRetreat) {
-                            cat.AddMemoir("B? tr?n kh?i vi?n chinh (Retreat)");
+                            cat.AddMemoir("Bỏ trốn khỏi viễn chinh (Retreat)");
                         }
 
                         if (cat.MyGameCard != null)
@@ -1035,6 +1203,8 @@ namespace Mewtations.Expedition
                             // Clean combat overlay links and set position
                             cat.MyGameCard.transform.position = spawnPos;
                             cat.MyGameCard.gameObject.SetActive(true);
+                            // Push to board
+                            WorldManager.instance.SendToBoard(cat.MyGameCard, WorldManager.instance.CurrentBoard, spawnPos);
                         }
                     }
                 }
@@ -1045,7 +1215,20 @@ namespace Mewtations.Expedition
                     MutationPersistenceSystem.ProcessRunVictoryTraits(ActiveCats);
 
                     // Spawn Backpack loot items around the portal safely
-                    ExpeditionRewardSystem.SpawnBackpackLoot(CurrentBackpack, spawnPos);
+                    foreach (var cardId in CurrentBackpack.ContainedCardIds)
+                    {
+                        var spawnedCard = WorldManager.instance.GetCardWithUniqueId(cardId);
+                        if (spawnedCard != null)
+                        {
+                            spawnedCard.transform.position = spawnPos;
+                            spawnedCard.gameObject.SetActive(true);
+                            WorldManager.instance.SendToBoard(spawnedCard, WorldManager.instance.CurrentBoard, spawnPos);
+                            
+                            // Randomize spread
+                            spawnPos.x += UnityEngine.Random.Range(-0.5f, 0.5f);
+                            spawnPos.z += UnityEngine.Random.Range(-0.5f, 0.5f);
+                        }
+                    }
 
                     // Special Boss Victory Reward: A new Heavenly Talent cat!
                     if (ActiveNode != null && ActiveNode.Type == NodeType.Boss)
@@ -1076,7 +1259,18 @@ namespace Mewtations.Expedition
                             ExpeditionExtractionSystem.ApplyAbandonPenalty(CurrentBackpack, rate);
                             Debug.Log("[Expedition] Viễn chinh thất bại hoặc bị tiêu diệt! Áp dụng hình phạt hao hụt balo nghiêm trọng.");
                         }
-                        ExpeditionRewardSystem.SpawnBackpackLoot(CurrentBackpack, spawnPos);
+                        foreach (var cardId in CurrentBackpack.ContainedCardIds)
+                        {
+                            var spawnedCard = WorldManager.instance.GetCardWithUniqueId(cardId);
+                            if (spawnedCard != null)
+                            {
+                                spawnedCard.transform.position = spawnPos;
+                                spawnedCard.gameObject.SetActive(true);
+                                WorldManager.instance.SendToBoard(spawnedCard, WorldManager.instance.CurrentBoard, spawnPos);
+                                spawnPos.x += UnityEngine.Random.Range(-0.5f, 0.5f);
+                                spawnPos.z += UnityEngine.Random.Range(-0.5f, 0.5f);
+                            }
+                        }
                     }
                 }
 

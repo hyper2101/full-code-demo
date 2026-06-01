@@ -130,23 +130,26 @@ namespace Mewtations.Expedition
             if (layerIndex == maxLayers - 2)
             {
                 // Floor before boss: Combat, Elite, Ruins, or Extraction
-                bag.AddEntry(NodeType.Combat, 40f);
+                bag.AddEntry(NodeType.Combat, 30f);
                 bag.AddEntry(NodeType.Elite, 20f);
                 bag.AddEntry(NodeType.Extraction, 15f);
-                bag.AddEntry(NodeType.Ruins, 15f);
-                bag.AddEntry(NodeType.Event, 10f);
+                bag.AddEntry(NodeType.CampHealer, 15f);
+                bag.AddEntry(NodeType.CampMerchant, 10f);
+                bag.AddEntry(NodeType.CampBlacksmith, 10f);
                 return bag.Choose();
             }
 
-            bag.AddEntry(NodeType.Combat, 30f);     // 30% combat
+            bag.AddEntry(NodeType.Combat, 25f);     // 25% combat
             bag.AddEntry(NodeType.Resource, 15f);   // 15% resource
             bag.AddEntry(NodeType.Elite, 10f);      // 10% elite
-            bag.AddEntry(NodeType.Extraction, 10f); // 10% extraction portal
-            bag.AddEntry(NodeType.SafeRetreat, 10f);// 10% safe retreat
-            bag.AddEntry(NodeType.Event, 10f);      // 10% event/choice dialogue
+            bag.AddEntry(NodeType.Extraction, 5f);  // 5% extraction portal
+            bag.AddEntry(NodeType.SafeRetreat, 5f); // 5% safe retreat
+            bag.AddEntry(NodeType.Event, 5f);       // 5% event/choice dialogue
+            bag.AddEntry(NodeType.CampHealer, 10f); // 10% Camp Healer
+            bag.AddEntry(NodeType.CampMerchant, 10f);// 10% Camp Merchant
+            bag.AddEntry(NodeType.CampBlacksmith, 5f);// 5% Camp Blacksmith
+            bag.AddEntry(NodeType.Reward, 5f);      // 5% Reward Node
             bag.AddEntry(NodeType.Altar, 5f);       // 5% Cat God's Altar
-            bag.AddEntry(NodeType.Ruins, 5f);       // 5% ruins
-            bag.AddEntry(NodeType.Lore, 5f);        // 5% lore/story card
             return bag.Choose();
         }
 

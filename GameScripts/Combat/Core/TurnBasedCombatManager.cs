@@ -463,6 +463,7 @@ namespace Mewtations.Combat.Core
                         cat.Stamina = unit.Stamina;
                         cat.IsExhausted = unit.IsExhausted;
                         cat.HoiQuangPhanChieuTriggered = unit.HoiQuangPhanChieuTriggered;
+                        cat.RefreshConditionState();
                         cat.ExhaustionLevel = unit.IsExhausted ? unit.ExhaustionLevel : 0;
                     }
                 }

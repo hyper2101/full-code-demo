@@ -79,6 +79,9 @@ public class SaveGame
 
 	public bool GotIslandIntroPack;
 
+	public int ExpeditionSpecialMapPityCounter = 0;
+	public int ExpeditionBossRespawnTimer = 0;
+
 	public long LastSavedUtcTicks;
 
 	public bool FinishedGreed;
