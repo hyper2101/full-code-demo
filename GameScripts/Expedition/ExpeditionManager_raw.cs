@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -20,9 +20,9 @@ namespace Mewtations.Expedition
         public CardData BackpackCardSource = null;
         public GameCard PortalCardSource = null;
         public int CurrentMapSeed = 0;
-        public CardData RelicCardSource = null; //
+        public CardData RelicCardSource = null; // Translated comment
         
-        public ExpeditionRunContext Context = null; //
+        public ExpeditionRunContext Context = null; // Translated comment
 
 
         public Dictionary<string, ExpeditionCatState> RuntimeCatStates = new Dictionary<string, ExpeditionCatState>();
@@ -36,7 +36,7 @@ namespace Mewtations.Expedition
                 {
                     if (cat.IsParalyzed || cat.HealthPoints <= 0)
                     {
-                        continue; //
+                        continue; // Translated comment
                     }
 
 
@@ -55,24 +55,24 @@ namespace Mewtations.Expedition
         {
             if (IsExpeditionActive) return;
 
-            //
+            // Translated comment
             if (GameScripts.Systems.Threat.ThreatManager.Instance != null && GameScripts.Systems.Threat.ThreatManager.Instance.HasActivePenalty(GameScripts.Systems.Threat.ThreatPenaltyType.LockExpedition))
             {
-                WorldManager.instance.CreateFloatingText(context.Ordering != null ? context.Ordering.MyGameCard : null, false, 0, Mewtations.Core.MewtationsLoc.Translate("exp_fail_start", "Lỗi khởi hành"), "", false, 0, 2f, true);
+                WorldManager.instance.CreateFloatingText(context.Ordering != null ? context.Ordering.MyGameCard : null, false, 0, "(Translated Log)", "", false, 0, 2f, true);
                 return;
             }
 
             var cats = GetExpeditionEligibleCats();
             if (cats.Count == 0)
             {
-                WorldManager.instance.CreateFloatingText(context.Ordering != null ? context.Ordering.MyGameCard : null, false, 0, Mewtations.Core.MewtationsLoc.Translate("exp_fail_start", "Lỗi khởi hành"), "", false, 0, 2f, true);
+                WorldManager.instance.CreateFloatingText(context.Ordering != null ? context.Ordering.MyGameCard : null, false, 0, "(Translated Log)", "", false, 0, 2f, true);
                 return;
             }
 
-            int capacity = 10; //
+            int capacity = 10; // Translated comment
             int seed = UnityEngine.Random.Range(0, 100000);
 
-            //
+            // Translated comment
             RelicCardSource = null;
 
             ExecuteStartExpedition(context, cats, capacity, seed);
@@ -83,7 +83,7 @@ namespace Mewtations.Expedition
             IsExpeditionActive = true;
             State = ExpeditionState.MapNavigation;
             
-            //
+            // Translated comment
             int savedGreedAppeasement = RunState.BaseAppeasementGreed;
             int savedCorrAppeasement = RunState.BaseAppeasementCorruption;
             RunState.Clear();
@@ -101,11 +101,11 @@ namespace Mewtations.Expedition
                 }
             }
             
-            Context = context; //
+            Context = context; // Translated comment
 
-            PortalCardSource = null; //
+            PortalCardSource = null; // Translated comment
             ActiveCats = cats;
-            BackpackCardSource = null; //
+            BackpackCardSource = null; // Translated comment
 
             RuntimeCatStates.Clear();
             foreach (var cat in ActiveCats)
@@ -121,7 +121,7 @@ namespace Mewtations.Expedition
                     ParentCardUniqueId = (cat.MyGameCard != null && cat.MyGameCard.Parent != null) ? cat.MyGameCard.Parent.CardData.UniqueId : ""
                 };
                 
-                //
+                // Translated comment
                 if (cat.MyGameCard != null)
                 {
                     var p = cat.MyGameCard.Parent;
@@ -136,13 +136,13 @@ namespace Mewtations.Expedition
             MapNodes = ExpeditionMapGenerator.GenerateMap(seed, maxLayers: 6, maxNodesPerLayer: 3);
             ActiveNode = null;
 
-            //
+            // Translated comment
             ExpeditionRiskSystem.InitializeRunStats(RunState);
 
-            //
+            // Translated comment
             WorldManager.WorldSimulationPaused = true;
 
-            //
+            // Translated comment
             if (ExpeditionMapUI.Instance != null)
             {
                 ExpeditionMapUI.Instance.ShowWindow();
@@ -152,15 +152,15 @@ namespace Mewtations.Expedition
                 Debug.LogError("[ExpeditionManager] ExpeditionMapUI.Instance is null!");
             }
 
-            Debug.Log("[Expedition] Started");
+            Debug.Log("[Expedition] (Translated Log)"(Translated Log)"[Expedition] (Translated Log)");
                 if (GameScripts.Systems.Threat.ThreatManager.Instance != null && GameScripts.Systems.Threat.ThreatManager.Instance.CatGodWrathTemplate != null)
                 {
-                    //
+                    // Translated comment
                     GameScripts.Systems.Threat.ThreatManager.Instance.CreateThreat(
                         GameScripts.Systems.Threat.ThreatManager.Instance.CatGodWrathTemplate, 
                         GameScripts.Systems.Threat.ThreatSourceType.Expedition, 
                         RunState.CurrentDifficultyLevel, 
-                        0 //
+                        0 // Translated comment
                     );
                 }
             }
@@ -184,21 +184,21 @@ namespace Mewtations.Expedition
                 }
             }
 
-            //
+            // Translated comment
 
-            //
+            // Translated comment
             if (node.Theme == RouteTheme.TaDao)
             {
                 RunState.AddCorruption(25);
-                Debug.Log("[Expedition] Log");
+                Debug.Log("[Expedition] (Translated Log)");
             }
             else if (node.Theme == RouteTheme.ThamLam)
             {
                 RunState.AddGreed(10);
-                Debug.Log("[Expedition] Log");
+                Debug.Log("[Expedition] (Translated Log)");
             }
 
-            //
+            // Translated comment
             if (ExpeditionMapUI.Instance != null)
             {
                 ExpeditionMapUI.Instance.HideWindow();
@@ -251,17 +251,17 @@ namespace Mewtations.Expedition
             }
             else
             {
-                //
+                // Translated comment
                 TriggerTextEventNode(node.Type);
             }
         }
 
         private void TriggerCombat(bool isBoss)
         {
-            //
+            // Translated comment
             List<Combatable> enemies = new List<Combatable>();
             int enemyCount = UnityEngine.Random.Range(1, 4);
-            if (isBoss) enemyCount = 1; //
+            if (isBoss) enemyCount = 1; // Translated comment
 
             Vector3 spawnPos = Vector3.zero;
             for (int i = 0; i < enemyCount; i++)
@@ -274,11 +274,11 @@ namespace Mewtations.Expedition
                 }
             }
 
-            //
+            // Translated comment
             List<Combatable> playerCombats = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Cast<Combatable>(System.Linq.Enumerable.Where(ActiveCats, c => c != null && !c.IsParalyzed)));
             TurnBasedCombatManager.Instance.StartCombat(playerCombats, enemies, (result) =>
             {
-                //
+                // Translated comment
                 foreach (var enemy in enemies)
                 {
                     if (enemy != null && enemy.MyGameCard != null)
@@ -289,19 +289,19 @@ namespace Mewtations.Expedition
 
                 if (result == CombatResult.Victory)
                 {
-                    //
+                    // Translated comment
                     RollLootForCombat(isBoss);
                     CompleteNodeResolution();
                 }
                 else if (result == CombatResult.Retreated)
                 {
-                    //
-                    Debug.Log("[Expedition] Log");
+                    // Translated comment
+                    Debug.Log("[Expedition] (Translated Log)");
                     ReturnToBase(isDefeat: true);
                 }
                 else
                 {
-                    //
+                    // Translated comment
                     ReturnToBase(isDefeat: true);
                 }
             });
@@ -332,23 +332,23 @@ namespace Mewtations.Expedition
                 RunState.PendingRewards.Add(loot);
             }
 
-            //
+            // Translated comment
             if (isBoss)
             {
                 string[] relics = { "item_ancient_relic_auto_farm", "item_ancient_relic_auto_collect", "item_ancient_relic_auto_heal" };
                 string chosenRelic = relics[UnityEngine.Random.Range(0, relics.Length)];
                 rolled.Add(chosenRelic);
                 RunState.PendingRewards.Add(chosenRelic);
-                Debug.Log("[Expedition] Log");
+                Debug.Log("[Expedition] (Translated Log)");
             }
 
             string lootMsg = string.Join(", ", rolled.Select(id => id.Replace("resource_", "").Replace("item_", "")));
-            Debug.Log("[Expedition] Log");
+            Debug.Log("[Expedition] (Translated Log)");
         }
 
         private void TriggerResourceNode()
         {
-            //
+            // Translated comment
             int lootCount = UnityEngine.Random.Range(2, 5);
             string[] resources = { "resource_food", "item_wood", "item_stone", "resource_gold", "item_iron_ore" };
 
@@ -364,36 +364,27 @@ namespace Mewtations.Expedition
 
             string resMsg = added.Count > 0 
                 ? string.Join(", ", added.Select(id => id.Replace("resource_", "").Replace("item_", "")))
-                : Mewtations.Core.MewtationsLoc.Translate("exp_res_empty", "KhÃ´ng cÃ³ chá»— chá»©a trong Balo!");
+                : "(Translated Log)";
 
-            //
-            string title = Mewtations.Core.MewtationsLoc.Translate("exp_res_title", "Thu tháº­p TÃ i NguyÃªn");
-            string text = string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_res_desc", "Äá»™i cá»§a báº¡n Ä‘Ã£ tÃ¬m tháº¥y má»™t bÃ£i tÃ i nguyÃªn trÃ¹ phÃº!\n\nNháº­n Ä‘Æ°á»£c: {0}"), resMsg);
+            // Translated comment
+            string title = "(Translated Log)";
+            string text = $"(Translated Log)";
             
-            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { Mewtations.Core.MewtationsLoc.Translate("exp_res_continue", "Tuyá»‡t vá»i!") }, (choiceIdx) =>
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "(Translated Log)" }, (choiceIdx) =>
             {
                 CompleteNodeResolution();
             });
         }
 
-                private void TriggerTextEventNode(NodeType type)
+        private void TriggerTextEventNode(NodeType type)
         {
-            int eventRoll = UnityEngine.Random.Range(0, 7);
-            Action<int> onChoice = null;
-            System.Collections.Generic.List<string> choices = new System.Collections.Generic.List<string>();
             string title = "";
-            string text = "";
-
-            if (type == NodeType.Event)
-            {
-                if (eventRoll == 0)
-                {
-                    title = Mewtations.Core.MewtationsLoc.Translate("exp_evt0_title", "⚡ KIẾP LÔI THỬ THÁCH");
-                    text = Mewtations.Core.MewtationsLoc.Translate("exp_evt0_desc", "Đội ngũ mèo đi tới một đỉnh núi hoang vắng, mây đen cuộn trào nghẹt thở. Từng tia lôi điện khổng lồ giáng xuống như Lôi Kiếp độ kiếp!\n\nLôi linh lực cuồng bạo này ẩn chứa cơ duyên lớn nhưng cực kỳ nguy hiểm. Bạn muốn làm gì?");
-                    choices = new System.Collections.Generic.List<string> {
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt0_opt0", "Hấp thụ Lôi Kiếp (Yêu cầu mèo hệ Sét hoặc Tốc độ cao)"),
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt0_opt1", "Đỡ đòn hộ đồng đội (Yêu cầu Tank bảo vệ)"),
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt0_opt2", "Trận pháp phòng thủ (Lách qua an toàn)")
+            string text = ""(Translated Log)"(Translated Log)";
+                    text = "(Translated Log)";
+                    choices = new List<string> {
+                        "(Translated Log)",
+                        "(Translated Log)",
+                        "(Translated Log)"
                     };
                     onChoice = (idx) =>
                     {
@@ -405,16 +396,19 @@ namespace Mewtations.Expedition
                             {
                                 var luckyCat = hasLightning ? ActiveCats.First(c => c.Element == CatElement.Lightning) : ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 luckyCat.Speed += 25;
-                                luckyCat.AddMemoir(MemoirType.Breakthrough, Mewtations.Core.MewtationsLoc.Translate("exp_evt0_t1", "Lôi Kiếp Tẩy Tủy"), Mewtations.Core.MewtationsLoc.Translate("exp_evt0_d1", "Hấp thụ lôi điện đột phá võ đạo (+25 Speed)"));
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt0_t1", "Lôi quang rực rỡ!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt0_d1", "Tuyệt đỉnh! Nhờ sự nhạy bén cực độ (hoặc linh căn hệ Sét), chú mèo <b>{0}</b> đã hấp thụ trọn vẹn Lôi Điện Phạt, vĩnh viễn gia tăng <b>+25 Thần Tốc</b>!"), luckyCat.Name));
+                                luckyCat.AddMemoir(MemoirType.Breakthrough, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.IsUltimateLocked = true;
-                                victim.AddMemoir(MemoirType.Mutation, Mewtations.Core.MewtationsLoc.Translate("exp_evt0_t2", "Tẩu Hỏa Nhập Ma"), Mewtations.Core.MewtationsLoc.Translate("exp_evt0_d2", "Trúng lôi điện bạo phát bế tắc linh mạch, khóa kỹ năng Nộ"));
-                                foreach (var cat in ActiveCats) { cat.HealthPoints = UnityEngine.Mathf.Max(1, cat.HealthPoints - 10); }
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt0_t2", "Lôi Phạt Oanh Tạc!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt0_d2", "Tốc độ quá chậm! Lôi điện cuồng bạo thâm nhập tàn phá kinh mạch. Chú mèo <b>{0}</b> bị <b><color=red>TẨU HỎA NHẬP MA (KHÓA KỸ NĂNG NỘ)</color></b> vĩnh viễn, toàn đội thương nặng (-10 HP)!"), victim.Name));
+                                victim.AddMemoir(MemoirType.Mutation, "(Translated Log)", "(Translated Log)");
+                                foreach (var cat in ActiveCats)
+                                {
+                                    cat.HealthPoints = Mathf.Max(1, cat.HealthPoints - 10);
+                                }
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else if (idx == 1)
@@ -425,68 +419,75 @@ namespace Mewtations.Expedition
                                 tank.BaseCombatStats.MaxHealth += 10;
                                 tank.HealthPoints = tank.ProcessedCombatStats.MaxHealth;
                                 tank.IsPassiveSlotsLocked = true;
-                                tank.AddMemoir(MemoirType.Breakthrough, Mewtations.Core.MewtationsLoc.Translate("exp_evt0_t3", "Hộ Thể Lôi Kiếp"), Mewtations.Core.MewtationsLoc.Translate("exp_evt0_d3", "Đỡ lôi kiếp cho đồng đội, khóa ô Thiên Phú"));
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt0_t3", "Hộ Thể Tuyệt Vời!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt0_d3", "Anh hùng! Chú Tank <b>{0}</b> đứng ra đỡ lôi phạt cho toàn đội. Thần thể được cường hóa (+10 Max HP) nhưng bùa chú bị phá hủy hoàn toàn, <b><color=red>ô Thiên Phú (Passive Slots) vĩnh viễn bị KHÓA</color></b>!"), tank.Name));
+                                tank.AddMemoir(MemoirType.Breakthrough, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                             else
                             {
-                                foreach (var cat in ActiveCats) { cat.HealthPoints = UnityEngine.Mathf.Max(1, cat.HealthPoints - 15); }
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt0_t4", "Hộ Vệ Thất Bại!"), Mewtations.Core.MewtationsLoc.Translate("exp_evt0_d4", "Đội hình không có hộ vệ Tank chuyên nghiệp! Buộc phải dùng thân xác trần tục chống đỡ, toàn đội bị thương tổn cực nặng (-15 HP)!"));
+                                foreach (var cat in ActiveCats)
+                                {
+                                    cat.HealthPoints = Mathf.Max(1, cat.HealthPoints - 15);
+                                }
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                         }
                         else
                         {
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt0_t5", "Lách Qua An Toàn"), Mewtations.Core.MewtationsLoc.Translate("exp_evt0_d5", "Toàn đội thiết lập kết giới phòng thủ thô sơ, cẩn thận đi vòng qua ngọn núi lôi kiếp an toàn."));
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     };
                 }
                 else if (eventRoll == 1)
                 {
-                    title = Mewtations.Core.MewtationsLoc.Translate("exp_evt1_title", "🐕 TRẠM TUẦN TRA CỦA CHÚNG CHÓ");
-                    text = Mewtations.Core.MewtationsLoc.Translate("exp_evt1_desc", "Phía trước xuất hiện chốt gác kiên cố của loài Chó kiểm soát trật tự xã hội. Lính tuần tra chó bọc giáp sắt đang canh phòng nghiêm ngặt.\n\nĐội mèo của bạn mang theo balo đầy ắp tài nguyên khả nghi. Bạn muốn ứng phó thế nào?");
-                    choices = new System.Collections.Generic.List<string> {
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt1_opt0", "Đút lót hối lộ (Tiêu hao 1 Vàng)"),
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt1_opt1", "Quyết chiến đột phá (Thắng lợi đẫm máu)"),
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt1_opt2", "Lén lút lẻn qua (Yêu cầu Tốc độ cao)"),
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt1_opt3", "Thuyết giảng tâm lý (Cần Thần Miêu Thiền Đạo)")
+                    // Translated comment
+                    title = "(Translated Log)";
+                    text = "(Translated Log)";
+                    choices = new List<string> {
+                        "(Translated Log)",
+                        "(Translated Log)",
+                        "(Translated Log)",
+                        "(Translated Log)"
                     };
                     onChoice = (idx) =>
                     {
                         if (idx == 0)
                         {
                             if (ConsumeItemFromOrdering("resource_gold")) {
-                                RunState.GreedLevel = UnityEngine.Mathf.Max(0, RunState.GreedLevel - 20);
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt1_t1", "Hối Lộ Thành Công!"), Mewtations.Core.MewtationsLoc.Translate("exp_evt1_d1", "Lính tuần tra Chó nhận lấy Vàng, cười nham nhở mở cổng cho đi qua. Sức ép luật pháp xoa dịu (-20 Greed)!"));
+                                RunState.GreedLevel = Mathf.Max(0, RunState.GreedLevel - 20);
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.IsEquipmentSlotsLocked = true;
-                                victim.AddMemoir(MemoirType.Mutation, Mewtations.Core.MewtationsLoc.Translate("exp_evt1_t2", "Tịch Thu Trang Bị"), Mewtations.Core.MewtationsLoc.Translate("exp_evt1_d2", "Không có tiền đút lót, bị lính tuần tra khóa ô trang bị"));
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt1_t2", "Không Có Tiền Đút Lót!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt1_d2", "Balo không có Vàng để hối lộ! Lính tuần tra nổi giận khám xét toàn đội. Chú mèo <b>{0}</b> bị tịch thu sạch vũ khí bùa chú và vĩnh viễn <b><color=red>KHÓA ô Trang Bị (Equipment Slots)</color></b>!"), victim.Name));
+                                victim.AddMemoir(MemoirType.Mutation, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else if (idx == 1)
                         {
-                            foreach (var cat in ActiveCats) { cat.HealthPoints = UnityEngine.Mathf.Max(1, cat.HealthPoints - 8); }
+                            foreach (var cat in ActiveCats)
+                            {
+                                cat.HealthPoints = Mathf.Max(1, cat.HealthPoints - 8);
+                            }
                             RunState.PendingRewards.Add("resource_gold");
                             RunState.PendingRewards.Add("item_iron_ore");
                             RunState.AddCorruption(25);
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt1_t3", "Huyết Chiến Đột Phá!"), Mewtations.Core.MewtationsLoc.Translate("exp_evt1_d3", "Toàn đội tuốt kiếm liều chết xông vào! Tiêu diệt toàn bộ lính canh, cướp lấy Vàng và Quặng sắt trong rương chốt tuần tra, toàn đội bị thương nhẹ (-8 HP) và tăng mạnh sát nghiệp (+25 Corruption)!"));
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                         else if (idx == 2)
                         {
                             int avgSpeed = (int)ActiveCats.Average(c => c.Speed);
                             if (avgSpeed > 115)
                             {
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt1_t4", "Lẻn Qua Thành Công!"), Mewtations.Core.MewtationsLoc.Translate("exp_evt1_d4", "Bóng ma bóng tối! Bằng bước di chuyển thần tốc, không tiếng động, toàn đội mèo đã lướt qua trạm canh gác trót lọt mà lính chó không hề hay biết!"));
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.IsEquipmentSlotsLocked = true;
-                                victim.AddMemoir(MemoirType.Mutation, Mewtations.Core.MewtationsLoc.Translate("exp_evt1_t5", "Bắt Giữ Phong Ấn"), Mewtations.Core.MewtationsLoc.Translate("exp_evt1_d5", "Lén lẻn thất bại, bị khóa ô trang bị hình phạt"));
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt1_t5", "Bị Bắt Quả Tang!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt1_d5", "Tốc độ trung bình quá chậm! Lính chó phát hiện bắt giữ toàn đội tra khảo. Chú mèo <b>{0}</b> bị tịch thu khí giới, <b><color=red>ô Trang bị vĩnh viễn bị KHÓA</color></b> làm hình phạt!"), victim.Name));
+                                victim.AddMemoir(MemoirType.Mutation, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else if (idx == 3)
@@ -495,26 +496,27 @@ namespace Mewtations.Expedition
                             if (zenCat != null)
                             {
                                 RunState.PendingRewards.Add("item_heavenly_relic");
-                                RunState.CorruptionLevel = UnityEngine.Mathf.Max(0, RunState.CorruptionLevel - 20);
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt1_t6", "Giác Ngộ Đạo Tâm!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt1_d6", "Giác ngộ thành công! Chú mèo Thiền Đạo <b>{0}</b> đã thuyết giảng Đạo lý Nhân sinh cực kỳ thâm sâu, khai mở đạo tâm cho lính tuần tra Chó thoát khỏi sự kiểm soát gò bó của hệ thống.\n\nChú Chó cảm kích rơi lệ, mở cổng tặng toàn đội viên <b>Chí Tôn Cổ Khí (Heavenly Relic)</b> cực hiếm và xoa dịu tà khí (-20 Corruption)!"), zenCat.Name));
+                                RunState.CorruptionLevel = Mathf.Max(0, RunState.CorruptionLevel - 20);
+                                DialogueResult("Zen Awakening!", $"The Zen Dao cat calmed the guards. You gained a Heavenly Relic and reduced Corruption (-20)!");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
-                                victim.HealthPoints = UnityEngine.Mathf.Max(1, victim.HealthPoints - 10);
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt1_t7", "Giáo Hóa Thất Bại!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt1_d7", "Đội hình không có Thần Miêu Thiền Đạo để giảng giải Đạo pháp thuyết phục! Lính tuần tra Chó cho rằng bạn đang sỉ nhục trí tuệ của họ, nổi giận dùng roi điện đánh thương <b>{0}</b> (-10 HP)!"), victim.Name));
+                                victim.HealthPoints = Mathf.Max(1, victim.HealthPoints - 10);
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                     };
                 }
                 else if (eventRoll == 2)
                 {
-                    title = Mewtations.Core.MewtationsLoc.Translate("exp_evt2_title", "⚗️ LÒ LUYỆN ĐAN CỔ KÍNH");
-                    text = Mewtations.Core.MewtationsLoc.Translate("exp_evt2_desc", "Đan điện phế tích u ám hiện ra trước mắt. Ở trung tâm sảnh lớn là một lò luyện cổ vẫn cháy âm ỉ lửa tím nhạt rò rỉ khí độc. Bên trong có thể ẩn chứa nghịch thiên linh đan hoặc kịch độc phế linh mạch.\n\nAi sẽ đứng ra xử lý chiếc lò đan này?");
-                    choices = new System.Collections.Generic.List<string> {
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt2_opt0", "Dùng linh độc hóa giải (Cần mèo hệ Độc)"),
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt2_opt1", "Lực lượng cưỡng chế mở lò (Rủi ro 50/50)"),
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt2_opt2", "Đập phá lò thu phế liệu (An toàn)")
+                    // Translated comment
+                    title = "(Translated Log)";
+                    text = "(Translated Log)";
+                    choices = new List<string> {
+                        "(Translated Log)",
+                        "(Translated Log)",
+                        "(Translated Log)"
                     };
                     onChoice = (idx) =>
                     {
@@ -524,14 +526,14 @@ namespace Mewtations.Expedition
                             if (poisonCat != null)
                             {
                                 RunState.PendingRewards.Add("item_breakthrough_pill");
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt2_t1", "Khống Chế Kịch Độc!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt2_d1", "Tuyệt đỉnh! Nhờ linh căn kịch độc bẩm sinh của <b>{0}</b>, chú đã trung hòa đan khí tím, mở lò lấy được viên <b>ĐỘT PHÁ LINH ĐAN</b> cực kỳ quý giá!"), poisonCat.Name));
+                                DialogueResult("Poison Immunity!", $"Your poison cat neutralized the toxic mist. You successfully obtained a Breakthrough Pill!");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.IsPillSlotLocked = true;
-                                victim.AddMemoir(MemoirType.Mutation, Mewtations.Core.MewtationsLoc.Translate("exp_evt2_t2", "Linh Mạch Độc Ứ"), Mewtations.Core.MewtationsLoc.Translate("exp_evt2_d2", "Khí độc tàn phá kinh mạch đan dược, khóa ô Linh Đan"));
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt2_t2", "Không Có Mèo Hệ Độc!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt2_d2", "Độc khí tím bùng phát cuồn cuộn do không có mèo hệ Độc khống chế! Chú mèo <b>{0}</b> hít phải độc sương tàn phá phế linh mạch, <b><color=red>ô Linh Đan (Pill Slot) vĩnh viễn bị KHÓA</color></b>!"), victim.Name));
+                                victim.AddMemoir(MemoirType.Mutation, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else if (idx == 1)
@@ -539,32 +541,33 @@ namespace Mewtations.Expedition
                             if (UnityEngine.Random.value < 0.5f)
                             {
                                 RunState.PendingRewards.Add("item_breakthrough_pill");
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt2_t3", "Vận May Nghịch Thiên!"), Mewtations.Core.MewtationsLoc.Translate("exp_evt2_d3", "Vận may mỉm cười! Dù khí độc bốc lên ngùn ngụt nhưng toàn đội đã nhanh tay cướp lấy viên <b>ĐỘT PHÁ LINH ĐAN</b> thành công trước khi độc chấn nổ ra!"));
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.IsPillSlotLocked = true;
-                                victim.AddMemoir(MemoirType.Mutation, Mewtations.Core.MewtationsLoc.Translate("exp_evt2_t4", "Lò Đan Nổ Tung"), Mewtations.Core.MewtationsLoc.Translate("exp_evt2_d4", "Trúng khí độc lò đan nổ, khóa ô Linh Đan"));
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt2_t4", "Lò Đan Nổ Tung!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt2_d4", "Bùm! Lò luyện đan phát nổ lớn bắn ra tàn dư đan dược kịch độc. Chú mèo <b>{0}</b> trúng độc ngưng kết kinh mạch đan điền, <b><color=red>ô Linh Đan vĩnh viễn bị KHÓA</color></b>!"), victim.Name));
+                                victim.AddMemoir(MemoirType.Mutation, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else
                         {
                             RunState.PendingRewards.Add("item_stone");
                             RunState.PendingRewards.Add("item_iron_ore");
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt2_t5", "Thu Hoạch Phế Liệu"), Mewtations.Core.MewtationsLoc.Translate("exp_evt2_d5", "Quyết định sáng suốt! Toàn đội đập vỡ lò đan an toàn, thu về Đá vụn và Sắt phế liệu bỏ vào Balo viễn chinh."));
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     };
                 }
                 else if (eventRoll == 3)
                 {
-                    title = Mewtations.Core.MewtationsLoc.Translate("exp_evt3_title", "🔴 MA HUYỆT KHẤN NGUYỆN");
-                    text = Mewtations.Core.MewtationsLoc.Translate("exp_evt3_desc", "Một ma huyệt phát ra hồng quang rực máu ngăn giữa đường đi. Linh khí bên trong cuộn trào quyến rũ, như khơi dậy ý niệm Tham Lam tột cùng của loài mèo.\n\nThần linh đòi hỏi cúng nạp linh thực ăn uống hoặc cốt tủy kinh mạch để ban phát thiên phú đột phá vĩnh viễn.");
-                    choices = new System.Collections.Generic.List<string> {
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt3_opt0", "Dâng hiến Linh Thực (Tiêu hao Thức ăn)"),
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt3_opt1", "Huyết Thệ Cốt Tủy (Đột phá - khóa ô Thức ăn)"),
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt3_opt2", "Từ bỏ tham niệm (Thanh tẩy linh hồn)")
+                    // Translated comment
+                    title = "(Translated Log)";
+                    text = "(Translated Log)";
+                    choices = new List<string> {
+                        "(Translated Log)",
+                        "(Translated Log)",
+                        "(Translated Log)"
                     };
                     onChoice = (idx) =>
                     {
@@ -572,17 +575,18 @@ namespace Mewtations.Expedition
                         {
                             if (ConsumeItemFromOrdering("food")) {
                                 var lucky = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
-                                var talent = (HeavenlyTalent)UnityEngine.Random.Range(1, Enum.GetValues(typeof(HeavenlyTalent)).Length);
+                                string talent = UnityEngine.Random.value < 0.5f ? HeavenlyTalent.RageOvercharger : HeavenlyTalent.DivineShieldProtection;
                                 lucky.AddTrait(talent);
-                                lucky.AddMemoir(MemoirType.Breakthrough, HeavenlyTalent.GetDisplayName(talent), Mewtations.Core.MewtationsLoc.Translate("exp_evt3_m1", "Dâng hiến thức ăn ma huyệt nhận thiên phú"));
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt3_t1", "Tế Phẩm Chấp Thuận!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt3_d1", "Thần linh hoan hỷ! Nhận lấy Linh thực hiến tế, ma lực bùng phát tẩy tủy vĩnh viễn cho <b>{0}</b>, thức tỉnh thiên phú vĩnh cửu: <b><color=#00ffcc>{1}</color></b>!"), lucky.Name, HeavenlyTalent.GetDisplayName(talent)));
+                                lucky.CustomName = $"{HeavenlyTalent.GetDisplayName(talent)} {lucky.Name}";
+                                lucky.AddMemoir(MemoirType.Breakthrough, HeavenlyTalent.GetDisplayName(talent), "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.IsFoodSlotLocked = true;
-                                victim.AddMemoir(MemoirType.Mutation, Mewtations.Core.MewtationsLoc.Translate("exp_evt3_t2", "Nguyền Rủa Đói Khát"), Mewtations.Core.MewtationsLoc.Translate("exp_evt3_d2", "Lừa dối ma huyệt bị phạt đói, khóa ô Thức ăn"));
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt3_t2", "Thần Linh Phẫn Nộ!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt3_d2", "Balo không có Thức ăn hiến tế! Thần linh nổi giận giáng nguyền rủa Đói Khát đói nghèo lên toàn đội. Chú mèo <b>{0}</b> bị <b><color=red>KHÓA ô Thức ăn (Food/Ultimate Slot)</color></b> vĩnh viễn!"), victim.Name));
+                                victim.AddMemoir(MemoirType.Mutation, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else if (idx == 1)
@@ -590,54 +594,61 @@ namespace Mewtations.Expedition
                             var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                             victim.BreakthroughLevel++;
                             victim.BaseCombatStats.MaxHealth += 10;
-                            victim.BaseCombatStats.Speed += 15;
+                            victim.HealthPoints = victim.ProcessedCombatStats.MaxHealth;
+                            victim.Speed += 15;
                             victim.IsFoodSlotLocked = true;
-                            victim.AddMemoir(MemoirType.Breakthrough, Mewtations.Core.MewtationsLoc.Translate("exp_evt3_t3", "Huyết Thệ Nghịch Thiên"), Mewtations.Core.MewtationsLoc.Translate("exp_evt3_d3", "Đột phá cưỡng chế, vĩnh viễn khóa ô Thức ăn"));
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt3_t3", "Huyết Thệ Thành Công!"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt3_d3", "Tế lễ đẫm máu nghịch thiên! Chú mèo <b>{0}</b> hiến tế kinh mạch tiêu hóa của bản thân. Đột phá cảnh giới vượt bậc vĩnh viễn (+10 Max HP, +15 Speed) nhưng <b><color=red>ô Thức ăn (Food/Ultimate Slot) vĩnh viễn bị KHÓA</color></b>!"), victim.Name));
+                            victim.AddMemoir(MemoirType.Breakthrough, "(Translated Log)", "(Translated Log)");
+                            DialogueResult("(Translated Log)", $"(Translated Log)");
                         }
                         else
                         {
-                            RunState.CorruptionLevel = UnityEngine.Mathf.Max(0, RunState.CorruptionLevel - 25);
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt3_t4", "Tâm Hồn Thanh Tịnh"), Mewtations.Core.MewtationsLoc.Translate("exp_evt3_d4", "Toàn đội từ bỏ ý chí tham lam, ma chướng linh mạch được tẩy rửa gột sạch (-25 Corruption)!"));
+                            RunState.CorruptionLevel = Mathf.Max(0, RunState.CorruptionLevel - 25);
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     };
                 }
                 else if (eventRoll == 4)
                 {
-                    title = Mewtations.Core.MewtationsLoc.Translate("exp_evt4_title", "⚠️ KIỂM TRA GIẤY PHÉP ĐỘT XUẤT");
-                    text = Mewtations.Core.MewtationsLoc.Translate("exp_evt4_desc", "Một toán Lực Lượng Hành Pháp bọc giáp sắt bất ngờ chặn đội mèo của bạn lại tại chốt rẽ. Đèn linh áp quét thẳng qua chiếc balo khả nghi của bạn.\n\n\"Dừng lại! Kiểm tra giấy phép thông hành và quota khai thác linh thạch. Trình diện ngay lập tức!\"");
-                    choices = new System.Collections.Generic.List<string> {
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt4_opt0", "Trình thẻ phép lậu (Đút lót Vàng)"),
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt4_opt1", "Chấp nhận tịch thu hàng lậu"),
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt4_opt2", "Chạy trốn lập tức (Yêu cầu Tốc độ > 120)")
+                    // Translated comment
+                    title = MewtationsLoc.Translate("exp_license_check_title", "(Translated Log)");
+                    text = MewtationsLoc.Translate("exp_license_check_desc", "(Translated Log)"(Translated Log)"");
+                    choices = new List<string> {
+                        "(Translated Log)",
+                        "(Translated Log)",
+                        "(Translated Log)"
                     };
                     onChoice = (idx) =>
                     {
                         if (idx == 0)
                         {
                             if (ConsumeItemFromOrdering("resource_gold")) {
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt4_t1", "Hối Lộ Thành Công"), Mewtations.Core.MewtationsLoc.Translate("exp_evt4_d1", "Lực Lượng Hành Pháp liếc nhìn đồng Vàng, lờ đi đống quặng bất hợp pháp trong balo: \"Giấy phép hợp lệ. Đi mau!\""));
+                                DialogueResult("(Translated Log)", "(Translated Log)"(Translated Log)"");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
-                                victim.HealthPoints = UnityEngine.Mathf.Max(1, victim.HealthPoints - 10);
+                                victim.HealthPoints = Mathf.Max(1, victim.HealthPoints - 10);
                                 RunState.AddCorruption(20);
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt4_t2", "Không Có Tiền Đút Lót"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt4_d2", "Bị phát hiện dùng giấy thông hành giả! Chúng lập tức dùng roi điện đánh thương nặng <b>{0}</b> (-10 HP) và nâng mức tà lực ma đạo (+20 Corruption)!"), victim.Name));
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else if (idx == 1)
                         {
-                            var inventory = Context.Ordering.MyGameCard.GetInventory();
-                            if (inventory.Count > 0)
-                            {
-                                var removed = inventory[UnityEngine.Random.Range(0, inventory.Count)];
-                                inventory.Remove(removed);
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt4_t3", "Hàng Lậu Bị Tịch Thu"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt4_d3", "Để giữ tính mạng, toàn đội giao nộp <b>{0}</b>. Chúng hừ lạnh thu giữ rồi thả đi."), removed.CardId.Replace("item_", "").Replace("resource_", "")));
-                            }
+                            if (Context != null && Context.Ordering != null && Context.Ordering.MyGameCard != null && Context.Ordering.MyGameCard.InventoryContainer != null)
+{
+    var container = Context.Ordering.MyGameCard.InventoryContainer;
+    var children = container.GetChildren();
+    if (children.Count > 0)
+    {
+        int randIdx = UnityEngine.Random.Range(0, children.Count);
+        string removed = children[randIdx].CardData.Id;
+        children[randIdx].DestroyCard(true, true);
+        DialogueResult("(Translated Log)", "(Translated Log)" + removed.Replace("item_", "").Replace("resource_", "") + "(Translated Log)");
+    }
+}
                             else
                             {
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt4_t4", "Balo Trống Rỗng"), Mewtations.Core.MewtationsLoc.Translate("exp_evt4_d4", "Chúng khám xét balo nhưng không thấy gì khả nghi. Không có gì để tịch thu, chúng đành đá đít xua đuổi bạn đi."));
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                         }
                         else
@@ -645,57 +656,51 @@ namespace Mewtations.Expedition
                             int avgSpeed = (int)ActiveCats.Average(c => c.Speed);
                             if (avgSpeed > 120)
                             {
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt4_t5", "Chạy Thoát Thành Công"), Mewtations.Core.MewtationsLoc.Translate("exp_evt4_d5", "Thần tốc! Toàn đội mèo phóng đi trong chớp mắt, cắt đuôi toán tuần tra Dogma một cách hoàn hảo!"));
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
-                                victim.HealthPoints = UnityEngine.Mathf.Max(1, victim.HealthPoints - 12);
+                                victim.HealthPoints = Mathf.Max(1, victim.HealthPoints - 12);
                                 RunState.AddCorruption(20);
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt4_t6", "Chạy Trốn Thất Bại"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt4_d6", "Tốc độ quá chậm! Toán tuần tra vây bắt và đánh trọng thương <b>{0}</b> (-12 HP), tà pháp giam giữ gia tăng (+20 Corruption)!"), victim.Name));
-                            }
-                        }
-                    };
-                }
-                else if (eventRoll == 5)
-                {
-                    title = Mewtations.Core.MewtationsLoc.Translate("exp_evt5_title", "🐱 DÂN NGHÈO CẦU XIN LINH KHÍ");
-                    text = Mewtations.Core.MewtationsLoc.Translate("exp_evt5_desc", "Một chú mèo tiều tụy gầy trơ xương, cơ thể dị biến nặng nề đang quỳ bên đống phế thải công nghiệp, run rẩy van xin:\n\n\"Làm ơn... tôi chỉ xin một mẩu Linh Thạch vụn để duy trì linh căn đang héo úa của con tôi... Bọn Dogma đã siết hết quota của khu này rồi...\"");
-                    choices = new System.Collections.Generic.List<string> {
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt5_opt0", "Bố thí Quặng Linh Thạch thô"),
-                        Mewtations.Core.MewtationsLoc.Translate("exp_evt5_opt1", "Từ chối đi thẳng")
+                                DialogueResult("Failed Escape", $"Too slow! The patrol caught up and severely injured {victim.Name} (-12 HP), increasing fear (+20 Corruption)!"(Translated Log)"exp_beggar_title", "(Translated Log)");
+                    text = MewtationsLoc.Translate("exp_beggar_desc", "(Translated Log)"(Translated Log)"");
+                    choices = new List<string> {
+                        "(Translated Log)",
+                        "(Translated Log)"
                     };
                     onChoice = (idx) =>
                     {
                         if (idx == 0)
                         {
                             if (ConsumeItemFromOrdering("ore")) {
-                                RunState.CorruptionLevel = UnityEngine.Mathf.Max(0, RunState.CorruptionLevel - 30);
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt5_t1", "Tích Đức Giải Nghiệp"), Mewtations.Core.MewtationsLoc.Translate("exp_evt5_d1", "Chú mèo mừng rỡ ôm lấy mảnh quặng khóc nấc lên. Linh hồn toàn đội được thanh thản, gột rửa bớt tà khí ma kiếp (-30 Corruption)!"));
+                                RunState.CorruptionLevel = Mathf.Max(0, RunState.CorruptionLevel - 30);
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                             else
                             {
-                                DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt5_t2", "Không Có Linh Thạch"), Mewtations.Core.MewtationsLoc.Translate("exp_evt5_d2", "Bạn rất muốn giúp nhưng balo viễn chinh không có bất kỳ mảnh Quặng Linh Thạch nào. Chú mèo nghèo thất vọng quay đi."));
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                         }
                         else
                         {
-                            RunState.GreedLevel = UnityEngine.Mathf.Min(100, RunState.GreedLevel + 15);
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt5_t3", "Quay Lưng Bỏ Đi"), Mewtations.Core.MewtationsLoc.Translate("exp_evt5_d3", "Bạn lạnh lùng bước tiếp. Tiếng khóc than uất nghẹn của dân nghèo bám riết đạo tâm của bạn (+15 Greed)!"));
+                            RunState.GreedLevel = Mathf.Min(100, RunState.GreedLevel + 15);
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     };
                 }
-                else if (eventRoll == 6)
+                else
                 {
-                    title = Mewtations.Core.MewtationsLoc.Translate("exp_evt6_title", "⚖️ THƯƠNG NHÂN CHỢ ĐEN");
+                    // Translated comment
                     int maxBreakthrough = ActiveCats.Count > 0 ? ActiveCats.Max(c => c.BreakthroughLevel) : 0;
+                    title = MewtationsLoc.Translate("exp_merchant_encounter_title", "(Translated Log)");
                     if (maxBreakthrough >= 2)
                     {
-                        text = Mewtations.Core.MewtationsLoc.Translate("exp_evt6_desc1", "Một gã mèo trùm mũ kín mít hé mở chiếc hòm linh bảo giấu kín. Hắn thì thầm đầy tôn kính:\n\n\"Nhìn ngài có vẻ là một Hộ Pháp cao cấp... Tiểu nhân có vài món bảo vật giấu riêng, hoàn toàn không ghi trong sổ sách kiểm kê của Giáo Điều... Ngài có muốn xem qua?\"");
-                        choices = new System.Collections.Generic.List<string> {
-                            Mewtations.Core.MewtationsLoc.Translate("exp_evt6_opt0", "Mua Hóa Thần Thạch (Tiêu hao Vàng)"),
-                            Mewtations.Core.MewtationsLoc.Translate("exp_evt6_opt1", "Mua Linh Dược Đột Phá (Tiêu hao Vàng)"),
-                            Mewtations.Core.MewtationsLoc.Translate("exp_evt6_opt2", "Rút lui")
+                        text = MewtationsLoc.Translate("exp_merchant_high_rank_desc", "(Translated Log)"(Translated Log)"");
+                        choices = new List<string> {
+                            "(Translated Log)",
+                            "(Translated Log)",
+                            "(Translated Log)"
                         };
                         onChoice = (idx) =>
                         {
@@ -704,11 +709,11 @@ namespace Mewtations.Expedition
                                 if (ConsumeItemFromOrdering("resource_gold")) {
                                     string itemSpawn = idx == 0 ? "item_revive_pill" : "item_breakthrough_pill";
                                     RunState.PendingRewards.Add(itemSpawn);
-                                    DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt6_t1", "Giao Dịch Thành Công"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_evt6_d1", "Bảo vật bất hợp pháp <b>{0}</b> đã được giao tay bí mật. Thương nhân đóng rương và lủi mất."), itemSpawn.Replace("item_", "")));
+                                    DialogueResult("(Translated Log)", $"(Translated Log)"item_", ""(Translated Log)");
                                 }
                                 else
                                 {
-                                    DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt6_t2", "Không Đủ Tiền"), Mewtations.Core.MewtationsLoc.Translate("exp_evt6_d2", "\"Ngài đang đùa với tôi à?\" Hắn gắt gỏng khi thấy bạn không có đủ Vàng rồi biến mất vào bóng tối."));
+                                    DialogueResult("(Translated Log)", "(Translated Log)"(Translated Log)"");
                                 }
                             }
                             else
@@ -719,10 +724,10 @@ namespace Mewtations.Expedition
                     }
                     else
                     {
-                        text = Mewtations.Core.MewtationsLoc.Translate("exp_evt6_desc2", "Một kẻ buôn lậu lén lút tiếp cận đội ngũ. Hắn thì thầm mời mọc:\n\n\"Ê, muốn mua hàng xách tay không? Quặng sắt chất lượng cao, giá rẻ mạt, chỉ bằng một góc ngoài chợ!\"");
-                        choices = new System.Collections.Generic.List<string> {
-                            Mewtations.Core.MewtationsLoc.Translate("exp_evt6_opt3", "Mua Quặng Sắt Lậu (Tiêu hao Vàng)"),
-                            Mewtations.Core.MewtationsLoc.Translate("exp_evt6_opt2", "Bỏ qua")
+                        text = MewtationsLoc.Translate("exp_merchant_low_rank_desc", "(Translated Log)"(Translated Log)"");
+                        choices = new List<string> {
+                            "(Translated Log)",
+                            "(Translated Log)"
                         };
                         onChoice = (idx) =>
                         {
@@ -730,11 +735,11 @@ namespace Mewtations.Expedition
                             {
                                 if (ConsumeItemFromOrdering("resource_gold")) {
                                     RunState.PendingRewards.Add("item_iron_ore");
-                                    DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt6_t1", "Giao Dịch Thành Công"), Mewtations.Core.MewtationsLoc.Translate("exp_evt6_d3", "Giao dịch nhanh gọn. Lấy được Quặng sắt lậu."));
+                                    DialogueResult("(Translated Log)", "(Translated Log)");
                                 }
                                 else
                                 {
-                                    DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_evt6_t2", "Không Đủ Tiền"), Mewtations.Core.MewtationsLoc.Translate("exp_evt6_d2", "\"Tưởng thế nào!\" Hắn bĩu môi rồi nhanh chóng biến mất."));
+                                    DialogueResult("(Translated Log)", "(Translated Log)"(Translated Log)"");
                                 }
                             }
                             else
@@ -747,12 +752,12 @@ namespace Mewtations.Expedition
             }
             else if (type == NodeType.CampHealer)
             {
-                title = Mewtations.Core.MewtationsLoc.Translate("exp_camp1_title", "⛲ CAMP HEALER: BỒN NƯỚC THẦN");
-                text = Mewtations.Core.MewtationsLoc.Translate("exp_camp1_desc", "Một dòng suối linh khí dồi dào có thể chữa lành vết thương.");
-                choices = new System.Collections.Generic.List<string> {
-                    Mewtations.Core.MewtationsLoc.Translate("exp_camp1_opt0", "Ngâm mình trị thương"),
-                    Mewtations.Core.MewtationsLoc.Translate("exp_camp1_opt1", "Tẩy tủy giải hiệu ứng"),
-                    Mewtations.Core.MewtationsLoc.Translate("exp_camp1_opt2", "Bỏ qua")
+                title = "??? CAMP HEALER";
+                text = "(Translated Log)";
+                choices = new List<string> {
+                    "(Translated Log)",
+                    "(Translated Log)",
+                    "B? qua"
                 };
                 onChoice = (idx) =>
                 {
@@ -767,14 +772,14 @@ namespace Mewtations.Expedition
                             {
                                 if(cat != null && cat.HealthPoints < cat.ProcessedCombatStats.MaxHealth) 
                                 {
-                                    cat.HealthPoints = UnityEngine.Mathf.Min(cat.ProcessedCombatStats.MaxHealth, cat.HealthPoints + healPerCat);
+                                    cat.HealthPoints = Mathf.Min(cat.ProcessedCombatStats.MaxHealth, cat.HealthPoints + healPerCat);
                                 }
                             }
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_camp1_t1", "Hồi phục"), string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_camp1_d1", "Đội ngũ uống nước thần và chia nhau hồi lại {0} HP!"), pool));
+                            DialogueResult("Restored Vitality", $"Your squad recovered {$pool} HP from the Healing Pool.");
                         }
                         else 
                         {
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_camp1_t2", "Khỏe mạnh"), Mewtations.Core.MewtationsLoc.Translate("exp_camp1_d2", "Tất cả các thành viên đều đang khỏe mạnh."));
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     }
                     else if (idx == 1)
@@ -787,7 +792,7 @@ namespace Mewtations.Expedition
                                 cat.IsExhausted = false;
                             }
                         }
-                        DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_camp1_t3", "Tẩy tủy"), Mewtations.Core.MewtationsLoc.Translate("exp_camp1_d3", "Toàn đội được thanh tẩy, giải trừ trạng thái Kiệt Sức và Tê Liệt!"));
+                        DialogueResult("(Translated Log)", "(Translated Log)");
                     }
                     else
                     {
@@ -797,46 +802,41 @@ namespace Mewtations.Expedition
             }
             else if (type == NodeType.CampMerchant)
             {
-                title = Mewtations.Core.MewtationsLoc.Translate("exp_merch2_title", "🤖 CAMP MERCHANT");
-                text = Mewtations.Core.MewtationsLoc.Translate("exp_merch2_desc", "Một cỗ máy giao dịch cổ đại bị bỏ hoang.\n\nĐổi 1 Food lấy Cổ Vật Tự Động Nhặt\nĐổi 1 Gold lấy Cổ Vật Tự Động Thu Hoạch");
-                choices = new System.Collections.Generic.List<string> {
-                    Mewtations.Core.MewtationsLoc.Translate("exp_merch2_opt0", "Đổi Thức ăn lấy Cổ Vật Nhặt"),
-                    Mewtations.Core.MewtationsLoc.Translate("exp_merch2_opt1", "Đổi Vàng lấy Cổ Vật Thu Hoạch")
+                title = "(Translated Log)";
+                text = "(Translated Log)";
+                choices = new List<string> {
+                    "(Translated Log)",
+                    "(Translated Log)"
                 };
                 onChoice = (idx) =>
                 {
                     if (idx == 0)
                     {
+                        // (Removed IsFull check)
+                        
                         if (ConsumeItemFromOrdering("food")) {
                             RunState.PendingRewards.Add("item_ancient_relic_auto_collect");
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_merch2_t1", "Giao dịch thành công"), Mewtations.Core.MewtationsLoc.Translate("exp_merch2_d1", "Đổi 1 Food lấy Cổ Vật Tự Động Nhặt!"));
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
-                        else
-                        {
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_merch2_t3", "Không đủ tiền"), Mewtations.Core.MewtationsLoc.Translate("exp_merch2_d3", "Thương nhân hừ lạnh vì bạn không có đủ vật phẩm trao đổi!"));
-                        }
-                    }
-                    else if (idx == 1)
-                    {
-                        if (ConsumeItemFromOrdering("resource_gold")) {
+                        else if (ConsumeItemFromOrdering("resource_gold")) {
                             RunState.PendingRewards.Add("item_ancient_relic_auto_farm");
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_merch2_t2", "Giao dịch thành công"), Mewtations.Core.MewtationsLoc.Translate("exp_merch2_d2", "Đổi 1 Gold lấy Cổ Vật Tự Động Thu Hoạch!"));
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                         else
                         {
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_merch2_t3", "Không đủ tiền"), Mewtations.Core.MewtationsLoc.Translate("exp_merch2_d3", "Thương nhân hừ lạnh vì bạn không có đủ vật phẩm trao đổi!"));
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
+                        CompleteNodeResolution();
                     }
-                    CompleteNodeResolution();
                 };
             }
             else if (type == NodeType.CampBlacksmith)
             {
-                title = Mewtations.Core.MewtationsLoc.Translate("exp_smith_title", "⚒️ CAMP BLACKSMITH");
-                text = Mewtations.Core.MewtationsLoc.Translate("exp_smith_desc", "Lò rèn của một thợ rèn lang thang.\n\nTốn Quặng Sắt để cường hóa tạm thời sức mạnh cho cả đội (+5 HP Max, +10 Stamina Max)?");
-                choices = new System.Collections.Generic.List<string> {
-                    Mewtations.Core.MewtationsLoc.Translate("exp_smith_opt0", "Rèn Trang Bị (Tốn Sắt)"),
-                    Mewtations.Core.MewtationsLoc.Translate("exp_smith_opt1", "Bỏ qua")
+                title = "(Translated Log)";
+                text = "(Translated Log)";
+                choices = new List<string> {
+                    "(Translated Log)",
+                    "(Translated Log)"
                 };
                 onChoice = (idx) =>
                 {
@@ -844,11 +844,11 @@ namespace Mewtations.Expedition
                     {
                         if (ConsumeItemFromOrdering("ore")) {
                             foreach(var cat in ActiveCats) { if(cat != null) { cat.HealthPoints += 5; cat.Stamina += 10; } }
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_smith_t1", "Cường Hóa"), Mewtations.Core.MewtationsLoc.Translate("exp_smith_d1", "Cả đội được nâng cấp áo giáp và vũ khí tạm thời!"));
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                         else
                         {
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_smith_t2", "Thiếu Quặng Sắt"), Mewtations.Core.MewtationsLoc.Translate("exp_smith_d2", "Thợ rèn lắc đầu, bạn không có đủ quặng sắt (Ore)."));
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     }
                     else
@@ -859,46 +859,54 @@ namespace Mewtations.Expedition
             }
             else if (type == NodeType.Reward)
             {
-                title = Mewtations.Core.MewtationsLoc.Translate("exp_reward_title", "🎁 REWARD NODE");
-                text = Mewtations.Core.MewtationsLoc.Translate("exp_reward_desc", "Trước mặt bạn là một rương kho báu khổng lồ bị bỏ hoang. Ai đó đã gom rất nhiều vật phẩm vào đây.");
-                choices = new System.Collections.Generic.List<string> {
-                    Mewtations.Core.MewtationsLoc.Translate("exp_reward_opt0", "Mở rương!")
+                title = "(Translated Log)";
+                text = "(Translated Log)";
+                choices = new List<string> {
+                    "(Translated Log)"
                 };
                 onChoice = (idx) =>
                 {
                     if (ExpeditionRewardUI.Instance != null)
-                    {
-                        int rewardCount = UnityEngine.Random.Range(2, 6);
-                        System.Collections.Generic.List<string> rewards = new System.Collections.Generic.List<string>();
-                        string[] pool = { "card_reward_pack", "resource_gold", "resource_food", "item_iron_ore", "item_wood" };
-                        for (int i = 0; i < rewardCount; i++) rewards.Add(pool[UnityEngine.Random.Range(0, pool.Length)]);
-                        ExpeditionRewardUI.Instance.ShowRewards(rewards);
-                    }
-                    else
-                    {
-                        CompleteNodeResolution();
-                    }
+                      {
+                          int rewardCount = UnityEngine.Random.Range(2, 6);
+                          List<string> rewards = new List<string>();
+                          string[] pool = { "card_reward_pack", "resource_gold", "resource_food", "item_iron_ore", "item_wood" };
+                          for (int i = 0; i < rewardCount; i++) rewards.Add(pool[UnityEngine.Random.Range(0, pool.Length)]);
+                          ExpeditionRewardUI.Instance.ShowRewards(rewards);
+                      }
+                      else
+                      {
+                          CompleteNodeResolution();
+                      }
                 };
             }
             else if (type == NodeType.Lore)
             {
-                title = Mewtations.Core.MewtationsLoc.Translate("exp_lore_title", "Bích Họa Cổ Xưa");
-                text = Mewtations.Core.MewtationsLoc.Translate("exp_lore_desc", "Trải rộng trên bức tường đá rêu phong là những bích họa mô tả về thời kỳ 'Thần Miêu Sáng Thế' và cuộc viễn chinh cổ đại.\n\nLinh hồn của toàn đội được gột rửa, giúp gia tăng Speed tạm thời!");
-                choices = new System.Collections.Generic.List<string> { Mewtations.Core.MewtationsLoc.Translate("exp_lore_opt0", "Tiếp thu tinh hoa") };
-                onChoice = (idx) =>
+                if (UnityEngine.Random.value <= 0.50f)
                 {
-                    foreach (var cat in ActiveCats)
+                    TriggerWearyDogEncounter();
+                    return; // Translated comment
+                }
+                else
+                {
+                    title = "(Translated Log)";
+                    text = "(Translated Log)";
+                    choices = new List<string> { "(Translated Log)" };
+                    onChoice = (idx) =>
                     {
-                        cat.Speed += 10;
-                    }
-                    CompleteNodeResolution();
-                };
+                        foreach (var cat in ActiveCats)
+                        {
+                            cat.Speed += 10;
+                        }
+                        CompleteNodeResolution();
+                    };
+                }
             }
             else // Ruins
             {
-                title = Mewtations.Core.MewtationsLoc.Translate("exp_ruins_title", "Phế Tích Hoang Phế");
-                text = Mewtations.Core.MewtationsLoc.Translate("exp_ruins_desc", "Đội hình mèo tiến vào một phế tích cung điện đổ nát. Ở giữa có một lò đan dược cũ kỹ vẫn đang cháy âm ỉ.\nBạn có muốn lục lọi không?");
-                choices = new System.Collections.Generic.List<string> { Mewtations.Core.MewtationsLoc.Translate("exp_ruins_opt0", "Mở lò đan dược"), Mewtations.Core.MewtationsLoc.Translate("exp_ruins_opt1", "Rút lui") };
+                title = "(Translated Log)";
+                text = "(Translated Log)";
+                choices = new List<string> { "(Translated Log)", "(Translated Log)" };
                 onChoice = (idx) =>
                 {
                     if (idx == 0)
@@ -906,11 +914,11 @@ namespace Mewtations.Expedition
                         if (UnityEngine.Random.value < 0.5f)
                         {
                             RunState.PendingRewards.Add("item_revive_pill");
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_ruins_t1", "Luyện Đan Kỳ Tích!"), Mewtations.Core.MewtationsLoc.Translate("exp_ruins_d1", "Tuyệt vời! Bên trong lò đan vẫn còn lưu giữ một viên Linh Đan Hồi Sinh cực kỳ quý hiếm!"));
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                         else
                         {
-                            DialogueResult(Mewtations.Core.MewtationsLoc.Translate("exp_ruins_t2", "Khói đen mù mịt"), Mewtations.Core.MewtationsLoc.Translate("exp_ruins_d2", "Lò đan nổ tung! Khói đen kịt phả thẳng vào mặt khiến toàn đội bám đầy tro bụi (Không có tổn thất thực tế)."));
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     }
                     else
@@ -923,9 +931,105 @@ namespace Mewtations.Expedition
             Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices, onChoice);
         }
 
-		private void DialogueResult(string title, string text)
+        private void TriggerWearyDogEncounter()
         {
-            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { Mewtations.Core.MewtationsLoc.Translate("exp_continue", "Tiáº¿p tá»¥c") }, (idx) =>
+            string title = MewtationsLoc.Translate("dog_patrol_title", "THE WEARY DOG PATROL OFFICER");
+            int maxBreakthrough = ActiveCats.Count > 0 ? ActiveCats.Max(c => c.BreakthroughLevel) : 0;
+            string text = MewtationsLoc.Translate("dog_patrol_desc");
+            if (maxBreakthrough >= 2)
+            {
+                text = MewtationsLoc.Translate("dog_patrol_high_rank_desc", text);
+            }
+            else
+            {
+                text = MewtationsLoc.Translate("dog_patrol_low_rank_desc", text);
+            }
+
+            List<Mewtations.Dialogue.DialogueChoice> choices = new List<Mewtations.Dialogue.DialogueChoice>();
+
+            // Option 1: Fight
+            choices.Add(new Mewtations.Dialogue.DialogueChoice(
+                MewtationsLoc.Translate("opt_fight", "(Translated Log)"),
+                () =>
+                {
+                    RunState.AddCorruption(20);
+                    DialogueResult(
+                        MewtationsLoc.Translate("dog_fight_res", "Bloody Skirmish!"),
+                        MewtationsLoc.Translate("dog_fight_res_desc", "You fought and defeated the guard. The path is clear, but at a bloody cost (+20 Corruption).")
+                    );
+                }
+            ));
+
+            // Translated comment
+            choices.Add(new Mewtations.Dialogue.DialogueChoice(
+                MewtationsLoc.Translate("opt_stealth", "(Translated Log)"),
+                () =>
+                {
+                    int avgSpeed = 100;
+                    if (ActiveCats.Count > 0)
+                    {
+                        avgSpeed = (int)ActiveCats.Average(c => c.Speed);
+                    }
+
+                    if (avgSpeed > 115)
+                    {
+                        DialogueResult(
+                            MewtationsLoc.Translate("dog_stealth_success", "Stealth Success!"),
+                            MewtationsLoc.Translate("dog_stealth_success_desc", "Your agile cats slipped by in the shadows without alerting the guard.")
+                        );
+                    }
+                    else
+                    {
+                        foreach (var cat in ActiveCats)
+                        {
+                            cat.HealthPoints = Mathf.Max(1, cat.HealthPoints - 5);
+                        }
+                        DialogueResult(
+                            MewtationsLoc.Translate("dog_stealth_fail", "Stealth Failed!"),
+                            MewtationsLoc.Translate("dog_stealth_fail_desc", "The weary guard noticed you. You had to force your way through and suffered minor injuries (-5 HP).")
+                        );
+                    }
+                }
+            ));
+
+            // Translated comment
+            choices.Add(new Mewtations.Dialogue.DialogueChoice(
+                MewtationsLoc.Translate("opt_comfort", "(Translated Log)"),
+                () =>
+                {
+                    string hintId = "item_secret_lore_hint_1";
+                    if (ChronicleManager.IsHintUnlocked("item_secret_lore_hint_1"))
+                    {
+                        if (ChronicleManager.IsHintUnlocked("item_secret_lore_hint_2"))
+                        {
+                            hintId = "item_secret_lore_hint_3";
+                        }
+                        else
+                        {
+                            hintId = "item_secret_lore_hint_2";
+                        }
+                    }
+
+                    ChronicleManager.UnlockHint(hintId);
+                    RunState.PendingRewards.Add(hintId);
+
+                    RunState.CorruptionLevel = Mathf.Max(0, RunState.CorruptionLevel - 25);
+
+                    DialogueResult(
+                        MewtationsLoc.Translate("dog_comfort_success", "A Soul Redeemed!"),
+                        MewtationsLoc.Translate("dog_comfort_success_desc", "The officer wept upon hearing your Zen words, realizing both Cats and Dogs are victims of the system. He abandons his post, giving you an Ancient Scroll and purging your sins (-25 Corruption)!")
+                    );
+                },
+                () => ActiveCats.Any(c => c.Specialization == Mewtations.Cards.Cats.DaoSpecialization.ZenDao),
+                MewtationsLoc.Translate("opt_comfort_req", "(Translated Log)")
+            ));
+
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices);
+        }
+
+        private void DialogueResult(string title, string text)
+        {
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "(Translated Log)" }, (idx) =>
             {
                 CompleteNodeResolution();
             });
@@ -956,7 +1060,7 @@ namespace Mewtations.Expedition
                 if (ExpeditionRewardUI.Instance != null)
                 {
                     ExpeditionRewardUI.Instance.ShowRewards(rewards);
-                    return; //
+                    return; // Translated comment
                 }
             }
 
@@ -976,21 +1080,21 @@ namespace Mewtations.Expedition
             }
             State = ExpeditionState.MapNavigation;
 
-            //
+            // Translated comment
             ApplyRelicAutomationProgress();
 
-            //
+            // Translated comment
             UpdateConnections();
 
-            //
+            // Translated comment
             if (ActiveNode != null && ActiveNode.Type == NodeType.Boss)
             {
-                Debug.Log(Mewtations.Core.MewtationsLoc.Translate("exp_log_boss_defeat", "[Expedition] Đã đánh bại Boss! Tự động trở về căn cứ."));
+                Debug.Log("[Expedition] (Translated Log)");
                 ReturnToBase(isDefeat: false);
             }
             else
             {
-                //
+                // Translated comment
                 if (ExpeditionMapUI.Instance != null)
                 {
                     ExpeditionMapUI.Instance.ShowWindow();
@@ -1003,7 +1107,7 @@ namespace Mewtations.Expedition
             if (RunState == null || RunState.ActiveRelicList.Count == 0) return;
 
             foreach (var relic in RunState.ActiveRelicList) {
-            Debug.Log(Mewtations.Core.MewtationsLoc.Translate("exp_log_relic_apply", "[Expedition] Kích hoạt hiệu ứng Thánh Vật tự động."));
+            Debug.Log("[Expedition] (Translated Log)");
 
             foreach (var gc in WorldManager.instance.AllCards)
             {
@@ -1013,18 +1117,18 @@ namespace Mewtations.Expedition
                     
                     if (relic == "item_ancient_relic_smelt" && (cid.Contains("smelter") || cid.Contains("furnace")))
                     {
-                        gc.CurrentTimerTime += 15f; //
-                        Debug.Log(Mewtations.Core.MewtationsLoc.Translate("exp_log_relic_smelt", "[Expedition] Thánh Vật Lò Luyện: Tăng tốc tiến trình nung chảy +15s."));
+                        gc.CurrentTimerTime += 15f; // Translated comment
+                        Debug.Log("[Expedition] (Translated Log)");
                     }
                     else if (relic == "item_ancient_relic_wood" && (cid.Contains("sawmill") || cid.Contains("mill")))
                     {
-                        gc.CurrentTimerTime += 15f; //
-                        Debug.Log(Mewtations.Core.MewtationsLoc.Translate("exp_log_relic_wood", "[Expedition] Thánh Vật Chặt Cây: Tăng tốc tiến trình xưởng mộc +15s."));
+                        gc.CurrentTimerTime += 15f; // Translated comment
+                        Debug.Log("[Expedition] (Translated Log)");
                     }
                     else if (relic == "item_ancient_relic_booster")
                     {
-                        gc.CurrentTimerTime += 5f; //
-                        Debug.Log(Mewtations.Core.MewtationsLoc.Translate("exp_log_relic_boost", "[Expedition] Thánh Vật Tăng Tốc: Tăng tốc tiến trình chung +5s."));
+                        gc.CurrentTimerTime += 5f; // Translated comment
+                        Debug.Log("[Expedition] (Translated Log)");
                     }
                 }
             }
@@ -1034,7 +1138,7 @@ namespace Mewtations.Expedition
         {
             if (ActiveNode == null) return;
 
-            //
+            // Translated comment
             foreach (var n in MapNodes)
             {
                 if (n.State == NodeState.Available)
@@ -1043,7 +1147,7 @@ namespace Mewtations.Expedition
                 }
             }
 
-            //
+            // Translated comment
             foreach (int connectedId in ActiveNode.OutgoingConnections)
             {
                 var targetNode = MapNodes.Find(n => n.Id == connectedId);
@@ -1053,7 +1157,7 @@ namespace Mewtations.Expedition
                 }
             }
 
-            //
+            // Translated comment
             if (!MapNodes.Any(n => n.State == NodeState.Visited))
             {
                 foreach (var n in MapNodes.Where(n => n.Layer == 0))
@@ -1067,7 +1171,7 @@ namespace Mewtations.Expedition
         {
             if (Mewtations.Legacy.Stacklands.SaveManager.instance != null && Mewtations.Legacy.Stacklands.SaveManager.instance.CurrentSave != null)
             {
-                //
+                // Translated comment
                 bool visitedSpecial = MapNodes != null && MapNodes.Any(n => n.State == NodeState.Visited && n.Type == NodeType.SpecialMap);
                 if (!visitedSpecial)
                 {
@@ -1077,12 +1181,12 @@ namespace Mewtations.Expedition
             IsExpeditionActive = false;
             State = ExpeditionState.Idle;
 
-            //
+            // Translated comment
             if (ExpeditionMapUI.Instance != null) ExpeditionMapUI.Instance.HideWindow();
             if (CombatOverlayUI.Instance != null) CombatOverlayUI.Instance.HideWindow();
             if (Mewtations.Dialogue.DialogueSystem.Instance != null) Mewtations.Dialogue.DialogueSystem.Instance.HideWindow();
 
-            //
+            // Translated comment
             WorldManager.WorldSimulationPaused = false;
 
             if (Context != null && Context.Ordering != null && Context.Ordering.MyGameCard != null)
@@ -1090,19 +1194,19 @@ namespace Mewtations.Expedition
                 var gatewayCard = Context.Ordering.MyGameCard.Parent;
                 Vector3 spawnPos = (gatewayCard != null ? gatewayCard.transform.position : Context.Ordering.MyGameCard.transform.position) + Vector3.back * 1.5f;
 
-                //
+                // Translated comment
                 Context.Ordering.MyGameCard.RemoveFromStack();
                 Context.Ordering.MyGameCard.transform.position = spawnPos + Vector3.right * 1.5f;
                 WorldManager.instance.SendToBoard(Context.Ordering.MyGameCard, WorldManager.instance.CurrentBoard, Context.Ordering.MyGameCard.transform.position);
 
-                //
+                // Translated comment
                 foreach (var cat in ActiveCats)
                 {
                     if (cat != null)
                     {
-                        cat.ClearMutations(); //
+                        cat.ClearMutations(); // Translated comment
                         
-                        //
+                        // Translated comment
                         if (RuntimeCatStates.TryGetValue(cat.UniqueId, out var state))
                         {
                             cat.HealthPoints = state.HP;
@@ -1112,14 +1216,14 @@ namespace Mewtations.Expedition
                             cat.ExhaustionLevel = state.ExhaustionLevel;
                         }
 
-                        //
-                        int staminaDebt = 20; //
+                        // Translated comment
+                        int staminaDebt = 20; // Translated comment
                         if (RunState != null) {
-                            staminaDebt += (RunState.CurrentLayer * 5); //
+                            staminaDebt += (RunState.CurrentLayer * 5); // Translated comment
                         }
                         cat.Stamina = UnityEngine.Mathf.Max(0, cat.Stamina - staminaDebt);
                         
-                        //
+                        // Translated comment
                         if (cat.Stamina == 0) {
                             cat.AddMemoir("Returned in an exhausted state! (Exhausted Return)");
                         }
@@ -1161,52 +1265,52 @@ namespace Mewtations.Expedition
 
                 if (!isDefeat)
                 {
-                    //
+                    // Translated comment
                     MutationPersistenceSystem.ProcessRunVictoryTraits(ActiveCats);
 
-                    //
+                    // Translated comment
                     
 
-                    //
+                    // Translated comment
                     if (ActiveNode != null && ActiveNode.Type == NodeType.Boss)
                     {
                         var summoning = new CatSummoningSystem(WorldManager.instance);
-                        summoning.SummonCat(spawnPos, highestBreakthroughLevel: 2); //
-                        Debug.Log(Mewtations.Core.MewtationsLoc.Translate("exp_log_boss_reward", "[Expedition] Phần thưởng Boss: Triệu hồi một Thần Miêu!"));
+                        summoning.SummonCat(spawnPos, highestBreakthroughLevel: 2); // Translated comment
+                        Debug.Log("[Expedition] (Translated Log)");
                     }
                 }
                 else
                 {
-                    //
+                    // Translated comment
                     if (Context != null && Context.Ordering != null && Context.Ordering.MyGameCard != null && Context.Ordering.MyGameCard.InventoryContainer != null) { int insuredSlots = Context.Ordering.InsuredSlots;
                         if (isManualRetreat)
                         {
-                            //
+                            // Translated comment
                             if (RunState != null)
                             {
                                 RunState.GreedLevel = Mathf.Min(100, RunState.GreedLevel + 15);
                             }
                             ExpeditionExtractionSystem.ApplyManualRetreatPenalty(Context.Ordering.MyGameCard.InventoryContainer, insuredSlots);
-                            Debug.Log(Mewtations.Core.MewtationsLoc.Translate("exp_log_retreat", "[Expedition] Rút lui chiến thuật: Bị phạt một phần tài nguyên."));
+                            Debug.Log("[Expedition] (Translated Log)");
                         }
                         else
                         {
                             float rate = ExpeditionExtractionSystem.CalculateLootRetentionRate(RunState, Context.Ordering.MyGameCard.InventoryContainer, Context.Ordering.StorageCapacity);
                               ExpeditionExtractionSystem.ApplyAbandonPenalty(Context.Ordering.MyGameCard.InventoryContainer, rate, insuredSlots);
-                            Debug.Log(Mewtations.Core.MewtationsLoc.Translate("exp_log_abandon", "[Expedition] Đội bị tiêu diệt: Mất phần lớn tài nguyên."));
+                            Debug.Log("[Expedition] (Translated Log)");
                         }
                         
                     }
                 }
 
-                //
+                // Translated comment
                 if (BackpackCardSource != null && BackpackCardSource.MyGameCard != null)
                 {
                     BackpackCardSource.MyGameCard.transform.position = spawnPos + Vector3.right * 1.0f;
                     BackpackCardSource.MyGameCard.gameObject.SetActive(true);
                 }
 
-                //
+                // Translated comment
                 if (RelicCardSource != null && RelicCardSource.MyGameCard != null)
                 {
                     RelicCardSource.MyGameCard.transform.position = spawnPos + Vector3.left * 1.0f;
@@ -1215,14 +1319,14 @@ namespace Mewtations.Expedition
                 RelicCardSource = null;
                 RunState.EquippedRelicId = "";
 
-                //
+                // Translated comment
                 if (PortalCardSource.CardData.Id == "strange_portal")
                 {
                     PortalCardSource.DestroyCard(false, true);
                 }
             }
 
-            Debug.Log(Mewtations.Core.MewtationsLoc.Translate("exp_log_return_base", "[Expedition] Chuyến Viễn Chinh kết thúc. Trở về căn cứ."));
+            Debug.Log("[Expedition] (Translated Log)");
         }
 
         public void SaveToExtraKeyValues(List<SerializedKeyValuePair> list)
@@ -1270,7 +1374,7 @@ namespace Mewtations.Expedition
                 return;
             }
 
-            //
+            // Translated comment
             string unlockedHints = GetValueOrDefault(list, "Mewtations_UnlockedHints", "");
             ChronicleManager.Deserialize(unlockedHints);
 
@@ -1367,7 +1471,7 @@ namespace Mewtations.Expedition
             ActiveNode = activeNodeId >= 0 ? MapNodes.Find(n => n.Id == activeNodeId) : null;
 
 
-            //
+            // Translated comment
             foreach (var cat in ActiveCats)
             {
                 if (cat != null && cat.MyGameCard != null)
@@ -1384,7 +1488,7 @@ namespace Mewtations.Expedition
                 BackpackCardSource.MyGameCard.gameObject.SetActive(false);
             }
 
-            //
+            // Translated comment
             if (State == ExpeditionState.MapNavigation && ExpeditionMapUI.Instance != null)
             {
                 ExpeditionMapUI.Instance.ShowWindow();
@@ -1392,11 +1496,6 @@ namespace Mewtations.Expedition
         }
     }
 }
-
-
-
-
-
 
 
 

@@ -474,11 +474,9 @@ namespace Mewtations.Expedition
                     cat.AddMemoir(MemoirType.Mutation, UnstableMutation.GetDisplayName(mutation), "Cường hành nạp linh bùng phát dị biến");
                     runState.AddCorruption(15);
 
-                    string resText = $"<b>{cat.Name}</b> đã cắn răng tiếp thụ luồng linh lực cuồng bạo!\n\n" +
-                                    $"Hậu quả dị biến: <b><color=red>{UnstableMutation.GetDisplayName(mutation)}</color></b>\n" +
-                                    $"<i>{UnstableMutation.GetDescription(mutation)}</i>";
+                    string resText = string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_encounter_mutation_desc", "<b>{0}</b> đã cắn răng tiếp thu luồng linh lực cuồng bạo!\n\nHậu quả đột biến: <b><color=red>{1}</color></b>\n<i>{2}</i>"), cat.Name, UnstableMutation.GetDisplayName(mutation), UnstableMutation.GetDescription(mutation));
 
-                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue("Dị Biến Kết Thúc", resText, new List<string> { "Tiếp tục" }, (idx) =>
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(Mewtations.Core.MewtationsLoc.Translate("exp_encounter_mutation_title", "Đột Biến Kết Thúc"), resText, new List<string> { Mewtations.Core.MewtationsLoc.Translate("exp_encounter_continue", "Tiếp tục") }, (idx) =>
                     {
                         onComplete?.Invoke();
                     });
@@ -506,7 +504,7 @@ namespace Mewtations.Expedition
                 alignment = TextAnchor.MiddleCenter
             };
 
-            if (GUI.Button(buttonRect, "⚔️ HOÀN THÀNH THU THẬP", buttonStyle))
+            if (GUI.Button(buttonRect, Mewtations.Core.MewtationsLoc.Translate("exp_encounter_gathering_finish", "⚔️ HOÀN THÀNH THU THẬP"), buttonStyle))
             {
                 // Freeze the board again
                 // Time.timeScale = 0f; (Removed for Expedition V1 Compliance)
@@ -547,7 +545,7 @@ namespace Mewtations.Expedition
                 comb.HealthPoints = comb.BaseCombatStats.MaxHealth;
                 comb.BaseCombatStats.AttackDamage = Mathf.RoundToInt(comb.BaseCombatStats.AttackDamage * scaleFactor);
                 comb.BaseCombatStats.Speed += 15;
-                comb.CustomName = $"🔥 Cương Giả {comb.Name}";
+                comb.CustomName = string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_encounter_elite_name_prefix", "🔥 Cương Giả {0}"), comb.Name);
                 enemies.Add(comb);
             }
 
@@ -580,11 +578,10 @@ namespace Mewtations.Expedition
                         cat.AddMemoir(MemoirType.BossKill, "Hạ Cương Giả", "Trảm sát Cương Giả nhận bùa chú");
                     }
 
-                    string title = "⚔️ CƯƠNG GIẢ PHÁT BẠI";
-                    string text = $"Chúc mừng! Toàn đội đã tiêu diệt thành công Cương Giả hộ vệ.\n\n" +
-                                  $"Thu về linh bảo: <b>{rolled.Replace("item_", "").Replace("talisman_", "").ToUpper()}</b> và Vàng.";
+                    string title = Mewtations.Core.MewtationsLoc.Translate("exp_encounter_elite_title", "⚔️ CƯƠNG GIẢ PHÁT BẠI");
+                    string text = string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_encounter_elite_desc", "Chúc mừng! Toàn đội đã tiêu diệt thành công Cương Giả hộ vệ.\n\nThu về linh bảo: <b>{0}</b> và Vàng."), rolled.Replace("item_", "").Replace("talisman_", "").ToUpper());
 
-                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "Thu hoạch và Đi tiếp" }, (idx) =>
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { Mewtations.Core.MewtationsLoc.Translate("exp_encounter_harvest_continue", "Thu hoạch và Đi tiếp") }, (idx) =>
                     {
                         onComplete?.Invoke();
                     });
@@ -603,11 +600,10 @@ namespace Mewtations.Expedition
         {
             var manager = ExpeditionManager.Instance;
 
-            string title = "🌀 CỔNG TRỤC XUẤT CỔ ĐẠI";
-            string text = "Trước mắt bạn là một Cổng Trục Xuất phát ra hào quang dịu nhẹ. Cổng này cho phép toàn đội kết thúc viễn chinh sớm và đem toàn bộ đồ vật trong Balo về Base an toàn.\n\n" +
-                          "Bạn muốn làm gì?";
+            string title = Mewtations.Core.MewtationsLoc.Translate("exp_encounter_extraction_title", "🌀 CỔNG TRỤC XUẤT CỔ ĐẠI");
+            string text = Mewtations.Core.MewtationsLoc.Translate("exp_encounter_extraction_desc", "Trước mặt bạn là một Cổng Trục Xuất phát ra hào quang dịu nhẹ. Cổng này cho phép toàn đội kết thúc viễn chinh sớm và đem toàn bộ đồ vật trong Balo về Base an toàn.\n\nBạn muốn làm gì?");
 
-            var choices = new List<string> { "🌀 Trục xuất về Base (An toàn 100% loot)", "Rời đi, tiếp tục viễn chinh" };
+            var choices = new List<string> { Mewtations.Core.MewtationsLoc.Translate("exp_encounter_extraction_yes", "🌀 Trục xuất về Base (An toàn 100% loot)"), Mewtations.Core.MewtationsLoc.Translate("exp_encounter_extraction_no", "Rời đi, tiếp tục viễn chinh") };
 
             Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices, (idx) =>
             {
@@ -629,11 +625,10 @@ namespace Mewtations.Expedition
         {
             var manager = ExpeditionManager.Instance;
 
-            string title = "⛺ ẨN TRÁNH CỔ LỘ (TRẠM NGHỈ)";
-            string text = "Một hang động ẩn khuất tự nhiên cực kỳ an toàn. Nơi này linh lực ôn hòa, tránh xa mọi ma thú và ô nhiễm thiên địa.\n\n" +
-                          "Toàn đội có thể chọn nghỉ ngơi để hồi phục thể trạng hoặc dưỡng thương.";
+            string title = Mewtations.Core.MewtationsLoc.Translate("exp_encounter_retreat_title", "⛺ ẨN TRÁNH CỔ LỘ (TRẠM NGHỈ)");
+            string text = Mewtations.Core.MewtationsLoc.Translate("exp_encounter_retreat_desc", "Một hang động ẩn khuất tự nhiên cực kỳ an toàn. Nơi này linh lực ôn hòa, tránh xa mọi ma thú và ô nhiễm thiên địa.\n\nToàn đội có thể chọn nghỉ ngơi để hồi phục thể trạng hoặc dưỡng thương.");
 
-            var choices = new List<string> { "💖 Nghỉ ngơi hồi phục (+15 HP cho toàn đội)", "Rời đi bình thường" };
+            var choices = new List<string> { Mewtations.Core.MewtationsLoc.Translate("exp_encounter_retreat_rest", "💖 Nghỉ ngơi hồi phục (+15 HP cho toàn đội)"), Mewtations.Core.MewtationsLoc.Translate("exp_encounter_retreat_leave", "Rời đi bình thường") };
 
             Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices, (idx) =>
             {
@@ -643,7 +638,7 @@ namespace Mewtations.Expedition
                     {
                         cat.HealthPoints = Mathf.Min(cat.ProcessedCombatStats.MaxHealth, cat.HealthPoints + 15);
                     }
-                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue("⛺ Dưỡng Thương Hoàn Thành", "Toàn đội mèo phục hồi kinh mạch (+15 HP)!", new List<string> { "Đồng ý" }, (i) => onComplete?.Invoke());
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(Mewtations.Core.MewtationsLoc.Translate("exp_encounter_retreat_finish_title", "⛺ Dưỡng Thương Hoàn Thành"), Mewtations.Core.MewtationsLoc.Translate("exp_encounter_retreat_finish_desc", "Toàn đội mèo phục hồi kinh mạch (+15 HP)!"), new List<string> { Mewtations.Core.MewtationsLoc.Translate("exp_encounter_agree", "Đồng ý") }, (i) => onComplete?.Invoke());
                 }
                 else
                 {

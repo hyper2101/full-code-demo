@@ -150,14 +150,14 @@ namespace Mewtations.Expedition
             GUILayout.BeginArea(overlayRect, _panelStyle);
 
             // 1. Header
-            GUILayout.Label("CHIẾN LỘ VIỄN CHINH — EXPEDITION MAP", _headerStyle);
+            GUILayout.Label(Mewtations.Core.MewtationsLoc.Translate("exp_map_header", "CHIẾN LỘ VIỄN CHINH — EXPEDITION MAP"), _headerStyle);
             GUILayout.Space(20);
 
             GUILayout.BeginHorizontal();
 
             // ================== LEFT COLUMN: MAP NODES TREE ==================
             GUILayout.BeginVertical(GUILayout.Width(screenWidth * 0.55f));
-            GUILayout.Label("<color=#ffaa00>BẢN ĐỒ VIỄN CHINH (SLAY THE SPIRE)</color>", _subHeaderStyle);
+            GUILayout.Label($"<color=#ffaa00>{Mewtations.Core.MewtationsLoc.Translate("exp_map_sub_header", "BẢN ĐỒ VIỄN CHINH (SLAY THE SPIRE)")}</color>", _subHeaderStyle);
             GUILayout.Space(10);
 
             // Group nodes by Layer descending (Boss on top, layer 0 at bottom)
@@ -169,7 +169,7 @@ namespace Mewtations.Expedition
                 var layerNodes = nodes.Where(n => n.Layer == layer).OrderBy(n => n.Position).ToList();
 
                 GUILayout.BeginHorizontal();
-                GUILayout.Label($"<b>TẦNG {layer}:</b>", _labelStyle, GUILayout.Width(75));
+                GUILayout.Label($"<b>{string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_map_layer", "TẦNG {0}:"), layer)}</b>", _labelStyle, GUILayout.Width(75));
                 GUILayout.FlexibleSpace();
 
                 foreach (var node in layerNodes)
@@ -209,7 +209,7 @@ namespace Mewtations.Expedition
 
             // THEMATIC METRICS PANEL
             GUILayout.BeginVertical(_backpackPanelStyle);
-            GUILayout.Label("<color=#ff5555>🔱 PHÁP TẮC VIỄN CHINH (THEMATIC METRICS)</color>", _subHeaderStyle);
+            GUILayout.Label($"<color=#ff5555>🔱 {Mewtations.Core.MewtationsLoc.Translate("exp_map_thematic_metrics", "PHÁP TẮC VIỄN CHINH (THEMATIC METRICS)")}</color>", _subHeaderStyle);
             GUILayout.Space(10);
 
             var runState = ExpeditionManager.Instance.RunState;
@@ -217,14 +217,14 @@ namespace Mewtations.Expedition
             float corruptPercent = runState.CorruptionLevel / 100f;
 
             // Greed Bar
-            GUILayout.Label($"<b>Tham Lam (Greed):</b> <color=#ff5555>{runState.GreedLevel}%</color> <i>(Tăng lực chiến quái vật: +{runState.GreedLevel * 2}% HP/ATK)</i>", _labelStyle);
+            GUILayout.Label($"<b>{Mewtations.Core.MewtationsLoc.Translate("exp_map_greed", "Tham Lam (Greed):")}</b> <color=#ff5555>{runState.GreedLevel}%</color> <i>{string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_map_greed_desc", "(Tăng lực chiến quái vật: +{0}% HP/ATK)"), runState.GreedLevel * 2)}</i>", _labelStyle);
             GUILayout.Space(2);
             Rect greedRect = GUILayoutUtility.GetRect(0, 18, GUILayout.ExpandWidth(true));
             DrawProgressBar(greedRect, greedPercent, _greedBgTex, _greedFillTex);
             GUILayout.Space(10);
 
             // Corruption Bar
-            GUILayout.Label($"<b>Ô Nhiễm (Corruption):</b> <color=#e066ff>{runState.CorruptionLevel}%</color> <i>(Tăng tỷ lệ Đột Biến khi chiến đấu)</i>", _labelStyle);
+            GUILayout.Label($"<b>{Mewtations.Core.MewtationsLoc.Translate("exp_map_corruption", "Ô Nhiễm (Corruption):")}</b> <color=#e066ff>{runState.CorruptionLevel}%</color> <i>{Mewtations.Core.MewtationsLoc.Translate("exp_map_corruption_desc", "(Tăng tỷ lệ Đột Biến khi chiến đấu)")}</i>", _labelStyle);
             GUILayout.Space(2);
             Rect corruptRect = GUILayoutUtility.GetRect(0, 18, GUILayout.ExpandWidth(true));
             DrawProgressBar(corruptRect, corruptPercent, _corruptBgTex, _corruptFillTex);
@@ -242,21 +242,21 @@ namespace Mewtations.Expedition
                 switch (runState.EquippedRelicId)
                 {
                     case "item_ancient_relic_smelt":
-                        relicName = "Linh Lò Tự Động (Auto-Smelt Relic)";
-                        relicDesc = "Tự động thúc tiến tất cả Lò Nung/Furnace ở căn cứ thêm <color=#88ff88>+15 giây</color> sau mỗi khu vực viễn chinh hoàn thành.";
+                        relicName = Mewtations.Core.MewtationsLoc.Translate("exp_relic_auto_smelt_name", "Linh Lò Tự Động (Auto-Smelt Relic)");
+                        relicDesc = Mewtations.Core.MewtationsLoc.Translate("exp_relic_auto_smelt_desc", "Tự động thúc tiến tất cả Lò Nung/Furnace ở căn cứ thêm <color=#88ff88>+15 giây</color> sau mỗi khu vực viễn chinh hoàn thành.");
                         break;
                     case "item_ancient_relic_wood":
-                        relicName = "Linh Mộc Tự Động (Auto-Sawmill Relic)";
-                        relicDesc = "Tự động thúc tiến tất cả Xưởng Xẻ Gỗ/Sawmill ở căn cứ thêm <color=#88ff88>+15 giây</color> sau mỗi khu vực viễn chinh hoàn thành.";
+                        relicName = Mewtations.Core.MewtationsLoc.Translate("exp_relic_auto_sawmill_name", "Linh Mộc Tự Động (Auto-Sawmill Relic)");
+                        relicDesc = Mewtations.Core.MewtationsLoc.Translate("exp_relic_auto_sawmill_desc", "Tự động thúc tiến tất cả Xưởng Xẻ Gỗ/Sawmill ở căn cứ thêm <color=#88ff88>+15 giây</color> sau mỗi khu vực viễn chinh hoàn thành.");
                         break;
                     case "item_ancient_relic_booster":
-                        relicName = "Linh Thần Thu Hoạch (Universal Booster Relic)";
-                        relicDesc = "Tự động thúc tiến <color=#88ff88>TẤT CẢ</color> các công trình đang chạy ở căn cứ thêm <color=#88ff88>+5 giây</color> sau mỗi khu vực.";
+                        relicName = Mewtations.Core.MewtationsLoc.Translate("exp_relic_auto_booster_name", "Linh Thần Thu Hoạch (Universal Booster Relic)");
+                        relicDesc = Mewtations.Core.MewtationsLoc.Translate("exp_relic_auto_booster_desc", "Tự động thúc tiến <color=#88ff88>TẤT CẢ</color> các công trình đang chạy ở căn cứ thêm <color=#88ff88>+5 giây</color> sau mỗi khu vực.");
                         break;
                 }
                 if (!string.IsNullOrEmpty(relicName))
                 {
-                    GUILayout.Label($"<color=#00ffcc>🔮 CỔ VẬT ĐANG TRANG BỊ:</color>\n<b>{relicName}</b>", _subHeaderStyle);
+                    GUILayout.Label($"<color=#00ffcc>🔮 {Mewtations.Core.MewtationsLoc.Translate("exp_relic_equipped", "CỔ VẬT ĐANG TRANG BỊ:")}</color>\n<b>{relicName}</b>", _subHeaderStyle);
                     GUILayout.Label($"<color=#cccccc><i>{relicDesc}</i></color>", _labelStyle);
                 }
                 GUILayout.EndVertical();
@@ -265,7 +265,7 @@ namespace Mewtations.Expedition
 
             // SQUAD STATUS PANEL
             GUILayout.BeginVertical(_backpackPanelStyle);
-            GUILayout.Label("<color=#7cc>ĐỘI NGŨ THẦN MIÊU VIỄN CHINH</color>", _subHeaderStyle);
+            GUILayout.Label($"<color=#7cc>{Mewtations.Core.MewtationsLoc.Translate("exp_map_squad_status", "ĐỘI NGŨ THẦN MIÊU VIỄN CHINH")}</color>", _subHeaderStyle);
             GUILayout.Space(10);
 
             foreach (var cat in ExpeditionManager.Instance.ActiveCats)
@@ -273,12 +273,13 @@ namespace Mewtations.Expedition
                 if (cat == null) continue;
                 string roleText = $"<color=#eeaa22>[{cat.Role}]</color>";
                 string elementText = cat.Element != CatElement.None ? $"<color=#88ccff>[{cat.Element}]</color> " : "";
-                string speedText = $"Speed: {cat.Speed}";
+                string speedText = string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_map_speed", "Speed: {0}"), cat.Speed);
                 
                 GUILayout.Label($"<b>{cat.Name}</b> {roleText} {elementText}— HP: {cat.HealthPoints}/{cat.ProcessedCombatStats.MaxHealth} | {speedText}", _labelStyle);
                 
                 // Lineage Generation
-                GUILayout.Label($"   🧬 <color=#88ff88>Thế hệ Đời thứ: {cat.LineageGeneration}</color>", _labelStyle);
+                GUILayout.Label($"   🧬 <color=#88ff88>{string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_map_lineage", "Thế hệ Đời thứ: {0}"), cat.LineageGeneration)}</color>", _labelStyle);
+
 
                 // Draw Permanent Talents
                 var talents = cat.PermanentTraits;
@@ -288,7 +289,7 @@ namespace Mewtations.Expedition
                     {
                         string talentName = HeavenlyTalent.GetDisplayName(talent);
                         string talentDesc = HeavenlyTalent.GetDescription(talent);
-                        GUILayout.Label($"   ✦ <color=#ffaa00><b>Thiên Phú: {talentName}</b></color>\n   <color=#aaaaaa><i>({talentDesc})</i></color>", _labelStyle);
+                        GUILayout.Label($"   ✦ <color=#ffaa00><b>{string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_map_talent", "Thiên Phú: {0}"), talentName)}</b></color>\n   <color=#aaaaaa><i>({talentDesc})</i></color>", _labelStyle);
                     }
                 }
 
@@ -300,7 +301,7 @@ namespace Mewtations.Expedition
                     {
                         string mutName = UnstableMutation.GetDisplayName(mut);
                         string mutDesc = UnstableMutation.GetDescription(mut);
-                        GUILayout.Label($"   ☣️ <color=#e066ff><b>Đột Biến: {mutName}</b></color>\n   <color=#aaaaaa><i>({mutDesc})</i></color>", _labelStyle);
+                        GUILayout.Label($"   ☣️ <color=#e066ff><b>{string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_map_mutation", "Đột Biến: {0}"), mutName)}</b></color>\n   <color=#aaaaaa><i>({mutDesc})</i></color>", _labelStyle);
                     }
                 }
 
@@ -308,7 +309,7 @@ namespace Mewtations.Expedition
                 var memoirs = cat.CharacterMemoirs;
                 if (memoirs.Count > 0)
                 {
-                    GUILayout.Label("   📖 <b>Hồi Ký Thần Tích:</b>", _labelStyle);
+                    GUILayout.Label($"   📖 <b>{Mewtations.Core.MewtationsLoc.Translate("exp_map_memoirs", "Hồi Ký Thần Tích:")}</b>", _labelStyle);
                     int countToShow = Mathf.Min(3, memoirs.Count);
                     for (int i = memoirs.Count - countToShow; i < memoirs.Count; i++)
                     {
@@ -325,13 +326,13 @@ namespace Mewtations.Expedition
             // BACKPACK INVENTORY PANEL
             GUILayout.BeginVertical(_backpackPanelStyle);
             var backpack = ExpeditionManager.Instance.CurrentBackpack;
-            string capLabel = $"<color=#ccff88>DUNG TÍCH BALO: {backpack.ContainedCardIds.Count}/{backpack.MaxCapacity}</color>";
+            string capLabel = $"<color=#ccff88>{string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_map_backpack_cap", "DUNG TÍCH BALO: {0}/{1}"), backpack.ContainedCardIds.Count, backpack.MaxCapacity)}</color>";
             GUILayout.Label(capLabel, _subHeaderStyle);
             GUILayout.Space(10);
 
             if (backpack.ContainedCardIds.Count == 0)
             {
-                GUILayout.Label("<color=#777>[ Balo trống rỗng ]</color>", _labelStyle);
+                GUILayout.Label($"<color=#777>{Mewtations.Core.MewtationsLoc.Translate("exp_map_backpack_empty", "[ Balo trống rỗng ]")}</color>", _labelStyle);
             }
             else
             {
@@ -357,7 +358,7 @@ namespace Mewtations.Expedition
             GUILayout.Space(30);
 
             // ABANDON EXPEDITION BUTTON
-            if (GUILayout.Button("🏳 RÚT LUI KHỎI VIỄN CHINH (THUẾ NHÁT GAN -50% LOOT)", _buttonStyle, GUILayout.Height(50)))
+            if (GUILayout.Button(Mewtations.Core.MewtationsLoc.Translate("exp_map_abandon", "🏳 RÚT LUI KHỎI VIỄN CHINH (THUẾ NHÁT GAN -50% LOOT)"), _buttonStyle, GUILayout.Height(50)))
             {
                 ExpeditionManager.Instance.ReturnToBase(isDefeat: true, isManualRetreat: true);
             }
@@ -391,34 +392,34 @@ namespace Mewtations.Expedition
             switch (node.Type)
             {
                 case NodeType.Combat:
-                    prefix = "⚔️ Chiến Đấu";
+                    prefix = Mewtations.Core.MewtationsLoc.Translate("exp_node_combat", "⚔️ Chiến Đấu");
                     break;
                 case NodeType.Resource:
-                    prefix = "💎 Tài Nguyên";
+                    prefix = Mewtations.Core.MewtationsLoc.Translate("exp_node_resource", "💎 Tài Nguyên");
                     break;
                 case NodeType.Event:
-                    prefix = "📜 Sự Kiện";
+                    prefix = Mewtations.Core.MewtationsLoc.Translate("exp_node_event", "📜 Sự Kiện");
                     break;
                 case NodeType.Lore:
-                    prefix = "🐾 Điển Tích";
+                    prefix = Mewtations.Core.MewtationsLoc.Translate("exp_node_lore", "🐾 Điển Tích");
                     break;
                 case NodeType.Ruins:
-                    prefix = "🏚️ Phế Tích";
+                    prefix = Mewtations.Core.MewtationsLoc.Translate("exp_node_ruins", "🏚️ Phế Tích");
                     break;
                 case NodeType.Boss:
-                    prefix = "💀 BOSS TIẾN TRÌNH";
+                    prefix = Mewtations.Core.MewtationsLoc.Translate("exp_node_boss", "💀 BOSS TIẾN TRÌNH");
                     break;
                 case NodeType.Altar:
-                    prefix = "🔮 Tế Đàn";
+                    prefix = Mewtations.Core.MewtationsLoc.Translate("exp_node_altar", "🔮 Tế Đàn");
                     break;
                 case NodeType.Elite:
-                    prefix = "🔥 CƯƠNG GIẢ (ELITE)";
+                    prefix = Mewtations.Core.MewtationsLoc.Translate("exp_node_elite", "🔥 CƯƠNG GIẢ (ELITE)");
                     break;
                 case NodeType.Extraction:
-                    prefix = "🌀 CỔNG TRỤC XUẤT";
+                    prefix = Mewtations.Core.MewtationsLoc.Translate("exp_node_extraction", "🌀 CỔNG TRỤC XUẤT");
                     break;
                 case NodeType.SafeRetreat:
-                    prefix = "⛺ ẨN TRÁNH CỔ LỘ";
+                    prefix = Mewtations.Core.MewtationsLoc.Translate("exp_node_safe_retreat", "⛺ ẨN TRÁNH CỔ LỘ");
                     break;
             }
 
@@ -426,16 +427,16 @@ namespace Mewtations.Expedition
             switch (node.Biome)
             {
                 case ExpeditionBiome.Forest:
-                    biomeLabel = " <color=#88ff88>[Rừng]</color>";
+                    biomeLabel = $" <color=#88ff88>{Mewtations.Core.MewtationsLoc.Translate("exp_biome_forest", "[Rừng]")}</color>";
                     break;
                 case ExpeditionBiome.Swamp:
-                    biomeLabel = " <color=#ff33cc>[Đầm Lầy]</color>";
+                    biomeLabel = $" <color=#ff33cc>{Mewtations.Core.MewtationsLoc.Translate("exp_biome_swamp", "[Đầm Lầy]")}</color>";
                     break;
                 case ExpeditionBiome.Peak:
-                    biomeLabel = " <color=#33ccff>[Đỉnh Lôi]</color>";
+                    biomeLabel = $" <color=#33ccff>{Mewtations.Core.MewtationsLoc.Translate("exp_biome_peak", "[Đỉnh Lôi]")}</color>";
                     break;
                 case ExpeditionBiome.Abyss:
-                    biomeLabel = " <color=#aa33ff>[Vô Tận]</color>";
+                    biomeLabel = $" <color=#aa33ff>{Mewtations.Core.MewtationsLoc.Translate("exp_biome_abyss", "[Vô Tận]")}</color>";
                     break;
             }
             prefix += biomeLabel;
@@ -444,24 +445,24 @@ namespace Mewtations.Expedition
             switch (node.Theme)
             {
                 case RouteTheme.TaDao:
-                    themeLabel = " <color=#ff33cc>[Tà Đạo]</color>";
+                    themeLabel = $" <color=#ff33cc>{Mewtations.Core.MewtationsLoc.Translate("exp_theme_tadao", "[Tà Đạo]")}</color>";
                     break;
                 case RouteTheme.ThienLoi:
-                    themeLabel = " <color=#33ccff>[Thiên Lôi]</color>";
+                    themeLabel = $" <color=#33ccff>{Mewtations.Core.MewtationsLoc.Translate("exp_theme_thienloi", "[Thiên Lôi]")}</color>";
                     break;
                 case RouteTheme.ThamLam:
-                    themeLabel = " <color=#ffaa00>[Tham Lam]</color>";
+                    themeLabel = $" <color=#ffaa00>{Mewtations.Core.MewtationsLoc.Translate("exp_theme_thamlam", "[Tham Lam]")}</color>";
                     break;
                 case RouteTheme.ThuTrieu:
-                    themeLabel = " <color=#ff3333>[Thú Triều]</color>";
+                    themeLabel = $" <color=#ff3333>{Mewtations.Core.MewtationsLoc.Translate("exp_theme_thutrieu", "[Thú Triều]")}</color>";
                     break;
             }
 
             prefix += themeLabel;
 
-            if (node.State == NodeState.Visited) return $"{prefix}\n[Đã Qua]";
-            if (node.State == NodeState.Available) return $"{prefix}\n<color=#fff>[Vào Khám Phá]</color>";
-            return $"{prefix}\n[Bị Khóa]";
+            if (node.State == NodeState.Visited) return $"{prefix}\n{Mewtations.Core.MewtationsLoc.Translate("exp_state_visited", "[Đã Qua]")}";
+            if (node.State == NodeState.Available) return $"{prefix}\n<color=#fff>{Mewtations.Core.MewtationsLoc.Translate("exp_state_available", "[Vào Khám Phá]")}</color>";
+            return $"{prefix}\n{Mewtations.Core.MewtationsLoc.Translate("exp_state_locked", "[Bị Khóa]")}";
         }
     }
 }

@@ -59,3 +59,17 @@
 ## Summary
 
 All core features, dialog systems, and the Localization Interceptor with refined gameplay-clarity-first terminology are successfully implemented!
+
+## Recent Updates (Today)
+- [x] **ExpeditionManager.cs Refactor**
+  - Completely removed hardcoded English placeholder strings ("Translated Log", "exp_generic_log").
+  - Dynamically mapped legacy immersive strings (from Expeditionlegacy.cs) into event nodes (e.g. Kiếp Lôi, Lò Đan, Ma Huyệt, Dogma Hành Pháp).
+  - Maintained 100% of the newly corrected logic (gold deduction, rewards, HP changes, mutations).
+- [x] **MewtationsLocTable.tsv Consolidation**
+  - Synced all newly mapped legacy strings into the central .tsv file.
+  - Merged redundant root-level .tsv file into the official GameScripts\Core\Systems\MewtationsLocTable.tsv.
+  - Deduped keys and verified 100% localization coverage for ExpeditionManager.cs.
+- [x] **Workspace Cleanup**
+  - Removed temporary generator scripts (Generator.cs, Generator3.cs, FixRemnants.cs).
+  - Removed redundant Expeditionlegacy.cs after extracting its text.
+  - Merged GDD texts into a master gdd.md.

@@ -129,13 +129,13 @@ namespace Mewtations.Expedition
             if (ordering != null)
             {
                 string capColor = currentSlots >= maxSlots ? "#ff3333" : "#33cc33";
-                GUILayout.Label($"<color={capColor}>Túi Đồ Ordering: {currentSlots} / {maxSlots}</color>", new GUIStyle(_headerStyle) { fontSize = 16, richText = true });
+                GUILayout.Label($"<color={capColor}>{string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_reward_ordering_capacity", "Tải đồ Ordering: {0} / {1}"), currentSlots, maxSlots)}</color>", new GUIStyle(_headerStyle) { fontSize = 16, richText = true });
             }
             GUILayout.Space(20);
 
             if (_availableRewards.Count == 0)
             {
-                GUILayout.Label("Không còn phần thưởng nào!", _headerStyle);
+                GUILayout.Label(Mewtations.Core.MewtationsLoc.Translate("exp_reward_empty", "Không còn phần thưởng nào!"), _headerStyle);
             }
             else
             {
@@ -205,15 +205,15 @@ namespace Mewtations.Expedition
                 }
                 else
                 {
-                    GUILayout.Label("Bạn chắc chắn muốn bỏ lại phần thưởng chưa nhận chứ?", _warningStyle);
+                    GUILayout.Label(Mewtations.Core.MewtationsLoc.Translate("exp_reward_skip_confirm", "Bạn chắc chắn muốn bỏ lại phần thưởng chưa nhận chứ?"), _warningStyle);
                     GUILayout.Space(10);
                     GUILayout.BeginHorizontal();
-                    if (GUILayout.Button("Vâng, kết thúc", _buttonStyle, GUILayout.Height(50)))
+                    if (GUILayout.Button(Mewtations.Core.MewtationsLoc.Translate("exp_reward_skip_yes", "Vâng, kết thúc"), _buttonStyle, GUILayout.Height(50)))
                     {
                         _availableRewards.Clear();
                         RewardScreenClosed();
                     }
-                    if (GUILayout.Button("Hủy (Quay lại nhận)", _buttonStyle, GUILayout.Height(50)))
+                    if (GUILayout.Button(Mewtations.Core.MewtationsLoc.Translate("exp_reward_skip_no", "Hủy (Quay lại nhận)"), _buttonStyle, GUILayout.Height(50)))
                     {
                         _confirmSkip = false;
                     }
