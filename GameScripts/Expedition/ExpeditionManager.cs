@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -18,10 +18,12 @@ namespace Mewtations.Expedition
         public ExpeditionNode ActiveNode = null;
         public List<CatCardData> ActiveCats = new List<CatCardData>();
         public CardData BackpackCardSource = null;
-        public Backpack CurrentBackpack = null;
         public GameCard PortalCardSource = null;
         public int CurrentMapSeed = 0;
-        public CardData RelicCardSource = null; // Cá»• váº­t Ä‘ang mang theo
+        public CardData RelicCardSource = null; // Translated comment
+        
+        public ExpeditionRunContext Context = null; // Translated comment
+
 
         public Dictionary<string, ExpeditionCatState> RuntimeCatStates = new Dictionary<string, ExpeditionCatState>();
 
@@ -34,7 +36,7 @@ namespace Mewtations.Expedition
                 {
                     if (cat.IsParalyzed || cat.HealthPoints <= 0)
                     {
-                        continue; // Imprisoned/Dead equivalent. Allow exhausted/injured.
+                        continue; // Translated comment
                     }
 
 
@@ -49,55 +51,61 @@ namespace Mewtations.Expedition
             Instance = this;
         }
 
-           public void StartExpedition(GameCard portalCard, CardData backpackCard, CardData relicCard = null)
+        public void StartExpedition(ExpeditionRunContext context)
         {
             if (IsExpeditionActive) return;
 
-            // Kiá»ƒm tra Threat Lock
+            // Translated comment
             if (GameScripts.Systems.Threat.ThreatManager.Instance != null && GameScripts.Systems.Threat.ThreatManager.Instance.HasActivePenalty(GameScripts.Systems.Threat.ThreatPenaltyType.LockExpedition))
             {
-                WorldManager.instance.CreateFloatingText(portalCard, false, 0, "KhÃ´ng thá»ƒ khá»Ÿi hÃ nh! LÃ£nh Ä‘á»‹a Ä‘ang bá»‹ Ä‘e dá»a.", "", false, 0, 2f, true);
+                WorldManager.instance.CreateFloatingText(context.Ordering != null ? context.Ordering.MyGameCard : null, false, 0, "(Translated Log)", "", false, 0, 2f, true);
                 return;
             }
 
             var cats = GetExpeditionEligibleCats();
             if (cats.Count == 0)
             {
-                WorldManager.instance.CreateFloatingText(portalCard, false, 0, "KhÃ´ng cÃ³ mÃ¨o nÃ o Ä‘á»§ sá»©c khá»e Ä‘á»ƒ Ä‘i viá»…n chinh!", "", false, 0, 2f, true);
+                WorldManager.instance.CreateFloatingText(context.Ordering != null ? context.Ordering.MyGameCard : null, false, 0, "(Translated Log)", "", false, 0, 2f, true);
                 return;
             }
 
-            int capacity = (backpackCard != null && backpackCard.BackpackCapacity > 0) ? backpackCard.BackpackCapacity : 10;
+            int capacity = 10; // Translated comment
             int seed = UnityEngine.Random.Range(0, 100000);
 
-            RelicCardSource = relicCard;
-            if (relicCard != null)
-            {
-                RunState.EquippedRelicId = relicCard.Id;
-            }
-            else
-            {
-                RunState.EquippedRelicId = "";
-            }
+            // Translated comment
+            RelicCardSource = null;
 
-            ExecuteStartExpedition(portalCard, cats, backpackCard, capacity, seed);
+            ExecuteStartExpedition(context, cats, capacity, seed);
         }
 
-        private void ExecuteStartExpedition(GameCard portalCard, List<CatCardData> cats, CardData backpackCard, int capacity, int seed)
+        private void ExecuteStartExpedition(ExpeditionRunContext context, List<CatCardData> cats, int capacity, int seed)
         {
             IsExpeditionActive = true;
             State = ExpeditionState.MapNavigation;
             
-            // Preserve base sacrifice appeasement points from world state before clearing the run
+            // Translated comment
             int savedGreedAppeasement = RunState.BaseAppeasementGreed;
             int savedCorrAppeasement = RunState.BaseAppeasementCorruption;
             RunState.Clear();
             RunState.BaseAppeasementGreed = savedGreedAppeasement;
             RunState.BaseAppeasementCorruption = savedCorrAppeasement;
+            
+            if (context.Ordering != null && context.Ordering.MyGameCard != null && context.Ordering.MyGameCard.InventoryContainer != null)
+            {
+                foreach (var child in context.Ordering.MyGameCard.InventoryContainer.GetChildren())
+                {
+                    if (child != null && child.CardData != null && child.CardData.Id.StartsWith("item_ancient_relic_"))
+                    {
+                        RunState.ActiveRelicList.Add(child.CardData.Id);
+                    }
+                }
+            }
+            
+            Context = context; // Translated comment
 
-            PortalCardSource = portalCard;
+            PortalCardSource = null; // Translated comment
             ActiveCats = cats;
-            BackpackCardSource = backpackCard;
+            BackpackCardSource = null; // Translated comment
 
             RuntimeCatStates.Clear();
             foreach (var cat in ActiveCats)
@@ -113,7 +121,7 @@ namespace Mewtations.Expedition
                     ParentCardUniqueId = (cat.MyGameCard != null && cat.MyGameCard.Parent != null) ? cat.MyGameCard.Parent.CardData.UniqueId : ""
                 };
                 
-                // Hide cat from board
+                // Translated comment
                 if (cat.MyGameCard != null)
                 {
                     var p = cat.MyGameCard.Parent;
@@ -124,19 +132,17 @@ namespace Mewtations.Expedition
                 }
             }
 
-            CurrentBackpack = new Backpack(capacity);
-
             CurrentMapSeed = seed;
             MapNodes = ExpeditionMapGenerator.GenerateMap(seed, maxLayers: 6, maxNodesPerLayer: 3);
             ActiveNode = null;
 
-            // Initialize risk stats using non-static base appeasement
+            // Translated comment
             ExpeditionRiskSystem.InitializeRunStats(RunState);
 
-            // Freeze main board using WorldSimulationPaused
+            // Translated comment
             WorldManager.WorldSimulationPaused = true;
 
-            // Show Expedition Map UI Overlay
+            // Translated comment
             if (ExpeditionMapUI.Instance != null)
             {
                 ExpeditionMapUI.Instance.ShowWindow();
@@ -146,30 +152,15 @@ namespace Mewtations.Expedition
                 Debug.LogError("[ExpeditionManager] ExpeditionMapUI.Instance is null!");
             }
 
-            Debug.Log($"[Expedition] Báº¯t Ä‘áº§u viá»…n chinh vá»›i {cats.Count} mÃ¨o. Balo dung tÃ­ch: {capacity}.");
-        }
-
-        public void AdvanceNode(ExpeditionNode nextNode)
-        {
-            if (!IsExpeditionActive) return;
-
-            ActiveNode = nextNode;
-            // Xá»­ lÃ½ logic Node
-            
-            // --- Phase 7: Event Integration (Expedition Ambush) ---
-            // Táº¡m thá»i táº¯t á»Ÿ Phase nÃ y theo yÃªu cáº§u Ä‘á»ƒ táº­p trung test Dog Tax
-            /*
-            if (nextNode.Type == NodeType.Resource && UnityEngine.Random.value < 0.1f) // 10% bá»‹ phá»¥c kÃ­ch
-            {
-                Debug.Log("Expedition Ambush Event triggered!");
+            Debug.Log("[Expedition] (Translated Log)"(Translated Log)"[Expedition] (Translated Log)");
                 if (GameScripts.Systems.Threat.ThreatManager.Instance != null && GameScripts.Systems.Threat.ThreatManager.Instance.CatGodWrathTemplate != null)
                 {
-                    // Giáº£ láº­p phá»¥c kÃ­ch vá»›i data máº«u
+                    // Translated comment
                     GameScripts.Systems.Threat.ThreatManager.Instance.CreateThreat(
                         GameScripts.Systems.Threat.ThreatManager.Instance.CatGodWrathTemplate, 
                         GameScripts.Systems.Threat.ThreatSourceType.Expedition, 
                         RunState.CurrentDifficultyLevel, 
-                        0 // Phá»¥c kÃ­ch ngay láº­p tá»©c, khÃ´ng cÃ³ warning
+                        0 // Translated comment
                     );
                 }
             }
@@ -193,27 +184,27 @@ namespace Mewtations.Expedition
                 }
             }
 
-            // Travel food consumption has been disabled per user request
+            // Translated comment
 
-            // Route Themes initial impacts
+            // Translated comment
             if (node.Theme == RouteTheme.TaDao)
             {
                 RunState.AddCorruption(25);
-                Debug.Log("[Expedition] TÃ  Äáº¡o Ã¡p lá»±c! TÄƒng +25 Corruption khi bÆ°á»›c vÃ o khu vá»±c tÃ  khÃ­.");
+                Debug.Log("[Expedition] (Translated Log)");
             }
             else if (node.Theme == RouteTheme.ThamLam)
             {
                 RunState.AddGreed(10);
-                Debug.Log("[Expedition] Tham Lam Ã½ niá»‡m! TÄƒng +10 Greed khi bÆ°á»›c vÃ o khu vá»±c trÃ¹ phÃº.");
+                Debug.Log("[Expedition] (Translated Log)");
             }
 
-            // Hide Map UI while resolving node activities
+            // Translated comment
             if (ExpeditionMapUI.Instance != null)
             {
                 ExpeditionMapUI.Instance.HideWindow();
             }
 
-            Debug.Log($"[Expedition] Tiáº¿n vÃ o node {node.Id} ({node.Type}) á»Ÿ Táº§ng {node.Layer}. Lá»™ trÃ¬nh: {node.Theme}. Biome: {node.Biome}.");
+            Debug.Log($"[Expedition] Entered node {node.Id} ({node.Type}), Layer {node.Layer}. Theme: {node.Theme}. Biome: {node.Biome}.");
 
             IExpeditionEncounter encounter = null;
             switch (node.Type)
@@ -260,17 +251,17 @@ namespace Mewtations.Expedition
             }
             else
             {
-                // Fallback for Event or Lore node types
+                // Translated comment
                 TriggerTextEventNode(node.Type);
             }
         }
 
         private void TriggerCombat(bool isBoss)
         {
-            // Spawn random enemies based on the floor level
+            // Translated comment
             List<Combatable> enemies = new List<Combatable>();
             int enemyCount = UnityEngine.Random.Range(1, 4);
-            if (isBoss) enemyCount = 1; // Boss usually stands alone or with 1 guard
+            if (isBoss) enemyCount = 1; // Translated comment
 
             Vector3 spawnPos = Vector3.zero;
             for (int i = 0; i < enemyCount; i++)
@@ -283,11 +274,11 @@ namespace Mewtations.Expedition
                 }
             }
 
-            // Start turn-based combat overlay (exclude Paralyzed cats)
+            // Translated comment
             List<Combatable> playerCombats = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Cast<Combatable>(System.Linq.Enumerable.Where(ActiveCats, c => c != null && !c.IsParalyzed)));
             TurnBasedCombatManager.Instance.StartCombat(playerCombats, enemies, (result) =>
             {
-                // Destroy leftover enemy cards if player won
+                // Translated comment
                 foreach (var enemy in enemies)
                 {
                     if (enemy != null && enemy.MyGameCard != null)
@@ -298,19 +289,19 @@ namespace Mewtations.Expedition
 
                 if (result == CombatResult.Victory)
                 {
-                    // Reward loot
+                    // Translated comment
                     RollLootForCombat(isBoss);
                     CompleteNodeResolution();
                 }
                 else if (result == CombatResult.Retreated)
                 {
-                    // Escape back to the map or retreat out of the expedition
-                    Debug.Log("[Expedition] NgÆ°á»i chÆ¡i bá» cuá»™c! Há»§y bá» viá»…n chinh vÃ  quay vá» base.");
+                    // Translated comment
+                    Debug.Log("[Expedition] (Translated Log)");
                     ReturnToBase(isDefeat: true);
                 }
                 else
                 {
-                    // Defeat: lose all loot and return
+                    // Translated comment
                     ReturnToBase(isDefeat: true);
                 }
             });
@@ -338,26 +329,26 @@ namespace Mewtations.Expedition
             {
                 string loot = possibleLoot[UnityEngine.Random.Range(0, possibleLoot.Length)];
                 rolled.Add(loot);
-                CurrentBackpack.AddItem(loot);
+                RunState.PendingRewards.Add(loot);
             }
 
-            // Náº¿u lÃ  Boss tiáº¿n Ä‘á»™, thÆ°á»Ÿng thÃªm Cá»• Váº­t tá»± Ä‘á»™ng hÃ³a ngáº«u nhiÃªn vÃ o balo
+            // Translated comment
             if (isBoss)
             {
                 string[] relics = { "item_ancient_relic_auto_farm", "item_ancient_relic_auto_collect", "item_ancient_relic_auto_heal" };
                 string chosenRelic = relics[UnityEngine.Random.Range(0, relics.Length)];
                 rolled.Add(chosenRelic);
-                CurrentBackpack.AddItem(chosenRelic);
-                Debug.Log($"[Expedition] Boss chiáº¿n tháº¯ng! Nháº­n thÃªm Cá»• Váº­t chÃ­ tÃ´n: {chosenRelic}");
+                RunState.PendingRewards.Add(chosenRelic);
+                Debug.Log("[Expedition] (Translated Log)");
             }
 
             string lootMsg = string.Join(", ", rolled.Select(id => id.Replace("resource_", "").Replace("item_", "")));
-            Debug.Log($"[Expedition] Thu hoáº¡ch chiáº¿n lá»£i pháº©m: {lootMsg}");
+            Debug.Log("[Expedition] (Translated Log)");
         }
 
         private void TriggerResourceNode()
         {
-            // Drop resources directly into the backpack
+            // Translated comment
             int lootCount = UnityEngine.Random.Range(2, 5);
             string[] resources = { "resource_food", "item_wood", "item_stone", "resource_gold", "item_iron_ore" };
 
@@ -365,7 +356,7 @@ namespace Mewtations.Expedition
             for (int i = 0; i < lootCount; i++)
             {
                 string res = resources[UnityEngine.Random.Range(0, resources.Length)];
-                if (CurrentBackpack.AddItem(res))
+                RunState.PendingRewards.Add(res); if (true)
                 {
                     added.Add(res);
                 }
@@ -373,13 +364,13 @@ namespace Mewtations.Expedition
 
             string resMsg = added.Count > 0 
                 ? string.Join(", ", added.Select(id => id.Replace("resource_", "").Replace("item_", "")))
-                : "KhÃ´ng cÃ³ chá»— chá»©a trong Balo!";
+                : "(Translated Log)";
 
-            // Trigger dialogue overlay to display the resource gathering result
-            string title = "Thu tháº­p TÃ i NguyÃªn";
-            string text = $"Äá»™i cá»§a báº¡n Ä‘Ã£ tÃ¬m tháº¥y má»™t bÃ£i tÃ i nguyÃªn trÃ¹ phÃº!\n\nNháº­n Ä‘Æ°á»£c: {resMsg}";
+            // Translated comment
+            string title = "(Translated Log)";
+            string text = $"(Translated Log)";
             
-            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "Äá»“ng Ã½" }, (choiceIdx) =>
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "(Translated Log)" }, (choiceIdx) =>
             {
                 CompleteNodeResolution();
             });
@@ -388,22 +379,12 @@ namespace Mewtations.Expedition
         private void TriggerTextEventNode(NodeType type)
         {
             string title = "";
-            string text = "";
-            List<string> choices = new List<string>();
-            Action<int> onChoice = null;
-
-            if (type == NodeType.Event)
-            {
-                int eventRoll = UnityEngine.Random.Range(0, 7);
-                if (eventRoll == 0)
-                {
-                    // LÃ´i kiáº¿p thá»­ thÃ¡ch
-                    title = "âš¡ KIáº¾P LÃ”I THá»¬ THÃCH";
-                    text = "Äá»™i ngÅ© mÃ¨o Ä‘i tá»›i má»™t Ä‘á»‰nh nÃºi hoang váº¯ng, mÃ¢y Ä‘en cuá»™n trÃ o ngháº¹t thá»Ÿ. Tá»«ng tia lÃ´i Ä‘iá»‡n khá»•ng lá»“ giÃ¡ng xuá»‘ng nhÆ° LÃ´i Kiáº¿p Ä‘á»™ kiáº¿p!\n\nLÃ´i linh lá»±c cuá»“ng báº¡o nÃ y áº©n chá»©a cÆ¡ duyÃªn lá»›n nhÆ°ng cá»±c ká»³ nguy hiá»ƒm. Báº¡n muá»‘n lÃ m gÃ¬?";
+            string text = ""(Translated Log)"(Translated Log)";
+                    text = "(Translated Log)";
                     choices = new List<string> {
-                        "Háº¥p thá»¥ LÃ´i Kiáº¿p (YÃªu cáº§u mÃ¨o há»‡ SÃ©t hoáº·c Tá»‘c Ä‘á»™ cao)",
-                        "Äá»¡ Ä‘Ã²n há»™ Ä‘á»“ng Ä‘á»™i (YÃªu cáº§u Tank báº£o vá»‡)",
-                        "Tráº­n phÃ¡p phÃ²ng thá»§ (LÃ¡ch qua an toÃ n)"
+                        "(Translated Log)",
+                        "(Translated Log)",
+                        "(Translated Log)"
                     };
                     onChoice = (idx) =>
                     {
@@ -415,19 +396,19 @@ namespace Mewtations.Expedition
                             {
                                 var luckyCat = hasLightning ? ActiveCats.First(c => c.Element == CatElement.Lightning) : ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 luckyCat.Speed += 25;
-                                luckyCat.AddMemoir(MemoirType.Breakthrough, "LÃ´i Kiáº¿p Táº©y Tá»§y", "Háº¥p thá»¥ lÃ´i Ä‘iá»‡n Ä‘á»™t phÃ¡ vÃµ Ä‘áº¡o (+25 Speed)");
-                                DialogueResult("LÃ´i quang rá»±c rá»¡!", $"Tuyá»‡t Ä‘á»‰nh! Nhá» sá»± nháº¡y bÃ©n cá»±c Ä‘á»™ (hoáº·c linh cÄƒn há»‡ SÃ©t), chÃº mÃ¨o <b>{luckyCat.Name}</b> Ä‘Ã£ háº¥p thá»¥ trá»n váº¹n LÃ´i Äiá»‡n Pháº¡t, vÄ©nh viá»…n gia tÄƒng <b>+25 Tháº§n Tá»‘c</b>!");
+                                luckyCat.AddMemoir(MemoirType.Breakthrough, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.IsUltimateLocked = true;
-                                victim.AddMemoir(MemoirType.Mutation, "Táº©u Há»a Nháº­p Ma", "TrÃºng lÃ´i Ä‘iá»‡n báº¡o phÃ¡t báº¿ táº¯c linh máº¡ch, khÃ³a ká»¹ nÄƒng Ná»™");
+                                victim.AddMemoir(MemoirType.Mutation, "(Translated Log)", "(Translated Log)");
                                 foreach (var cat in ActiveCats)
                                 {
                                     cat.HealthPoints = Mathf.Max(1, cat.HealthPoints - 10);
                                 }
-                                DialogueResult("LÃ´i Pháº¡t Oanh Táº¡c!", $"Tá»‘c Ä‘á»™ quÃ¡ cháº­m! LÃ´i Ä‘iá»‡n cuá»“ng báº¡o thÃ¢m nháº­p tÃ n phÃ¡ kinh máº¡ch. ChÃº mÃ¨o <b>{victim.Name}</b> bá»‹ <b><color=red>Táº¨U Há»ŽA NHáº¬P MA (KHÃ“A Ká»¸ NÄ‚NG Ná»˜)</color></b> vÄ©nh viá»…n, toÃ n Ä‘á»™i thÆ°Æ¡ng náº·ng (-10 HP)!");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else if (idx == 1)
@@ -438,8 +419,8 @@ namespace Mewtations.Expedition
                                 tank.BaseCombatStats.MaxHealth += 10;
                                 tank.HealthPoints = tank.ProcessedCombatStats.MaxHealth;
                                 tank.IsPassiveSlotsLocked = true;
-                                tank.AddMemoir(MemoirType.Breakthrough, "Há»™ Thá»ƒ LÃ´i Kiáº¿p", "Äá»¡ lÃ´i kiáº¿p cho Ä‘á»“ng Ä‘á»™i, khÃ³a Ã´ ThiÃªn PhÃº");
-                                DialogueResult("Há»™ Thá»ƒ Tuyá»‡t Vá»i!", $"Anh hÃ¹ng! ChÃº Tank <b>{tank.Name}</b> Ä‘á»©ng ra Ä‘á»¡ lÃ´i pháº¡t cho toÃ n Ä‘á»™i. Tháº§n thá»ƒ Ä‘Æ°á»£c cÆ°á»ng hÃ³a (+10 Max HP) nhÆ°ng bÃ¹a chÃº bá»‹ phÃ¡ há»§y hoÃ n toÃ n, <b><color=red>Ã´ ThiÃªn PhÃº (Passive Slots) vÄ©nh viá»…n bá»‹ KHÃ“A</color></b>!");
+                                tank.AddMemoir(MemoirType.Breakthrough, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                             else
                             {
@@ -447,43 +428,40 @@ namespace Mewtations.Expedition
                                 {
                                     cat.HealthPoints = Mathf.Max(1, cat.HealthPoints - 15);
                                 }
-                                DialogueResult("Há»™ Vá»‡ Tháº¥t Báº¡i!", "Äá»™i hÃ¬nh khÃ´ng cÃ³ há»™ vá»‡ Tank chuyÃªn nghiá»‡p! Buá»™c pháº£i dÃ¹ng thÃ¢n xÃ¡c tráº§n tá»¥c chá»‘ng Ä‘á»¡, toÃ n Ä‘á»™i bá»‹ thÆ°Æ¡ng tá»•n cá»±c náº·ng (-15 HP)!");
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                         }
                         else
                         {
-                            DialogueResult("LÃ¡ch Qua An ToÃ n", "ToÃ n Ä‘á»™i thiáº¿t láº­p káº¿t giá»›i phÃ²ng thá»§ thÃ´ sÆ¡, cáº©n tháº­n Ä‘i vÃ²ng qua ngá»n nÃºi lÃ´i kiáº¿p an toÃ n.");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     };
                 }
                 else if (eventRoll == 1)
                 {
-                    // Tráº¡m tuáº§n tra
-                    title = "ðŸ• TRáº M TUáº¦N TRA Cá»¦A CHÃšNG CHÃ“";
-                    text = "PhÃ­a trÆ°á»›c xuáº¥t hiá»‡n chá»‘t gÃ¡c kiÃªn cá»‘ cá»§a loÃ i ChÃ³ kiá»ƒm soÃ¡t tráº­t tá»± xÃ£ há»™i. LÃ­nh tuáº§n tra chÃ³ bá»c giÃ¡p sáº¯t Ä‘ang canh phÃ²ng nghiÃªm ngáº·t.\n\nÄá»™i mÃ¨o cá»§a báº¡n mang theo balo Ä‘áº§y áº¯p tÃ i nguyÃªn kháº£ nghi. Báº¡n muá»‘n á»©ng phÃ³ tháº¿ nÃ o?";
+                    // Translated comment
+                    title = "(Translated Log)";
+                    text = "(Translated Log)";
                     choices = new List<string> {
-                        "ÄÃºt lÃ³t há»‘i lá»™ (TiÃªu hao 1 VÃ ng trong Balo - Giáº£m 20 Greed)",
-                        "Quyáº¿t chiáº¿n Ä‘á»™t phÃ¡ (Tháº¯ng lá»£i Ä‘áº«m mÃ¡u - TÄƒng 25 Corruption)",
-                        "LÃ©n lÃºt láº»n qua (YÃªu cáº§u Tá»‘c Ä‘á»™ trung bÃ¬nh > 115)",
-                        "Thuyáº¿t giáº£ng tÃ¢m lÃ½ (Cáº§n Tháº§n MiÃªu Thiá»n Äáº¡o giáº£i thoÃ¡t Ä‘áº¡o tÃ¢m lÃ­nh gÃ¡c)"
+                        "(Translated Log)",
+                        "(Translated Log)",
+                        "(Translated Log)",
+                        "(Translated Log)"
                     };
                     onChoice = (idx) =>
                     {
                         if (idx == 0)
                         {
-                            int goldIdx = CurrentBackpack.FindItemIndex("resource_gold");
-                            if (goldIdx >= 0)
-                            {
-                                CurrentBackpack.RemoveItemAt(goldIdx);
+                            if (ConsumeItemFromOrdering("resource_gold")) {
                                 RunState.GreedLevel = Mathf.Max(0, RunState.GreedLevel - 20);
-                                DialogueResult("Há»‘i Lá»™ ThÃ nh CÃ´ng!", "LÃ­nh tuáº§n tra ChÃ³ nháº­n láº¥y VÃ ng, cÆ°á»i nham nhá»Ÿ má»Ÿ cá»•ng cho Ä‘i qua. Sá»©c Ã©p luáº­t phÃ¡p xoa dá»‹u (-20 Greed)!");
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.IsEquipmentSlotsLocked = true;
-                                victim.AddMemoir(MemoirType.Mutation, "Tá»‹ch Thu Trang Bá»‹", "KhÃ´ng cÃ³ tiá»n Ä‘Ãºt lÃ³t, bá»‹ lÃ­nh tuáº§n tra khÃ³a Ã´ trang bá»‹");
-                                DialogueResult("KhÃ´ng CÃ³ Tiá»n ÄÃºt LÃ³t!", $"Balo khÃ´ng cÃ³ VÃ ng Ä‘á»ƒ há»‘i lá»™! LÃ­nh tuáº§n tra ná»•i giáº­n khÃ¡m xÃ©t toÃ n Ä‘á»™i. ChÃº mÃ¨o <b>{victim.Name}</b> bá»‹ tá»‹ch thu sáº¡ch vÅ© khÃ­ bÃ¹a chÃº vÃ  vÄ©nh viá»…n <b><color=red>KHÃ“A Ã´ Trang Bá»‹ (Equipment Slots)</color></b>!");
+                                victim.AddMemoir(MemoirType.Mutation, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else if (idx == 1)
@@ -492,24 +470,24 @@ namespace Mewtations.Expedition
                             {
                                 cat.HealthPoints = Mathf.Max(1, cat.HealthPoints - 8);
                             }
-                            CurrentBackpack.AddItem("resource_gold");
-                            CurrentBackpack.AddItem("item_iron_ore");
+                            RunState.PendingRewards.Add("resource_gold");
+                            RunState.PendingRewards.Add("item_iron_ore");
                             RunState.AddCorruption(25);
-                            DialogueResult("Huyáº¿t Chiáº¿n Äá»™t PhÃ¡!", "ToÃ n Ä‘á»™i tuá»‘t kiáº¿m liá»u cháº¿t xÃ´ng vÃ o! TiÃªu diá»‡t toÃ n bá»™ lÃ­nh canh, cÆ°á»›p láº¥y VÃ ng vÃ  Quáº·ng sáº¯t trong rÆ°Æ¡ng chá»‘t tuáº§n tra, toÃ n Ä‘á»™i bá»‹ thÆ°Æ¡ng nháº¹ (-8 HP) vÃ  tÄƒng máº¡nh sÃ¡t nghiá»‡p (+25 Corruption)!");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                         else if (idx == 2)
                         {
                             int avgSpeed = (int)ActiveCats.Average(c => c.Speed);
                             if (avgSpeed > 115)
                             {
-                                DialogueResult("Láº»n Qua ThÃ nh CÃ´ng!", "BÃ³ng ma bÃ³ng tá»‘i! Báº±ng bÆ°á»›c di chuyá»ƒn tháº§n tá»‘c, khÃ´ng tiáº¿ng Ä‘á»™ng, toÃ n Ä‘á»™i mÃ¨o Ä‘Ã£ lÆ°á»›t qua tráº¡m canh gÃ¡c trÃ³t lá»t mÃ  lÃ­nh chÃ³ khÃ´ng há» hay biáº¿t!");
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.IsEquipmentSlotsLocked = true;
-                                victim.AddMemoir(MemoirType.Mutation, "Báº¯t Giá»¯ Phong áº¤n", "LÃ©n láº»n tháº¥t báº¡i, bá»‹ khÃ³a Ã´ trang bá»‹ hÃ¬nh pháº¡t");
-                                DialogueResult("Bá»‹ Báº¯t Quáº£ Tang!", $"Tá»‘c Ä‘á»™ trung bÃ¬nh ({avgSpeed} Speed) quÃ¡ cháº­m! LÃ­nh chÃ³ phÃ¡t hiá»‡n báº¯t giá»¯ toÃ n Ä‘á»™i tra kháº£o. ChÃº mÃ¨o <b>{victim.Name}</b> bá»‹ tá»‹ch thu khÃ­ giá»›i, <b><color=red>Ã´ Trang bá»‹ vÄ©nh viá»…n bá»‹ KHÃ“A</color></b> lÃ m hÃ¬nh pháº¡t!");
+                                victim.AddMemoir(MemoirType.Mutation, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else if (idx == 3)
@@ -517,28 +495,28 @@ namespace Mewtations.Expedition
                             var zenCat = ActiveCats.Find(c => c.Specialization == Mewtations.Cards.Cats.DaoSpecialization.ZenDao);
                             if (zenCat != null)
                             {
-                                CurrentBackpack.AddItem("item_heavenly_relic");
+                                RunState.PendingRewards.Add("item_heavenly_relic");
                                 RunState.CorruptionLevel = Mathf.Max(0, RunState.CorruptionLevel - 20);
-                                DialogueResult("GiÃ¡c Ngá»™ Äáº¡o TÃ¢m!", $"GiÃ¡c ngá»™ thÃ nh cÃ´ng! ChÃº mÃ¨o Thiá»n Äáº¡o <b>{zenCat.Name}</b> Ä‘Ã£ thuyáº¿t giáº£ng Äáº¡o lÃ½ NhÃ¢n sinh cá»±c ká»³ thÃ¢m sÃ¢u, khai má»Ÿ Ä‘áº¡o tÃ¢m cho lÃ­nh tuáº§n tra ChÃ³ thoÃ¡t khá»i sá»± kiá»ƒm soÃ¡t gÃ² bÃ³ cá»§a há»‡ thá»‘ng.\n\nChÃº ChÃ³ cáº£m kÃ­ch rÆ¡i lá»‡, má»Ÿ cá»•ng táº·ng toÃ n Ä‘á»™i viÃªn <b>ChÃ­ TÃ´n Cá»• KhÃ­ (Heavenly Relic)</b> cá»±c hiáº¿m vÃ  xoa dá»‹u tÃ  khÃ­ (-20 Corruption)!");
+                                DialogueResult("Zen Awakening!", $"The Zen Dao cat calmed the guards. You gained a Heavenly Relic and reduced Corruption (-20)!");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.HealthPoints = Mathf.Max(1, victim.HealthPoints - 10);
-                                DialogueResult("GiÃ¡o HÃ³a Tháº¥t Báº¡i!", $"Äá»™i hÃ¬nh khÃ´ng cÃ³ Tháº§n MiÃªu Thiá»n Äáº¡o Ä‘á»ƒ giáº£ng giáº£i Äáº¡o phÃ¡p thuyáº¿t phá»¥c! LÃ­nh tuáº§n tra ChÃ³ cho ráº±ng báº¡n Ä‘ang sá»‰ nhá»¥c trÃ­ tuá»‡ cá»§a há», ná»•i giáº­n dÃ¹ng roi Ä‘iá»‡n Ä‘Ã¡nh thÆ°Æ¡ng <b>{victim.Name}</b> (-10 HP)!");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                     };
                 }
                 else if (eventRoll == 2)
                 {
-                    // LÃ² Ä‘an cá»•
-                    title = "âš—ï¸ LÃ’ LUYá»†N ÄAN Cá»” KÃNH";
-                    text = "Äan Ä‘iá»‡n pháº¿ tÃ­ch u Ã¡m hiá»‡n ra trÆ°á»›c máº¯t. á»ž trung tÃ¢m sáº£nh lá»›n lÃ  má»™t lÃ² luyá»‡n cá»• váº«n chÃ¡y Ã¢m á»‰ lá»­a tÃ­m nháº¡t rÃ² rá»‰ khÃ­ Ä‘á»™c. BÃªn trong cÃ³ thá»ƒ áº©n chá»©a nghá»‹ch thiÃªn linh Ä‘an hoáº·c ká»‹ch Ä‘á»™c pháº¿ linh máº¡ch.\n\nAi sáº½ Ä‘á»©ng ra xá»­ lÃ½ chiáº¿c lÃ² Ä‘an nÃ y?";
+                    // Translated comment
+                    title = "(Translated Log)";
+                    text = "(Translated Log)";
                     choices = new List<string> {
-                        "DÃ¹ng linh Ä‘á»™c hÃ³a giáº£i (Cáº§n mÃ¨o há»‡ Äá»™c)",
-                        "Lá»±c lÆ°á»£ng cÆ°á»¡ng cháº¿ má»Ÿ lÃ² (Rá»§i ro 50/50)",
-                        "Äáº­p phÃ¡ lÃ² thu pháº¿ liá»‡u (An toÃ n)"
+                        "(Translated Log)",
+                        "(Translated Log)",
+                        "(Translated Log)"
                     };
                     onChoice = (idx) =>
                     {
@@ -547,71 +525,68 @@ namespace Mewtations.Expedition
                             var poisonCat = ActiveCats.Find(c => c.Element == CatElement.Poison);
                             if (poisonCat != null)
                             {
-                                CurrentBackpack.AddItem("item_breakthrough_pill");
-                                DialogueResult("Khá»‘ng Cháº¿ Ká»‹ch Äá»™c!", $"Tuyá»‡t Ä‘á»‰nh! Nhá» linh cÄƒn ká»‹ch Ä‘á»™c báº©m sinh cá»§a <b>{poisonCat.Name}</b>, chÃº Ä‘Ã£ trung hÃ²a Ä‘an khÃ­ tÃ­m, má»Ÿ lÃ² láº¥y Ä‘Æ°á»£c viÃªn <b>Äá»˜T PHÃ LINH ÄAN</b> cá»±c ká»³ quÃ½ giÃ¡!");
+                                RunState.PendingRewards.Add("item_breakthrough_pill");
+                                DialogueResult("Poison Immunity!", $"Your poison cat neutralized the toxic mist. You successfully obtained a Breakthrough Pill!");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.IsPillSlotLocked = true;
-                                victim.AddMemoir(MemoirType.Mutation, "Linh Máº¡ch Äá»™c á»¨", "KhÃ­ Ä‘á»™c tÃ n phÃ¡ kinh máº¡ch Ä‘an dÆ°á»£c, khÃ³a Ã´ Linh Äan");
-                                DialogueResult("KhÃ´ng CÃ³ MÃ¨o Há»‡ Äá»™c!", $"Äá»™c khÃ­ tÃ­m bÃ¹ng phÃ¡t cuá»“n cuá»™n do khÃ´ng cÃ³ mÃ¨o há»‡ Äá»™c khá»‘ng cháº¿! ChÃº mÃ¨o <b>{victim.Name}</b> hÃ­t pháº£i Ä‘á»™c sÆ°Æ¡ng tÃ n phÃ¡ pháº¿ linh máº¡ch, <b><color=red>Ã´ Linh Äan (Pill Slot) vÄ©nh viá»…n bá»‹ KHÃ“A</color></b>!");
+                                victim.AddMemoir(MemoirType.Mutation, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else if (idx == 1)
                         {
                             if (UnityEngine.Random.value < 0.5f)
                             {
-                                CurrentBackpack.AddItem("item_breakthrough_pill");
-                                DialogueResult("Váº­n May Nghá»‹ch ThiÃªn!", "Váº­n may má»‰m cÆ°á»i! DÃ¹ khÃ­ Ä‘á»™c bá»‘c lÃªn ngÃ¹n ngá»¥t nhÆ°ng toÃ n Ä‘á»™i Ä‘Ã£ nhanh tay cÆ°á»›p láº¥y viÃªn <b>Äá»˜T PHÃ LINH ÄAN</b> thÃ nh cÃ´ng trÆ°á»›c khi Ä‘á»™c cháº¥n ná»• ra!");
+                                RunState.PendingRewards.Add("item_breakthrough_pill");
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.IsPillSlotLocked = true;
-                                victim.AddMemoir(MemoirType.Mutation, "LÃ² Äan Ná»• Tung", "TrÃºng khÃ­ Ä‘á»™c lÃ² Ä‘an ná»•, khÃ³a Ã´ Linh Äan");
-                                DialogueResult("LÃ² Äan Ná»• Tung!", $"BÃ¹m! LÃ² luyá»‡n Ä‘an phÃ¡t ná»• lá»›n báº¯n ra tÃ n dÆ° Ä‘an dÆ°á»£c ká»‹ch Ä‘á»™c. ChÃº mÃ¨o <b>{victim.Name}</b> trÃºng Ä‘á»™c ngÆ°ng káº¿t kinh máº¡ch Ä‘an Ä‘iá»n, <b><color=red>Ã´ Linh Äan vÄ©nh viá»…n bá»‹ KHÃ“A</color></b>!");
+                                victim.AddMemoir(MemoirType.Mutation, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else
                         {
-                            CurrentBackpack.AddItem("item_stone");
-                            CurrentBackpack.AddItem("item_iron_ore");
-                            DialogueResult("Thu Hoáº¡ch Pháº¿ Liá»‡u", "Quyáº¿t Ä‘á»‹nh sÃ¡ng suá»‘t! ToÃ n Ä‘á»™i Ä‘áº­p vá»¡ lÃ² Ä‘an an toÃ n, thu vá» ÄÃ¡ vá»¥n vÃ  Sáº¯t pháº¿ liá»‡u bá» vÃ o Balo viá»…n chinh.");
+                            RunState.PendingRewards.Add("item_stone");
+                            RunState.PendingRewards.Add("item_iron_ore");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     };
                 }
                 else if (eventRoll == 3)
                 {
-                    // Ma huyá»‡t hiáº¿n táº¿
-                    title = "ðŸ”´ MA HUYá»†T KHáº¤N NGUYá»†N";
-                    text = "Má»™t ma huyá»‡t phÃ¡t ra há»“ng quang rá»±c mÃ¡u ngÄƒn giá»¯a Ä‘Æ°á»ng Ä‘i. Linh khÃ­ bÃªn trong cuá»™n trÃ o quyáº¿n rÅ©, nhÆ° khÆ¡i dáº­y Ã½ niá»‡m Tham Lam tá»™t cÃ¹ng cá»§a loÃ i mÃ¨o.\n\nTháº§n linh Ä‘Ã²i há»i cÃºng náº¡p linh thá»±c Äƒn uá»‘ng hoáº·c cá»‘t tá»§y kinh máº¡ch Ä‘á»ƒ ban phÃ¡t thiÃªn phÃº Ä‘á»™t phÃ¡ vÄ©nh viá»…n.";
+                    // Translated comment
+                    title = "(Translated Log)";
+                    text = "(Translated Log)";
                     choices = new List<string> {
-                        "DÃ¢ng hiáº¿n Linh Thá»±c (TiÃªu hao 1 Thá»©c Äƒn trong Balo - Nháº­n ThiÃªn PhÃº vÄ©nh viá»…n)",
-                        "Huyáº¿t Thá»‡ Cá»‘t Tá»§y (Äá»™t phÃ¡ Cáº£nh giá»›i - Cháº¥p nháº­n khÃ³a Ã´ Thá»©c Äƒn)",
-                        "Tá»« bá» tham niá»‡m (Thanh táº©y linh há»“n)"
+                        "(Translated Log)",
+                        "(Translated Log)",
+                        "(Translated Log)"
                     };
                     onChoice = (idx) =>
                     {
                         if (idx == 0)
                         {
-                            int foodIdx = CurrentBackpack.FindItemIndex("food");
-                            if (foodIdx >= 0)
-                            {
-                                CurrentBackpack.RemoveItemAt(foodIdx);
+                            if (ConsumeItemFromOrdering("food")) {
                                 var lucky = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 string talent = UnityEngine.Random.value < 0.5f ? HeavenlyTalent.RageOvercharger : HeavenlyTalent.DivineShieldProtection;
                                 lucky.AddTrait(talent);
                                 lucky.CustomName = $"{HeavenlyTalent.GetDisplayName(talent)} {lucky.Name}";
-                                lucky.AddMemoir(MemoirType.Breakthrough, HeavenlyTalent.GetDisplayName(talent), "DÃ¢ng hiáº¿n thá»©c Äƒn ma huyá»‡t nháº­n thiÃªn phÃº");
-                                DialogueResult("Táº¿ Pháº©m Cháº¥p Thuáº­n!", $"Tháº§n linh hoan há»·! Nháº­n láº¥y Linh thá»±c hiáº¿n táº¿, ma lá»±c bÃ¹ng phÃ¡t táº©y tá»§y vÄ©nh viá»…n cho <b>{lucky.Name}</b>, thá»©c tá»‰nh thiÃªn phÃº vÄ©nh cá»­u: <b><color=#00ffcc>{HeavenlyTalent.GetDisplayName(talent)}</color></b>!");
+                                lucky.AddMemoir(MemoirType.Breakthrough, HeavenlyTalent.GetDisplayName(talent), "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.IsFoodSlotLocked = true;
-                                victim.AddMemoir(MemoirType.Mutation, "Nguyá»n Rá»§a ÄÃ³i KhÃ¡t", "Lá»«a dá»‘i ma huyá»‡t bá»‹ pháº¡t Ä‘Ã³i, khÃ³a Ã´ Thá»©c Äƒn");
-                                DialogueResult("Tháº§n Linh Pháº«n Ná»™!", $"Balo khÃ´ng cÃ³ Thá»©c Äƒn hiáº¿n táº¿! Tháº§n linh ná»•i giáº­n giÃ¡ng nguyá»n rá»§a ÄÃ³i KhÃ¡t Ä‘Ã³i nghÃ¨o lÃªn toÃ n Ä‘á»™i. ChÃº mÃ¨o <b>{victim.Name}</b> bá»‹ <b><color=red>KHÃ“A Ã´ Thá»©c Äƒn (Food/Ultimate Slot)</color></b> vÄ©nh viá»…n!");
+                                victim.AddMemoir(MemoirType.Mutation, "(Translated Log)", "(Translated Log)");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else if (idx == 1)
@@ -622,56 +597,58 @@ namespace Mewtations.Expedition
                             victim.HealthPoints = victim.ProcessedCombatStats.MaxHealth;
                             victim.Speed += 15;
                             victim.IsFoodSlotLocked = true;
-                            victim.AddMemoir(MemoirType.Breakthrough, "Huyáº¿t Thá»‡ Nghá»‹ch ThiÃªn", "Äá»™t phÃ¡ cÆ°á»¡ng cháº¿, vÄ©nh viá»…n khÃ³a Ã´ Thá»©c Äƒn");
-                            DialogueResult("Huyáº¿t Thá»‡ ThÃ nh CÃ´ng!", $"Táº¿ lá»… Ä‘áº«m mÃ¡u nghá»‹ch thiÃªn! ChÃº mÃ¨o <b>{victim.Name}</b> hiáº¿n táº¿ kinh máº¡ch tiÃªu hÃ³a cá»§a báº£n thÃ¢n. Äá»™t phÃ¡ cáº£nh giá»›i vÆ°á»£t báº­c vÄ©nh viá»…n (+10 Max HP, +15 Speed) nhÆ°ng <b><color=red>Ã´ Thá»©c Äƒn (Food/Ultimate Slot) vÄ©nh viá»…n bá»‹ KHÃ“A</color></b>!");
+                            victim.AddMemoir(MemoirType.Breakthrough, "(Translated Log)", "(Translated Log)");
+                            DialogueResult("(Translated Log)", $"(Translated Log)");
                         }
                         else
                         {
                             RunState.CorruptionLevel = Mathf.Max(0, RunState.CorruptionLevel - 25);
-                            DialogueResult("TÃ¢m Há»“n Thanh Tá»‹nh", "ToÃ n Ä‘á»™i tá»« bá» Ã½ chÃ­ tham lam, ma chÆ°á»›ng linh máº¡ch Ä‘Æ°á»£c táº©y rá»­a gá»™t sáº¡ch (-25 Corruption)!");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     };
                 }
                 else if (eventRoll == 4)
                 {
-                    // Kiá»ƒm tra giáº¥y phÃ©p thÃ´ng hÃ nh láº­u
-                    title = MewtationsLoc.Translate("exp_license_check_title", "âš ï¸ KIá»‚M TRA GIáº¤Y PHÃ‰P Äá»˜T XUáº¤T");
-                    text = MewtationsLoc.Translate("exp_license_check_desc", "Má»™t toÃ¡n Lá»±c LÆ°á»£ng HÃ nh PhÃ¡p bá»c giÃ¡p sáº¯t báº¥t ngá» cháº·n Ä‘á»™i mÃ¨o cá»§a báº¡n láº¡i táº¡i chá»‘t ráº½. ÄÃ¨n linh Ã¡p quÃ©t tháº³ng qua chiáº¿c balo kháº£ nghi cá»§a báº¡n.\n\n\"Dá»«ng láº¡i! Kiá»ƒm tra giáº¥y phÃ©p thÃ´ng hÃ nh vÃ  quota khai thÃ¡c linh tháº¡ch. TrÃ¬nh diá»‡n ngay láº­p tá»©c!\"");
+                    // Translated comment
+                    title = MewtationsLoc.Translate("exp_license_check_title", "(Translated Log)");
+                    text = MewtationsLoc.Translate("exp_license_check_desc", "(Translated Log)"(Translated Log)"");
                     choices = new List<string> {
-                        "TrÃ¬nh tháº» phÃ©p láº­u (ÄÃºt lÃ³t 1 VÃ ng) / Show Forged Permit (1 Gold)",
-                        "Cháº¥p nháº­n tá»‹ch thu hÃ ng láº­u / Accept Confiscation",
-                        "Cháº¡y trá»‘n láº­p tá»©c (YÃªu cáº§u Tá»‘c Ä‘á»™ > 120) / Flee"
+                        "(Translated Log)",
+                        "(Translated Log)",
+                        "(Translated Log)"
                     };
                     onChoice = (idx) =>
                     {
                         if (idx == 0)
                         {
-                            int goldIdx = CurrentBackpack.FindItemIndex("resource_gold");
-                            if (goldIdx >= 0)
-                            {
-                                CurrentBackpack.RemoveItemAt(goldIdx);
-                                DialogueResult("Há»‘i Lá»™ ThÃ nh CÃ´ng", "Lá»±c LÆ°á»£ng HÃ nh PhÃ¡p liáº¿c nhÃ¬n Ä‘á»“ng VÃ ng, lá» Ä‘i Ä‘á»‘ng quáº·ng báº¥t há»£p phÃ¡p trong balo: \"Giáº¥y phÃ©p há»£p lá»‡. Äi mau!\"");
+                            if (ConsumeItemFromOrdering("resource_gold")) {
+                                DialogueResult("(Translated Log)", "(Translated Log)"(Translated Log)"");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.HealthPoints = Mathf.Max(1, victim.HealthPoints - 10);
                                 RunState.AddCorruption(20);
-                                DialogueResult("KhÃ´ng CÃ³ Tiá»n ÄÃºt LÃ³t", $"Bá»‹ phÃ¡t hiá»‡n dÃ¹ng giáº¥y thÃ´ng hÃ nh giáº£! ChÃºng láº­p tá»©c dÃ¹ng roi Ä‘iá»‡n Ä‘Ã¡nh thÆ°Æ¡ng náº·ng <b>{victim.Name}</b> (-10 HP) vÃ  nÃ¢ng má»©c tÃ  lá»±c ma Ä‘áº¡o (+20 Corruption)!");
+                                DialogueResult("(Translated Log)", $"(Translated Log)");
                             }
                         }
                         else if (idx == 1)
                         {
-                            if (CurrentBackpack.ContainedCardIds.Count > 0)
-                            {
-                                int randIdx = UnityEngine.Random.Range(0, CurrentBackpack.ContainedCardIds.Count);
-                                string removed = CurrentBackpack.GetItemIdAt(randIdx);
-                                CurrentBackpack.RemoveItemAt(randIdx);
-                                DialogueResult("HÃ ng Láº­u Bá»‹ Tá»‹ch Thu", $"Äá»ƒ giá»¯ tÃ­nh máº¡ng, toÃ n Ä‘á»™i giao ná»™p <b>{removed.Replace("item_", "").Replace("resource_", "")}</b>. ChÃºng há»« láº¡nh thu giá»¯ rá»“i tháº£ Ä‘i.");
-                            }
+                            if (Context != null && Context.Ordering != null && Context.Ordering.MyGameCard != null && Context.Ordering.MyGameCard.InventoryContainer != null)
+{
+    var container = Context.Ordering.MyGameCard.InventoryContainer;
+    var children = container.GetChildren();
+    if (children.Count > 0)
+    {
+        int randIdx = UnityEngine.Random.Range(0, children.Count);
+        string removed = children[randIdx].CardData.Id;
+        children[randIdx].DestroyCard(true, true);
+        DialogueResult("(Translated Log)", "(Translated Log)" + removed.Replace("item_", "").Replace("resource_", "") + "(Translated Log)");
+    }
+}
                             else
                             {
-                                DialogueResult("Balo Trá»‘ng Rá»—ng", "ChÃºng khÃ¡m xÃ©t balo nhÆ°ng khÃ´ng tháº¥y gÃ¬ kháº£ nghi. KhÃ´ng cÃ³ gÃ¬ Ä‘á»ƒ tá»‹ch thu, chÃºng Ä‘Ã nh Ä‘Ã¡ Ä‘Ã­t xua Ä‘uá»•i báº¡n Ä‘i.");
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                         }
                         else
@@ -679,78 +656,64 @@ namespace Mewtations.Expedition
                             int avgSpeed = (int)ActiveCats.Average(c => c.Speed);
                             if (avgSpeed > 120)
                             {
-                                DialogueResult("Cháº¡y ThoÃ¡t ThÃ nh CÃ´ng", "Tháº§n tá»‘c! ToÃ n Ä‘á»™i mÃ¨o phÃ³ng Ä‘i trong chá»›p máº¯t, cáº¯t Ä‘uÃ´i toÃ¡n tuáº§n tra Dogma má»™t cÃ¡ch hoÃ n háº£o!");
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                             else
                             {
                                 var victim = ActiveCats[UnityEngine.Random.Range(0, ActiveCats.Count)];
                                 victim.HealthPoints = Mathf.Max(1, victim.HealthPoints - 12);
                                 RunState.AddCorruption(20);
-                                DialogueResult("Cháº¡y Trá»‘n Tháº¥t Báº¡i", $"Tá»‘c Ä‘á»™ quÃ¡ cháº­m! ToÃ¡n tuáº§n tra vÃ¢y báº¯t vÃ  Ä‘Ã¡nh trá»ng thÆ°Æ¡ng <b>{victim.Name}</b> (-12 HP), tÃ  phÃ¡p giam giá»¯ gia tÄƒng (+20 Corruption)!");
-                            }
-                        }
-                    };
-                }
-                else if (eventRoll == 5)
-                {
-                    // DÃ¢n nghÃ¨o cáº§u xin
-                    title = MewtationsLoc.Translate("exp_beggar_title", "ðŸ± DÃ‚N NGHÃˆO Cáº¦U XIN LINH KHÃ");
-                    text = MewtationsLoc.Translate("exp_beggar_desc", "Má»™t chÃº mÃ¨o tiá»u tá»¥y gáº§y trÆ¡ xÆ°Æ¡ng, cÆ¡ thá»ƒ dá»‹ biáº¿n náº·ng ná» Ä‘ang quá»³ bÃªn Ä‘á»‘ng pháº¿ tháº£i cÃ´ng nghiá»‡p, run ráº©y van xin:\n\n\"LÃ m Æ¡n... tÃ´i chá»‰ xin má»™t máº©u Linh Tháº¡ch vá»¥n Ä‘á»ƒ duy trÃ¬ linh cÄƒn Ä‘ang hÃ©o Ãºa cá»§a con tÃ´i... Bá»n Dogma Ä‘Ã£ siáº¿t háº¿t quota cá»§a khu nÃ y rá»“i...\"");
+                                DialogueResult("Failed Escape", $"Too slow! The patrol caught up and severely injured {victim.Name} (-12 HP), increasing fear (+20 Corruption)!"(Translated Log)"exp_beggar_title", "(Translated Log)");
+                    text = MewtationsLoc.Translate("exp_beggar_desc", "(Translated Log)"(Translated Log)"");
                     choices = new List<string> {
-                        "Bá»‘ thÃ­ 1 Quáº·ng Linh Tháº¡ch thÃ´ / Give 1 Spirit Ore",
-                        "Tá»« chá»‘i Ä‘i tháº³ng / Refuse"
+                        "(Translated Log)",
+                        "(Translated Log)"
                     };
                     onChoice = (idx) =>
                     {
                         if (idx == 0)
                         {
-                            int oreIdx = CurrentBackpack.FindItemIndex("ore");
-                            if (oreIdx >= 0)
-                            {
-                                CurrentBackpack.RemoveItemAt(oreIdx);
+                            if (ConsumeItemFromOrdering("ore")) {
                                 RunState.CorruptionLevel = Mathf.Max(0, RunState.CorruptionLevel - 30);
-                                DialogueResult("TÃ­ch Äá»©c Giáº£i Nghiá»‡p", "ChÃº mÃ¨o má»«ng rá»¡ Ã´m láº¥y máº£nh quáº·ng khÃ³c náº¥c lÃªn. Linh há»“n toÃ n Ä‘á»™i Ä‘Æ°á»£c thanh tháº£n, gá»™t rá»­a bá»›t tÃ  khÃ­ ma kiáº¿p (-30 Corruption)!");
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                             else
                             {
-                                DialogueResult("KhÃ´ng CÃ³ Linh Tháº¡ch", "Báº¡n ráº¥t muá»‘n giÃºp nhÆ°ng balo viá»…n chinh khÃ´ng cÃ³ báº¥t ká»³ máº£nh Quáº·ng Linh Tháº¡ch nÃ o. ChÃº mÃ¨o nghÃ¨o tháº¥t vá»ng quay Ä‘i.");
+                                DialogueResult("(Translated Log)", "(Translated Log)");
                             }
                         }
                         else
                         {
                             RunState.GreedLevel = Mathf.Min(100, RunState.GreedLevel + 15);
-                            DialogueResult("Quay LÆ°ng Bá» Äi", "Báº¡n láº¡nh lÃ¹ng bÆ°á»›c tiáº¿p. Tiáº¿ng khÃ³c than uáº¥t ngháº¹n cá»§a dÃ¢n nghÃ¨o bÃ¡m riáº¿t Ä‘áº¡o tÃ¢m cá»§a báº¡n (+15 Greed)!");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     };
                 }
                 else
                 {
-                    // Gáº·p ThÆ°Æ¡ng nhÃ¢n láº­u (Black Market Merchant)
+                    // Translated comment
                     int maxBreakthrough = ActiveCats.Count > 0 ? ActiveCats.Max(c => c.BreakthroughLevel) : 0;
-                    title = MewtationsLoc.Translate("exp_merchant_encounter_title", "âš–ï¸ THÆ¯Æ NG NHÃ‚N CHá»¢ ÄEN");
+                    title = MewtationsLoc.Translate("exp_merchant_encounter_title", "(Translated Log)");
                     if (maxBreakthrough >= 2)
                     {
-                        text = MewtationsLoc.Translate("exp_merchant_high_rank_desc", "Má»™t gÃ£ mÃ¨o trÃ¹m mÅ© kÃ­n mÃ­t hÃ© má»Ÿ chiáº¿c hÃ²m linh báº£o giáº¥u kÃ­n. Háº¯n thÃ¬ tháº§m Ä‘áº§y tÃ´n kÃ­nh:\n\n\"NhÃ¬n ngÃ i cÃ³ váº» lÃ  má»™t Há»™ PhÃ¡p cao cáº¥p... Tiá»ƒu nhÃ¢n cÃ³ vÃ i mÃ³n báº£o váº­t giáº¥u riÃªng, hoÃ n toÃ n khÃ´ng ghi trong sá»• sÃ¡ch kiá»ƒm kÃª cá»§a GiÃ¡o Äiá»u... NgÃ i cÃ³ muá»‘n xem qua?\"");
+                        text = MewtationsLoc.Translate("exp_merchant_high_rank_desc", "(Translated Log)"(Translated Log)"");
                         choices = new List<string> {
-                            "Mua HÃ³a Tháº§n Tháº¡ch / Revive Pill (TiÃªu hao 15 VÃ ng) / 15 Gold",
-                            "Mua Linh DÆ°á»£c Äá»™t PhÃ¡ / Breakthrough Pill (TiÃªu hao 15 VÃ ng) / 15 Gold",
-                            "RÃºt lui / Leave"
+                            "(Translated Log)",
+                            "(Translated Log)",
+                            "(Translated Log)"
                         };
                         onChoice = (idx) =>
                         {
                             if (idx == 0 || idx == 1)
                             {
-                                int goldIdx = CurrentBackpack.FindItemIndex("resource_gold");
-                                if (goldIdx >= 0)
-                                {
-                                    CurrentBackpack.RemoveItemAt(goldIdx);
+                                if (ConsumeItemFromOrdering("resource_gold")) {
                                     string itemSpawn = idx == 0 ? "item_revive_pill" : "item_breakthrough_pill";
-                                    CurrentBackpack.AddItem(itemSpawn);
-                                    DialogueResult("Giao Dá»‹ch ThÃ nh CÃ´ng", $"Báº£o váº­t báº¥t há»£p phÃ¡p <b>{itemSpawn.Replace("item_", "")}</b> Ä‘Ã£ Ä‘Æ°á»£c giao tay bÃ­ máº­t. ThÆ°Æ¡ng nhÃ¢n Ä‘Ã³ng rÆ°Æ¡ng vÃ  lá»§i máº¥t.");
+                                    RunState.PendingRewards.Add(itemSpawn);
+                                    DialogueResult("(Translated Log)", $"(Translated Log)"item_", ""(Translated Log)");
                                 }
                                 else
                                 {
-                                    DialogueResult("KhÃ´ng Äá»§ VÃ ng", "KhÃ´ng Ä‘á»§ vÃ ng thanh toÃ¡n! Háº¯n láº§u báº§u Ä‘Ã³ng rÆ°Æ¡ng láº¡i: \"Quay láº¡i khi ngÃ i mang Ä‘á»§ vÃ ng!\"");
+                                    DialogueResult("(Translated Log)", "(Translated Log)"(Translated Log)"");
                                 }
                             }
                             else
@@ -761,25 +724,22 @@ namespace Mewtations.Expedition
                     }
                     else
                     {
-                        text = MewtationsLoc.Translate("exp_merchant_low_rank_desc", "Má»™t gÃ£ mÃ¨o trÃ¹m mÅ© kÃ­n mÃ­t liáº¿c nhÃ¬n Ä‘á»™i mÃ¨o sÆ¡ cáº¥p cá»§a báº¡n Ä‘áº§y khinh khá»‰nh, Ä‘Ã³ng sáº­p hÃ²m báº£o váº­t láº¡i:\n\n\"Biáº¿n Ä‘i! Loáº¡i táº¡p mÃ¨o tháº¥p kÃ©m nhÆ° cÃ¡c ngÆ°Æ¡i khÃ´ng Ä‘á»§ cáº¥p Ä‘á»ƒ xem hÃ ng nÃ y cá»§a ta. Äá»«ng lÃ m máº¥t thá»i gian!\"");
+                        text = MewtationsLoc.Translate("exp_merchant_low_rank_desc", "(Translated Log)"(Translated Log)"");
                         choices = new List<string> {
-                            "Mua Quáº·ng Linh Tháº¡ch giÃ¡ ráº» (TiÃªu hao 3 VÃ ng) / 3 Gold",
-                            "RÃºt lui / Leave"
+                            "(Translated Log)",
+                            "(Translated Log)"
                         };
                         onChoice = (idx) =>
                         {
                             if (idx == 0)
                             {
-                                int goldIdx = CurrentBackpack.FindItemIndex("resource_gold");
-                                if (goldIdx >= 0)
-                                {
-                                    CurrentBackpack.RemoveItemAt(goldIdx);
-                                    CurrentBackpack.AddItem("item_iron_ore");
-                                    DialogueResult("Giao Dá»‹ch Háº¡ng Tháº¥p", "Háº¯n nÃ©m cho báº¡n má»™t máº£nh Quáº·ng Linh Tháº¡ch thÃ´ ráº» tiá»n rá»“i thu tiá»n vÃ ng Ä‘áº§y thÃ´ báº¡o.");
+                                if (ConsumeItemFromOrdering("resource_gold")) {
+                                    RunState.PendingRewards.Add("item_iron_ore");
+                                    DialogueResult("(Translated Log)", "(Translated Log)");
                                 }
                                 else
                                 {
-                                    DialogueResult("KhÃ´ng CÃ³ VÃ ng", "KhÃ´ng cÃ³ vÃ ng! Háº¯n pháº¥t tay xua Ä‘uá»•i: \"KhÃ´ng cÃ³ tiá»n thÃ¬ biáº¿n Ä‘i chá»— khÃ¡c!\"");
+                                    DialogueResult("(Translated Log)", "(Translated Log)"(Translated Log)"");
                                 }
                             }
                             else
@@ -793,10 +753,10 @@ namespace Mewtations.Expedition
             else if (type == NodeType.CampHealer)
             {
                 title = "??? CAMP HEALER";
-                text = "M?t y si chó già dang ng?i nu?ng th?c an. Ông ta s?n sàng h?i ph?c ho?c ch?a tr? cho d?i c?a b?n.\n\n(Healing Pool: 100 HP)";
+                text = "(Translated Log)";
                 choices = new List<string> {
-                    "H?i máu toàn d?i (Chia d?u 100 HP)",
-                    "Xóa Tê Li?t & Ki?t S?c toàn d?i (Mi?n phí)",
+                    "(Translated Log)",
+                    "(Translated Log)",
                     "B? qua"
                 };
                 onChoice = (idx) =>
@@ -815,11 +775,11 @@ namespace Mewtations.Expedition
                                     cat.HealthPoints = Mathf.Min(cat.ProcessedCombatStats.MaxHealth, cat.HealthPoints + healPerCat);
                                 }
                             }
-                            DialogueResult("H?i Ph?c Sinh L?c", "$C? d?i dã du?c chia d?u $pool HP t? Healing Pool.");
+                            DialogueResult("Restored Vitality", $"Your squad recovered {$pool} HP from the Healing Pool.");
                         }
                         else 
                         {
-                            DialogueResult("Không C?n Thi?t", "C? d?i dang d?y máu, không c?n h?i ph?c.");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     }
                     else if (idx == 1)
@@ -832,7 +792,7 @@ namespace Mewtations.Expedition
                                 cat.IsExhausted = false;
                             }
                         }
-                        DialogueResult("Gi?i Tr? Tr?ng Thái", "M?i tr?ng thái x?u dã du?c lo?i b?.");
+                        DialogueResult("(Translated Log)", "(Translated Log)");
                     }
                     else
                     {
@@ -842,40 +802,29 @@ namespace Mewtations.Expedition
             }
             else if (type == NodeType.CampMerchant)
             {
-                title = "ðŸ•ï¸ CAMP MERCHANT";
-                text = "Má»™t thÆ°Æ¡ng nhÃ¢n háº¯c Ã¡m tiáº¿p cáº­n báº¡n vá»›i nhá»¯ng váº­t pháº©m tháº§n bÃ­. Äá»•i 2 Food hoáº·c 2 Gold Ä‘á»ƒ láº¥y 1 pháº§n thÆ°á»Ÿng báº¥t ká»³?";
+                title = "(Translated Log)";
+                text = "(Translated Log)";
                 choices = new List<string> {
-                    "Mua (Tá»‘n 2 Food/Gold)",
-                    "Bá» qua"
+                    "(Translated Log)",
+                    "(Translated Log)"
                 };
                 onChoice = (idx) =>
                 {
                     if (idx == 0)
                     {
-                        if (CurrentBackpack != null && CurrentBackpack.IsFull)
-                        {
-                            DialogueResult("TÃºi Äá»“ ÄÃ£ Äáº§y!", "KhÃ´ng cÃ²n chá»— chá»©a! HÃ£y má»Ÿ tÃºi Ä‘á»“ (gÃ³c trÃ¡i) Ä‘á»ƒ vá»©t bá»›t váº­t pháº©m khÃ´ng cáº§n thiáº¿t, sau Ä‘Ã³ quay láº¡i nháº·t tiáº¿p.");
-                            return;
-                        }
+                        // (Removed IsFull check)
                         
-                        int foodIdx = CurrentBackpack.FindItemIndex("food");
-                        int goldIdx = CurrentBackpack.FindItemIndex("resource_gold");
-                        
-                        if (foodIdx >= 0)
-                        {
-                            CurrentBackpack.RemoveItemAt(foodIdx);
-                            CurrentBackpack.AddItem("item_ancient_relic_auto_collect");
-                            DialogueResult("Giao d?ch thnh cng", "D?i 1 Food l?y C? V?t T? D?ng Nh?t!");
+                        if (ConsumeItemFromOrdering("food")) {
+                            RunState.PendingRewards.Add("item_ancient_relic_auto_collect");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
-                        else if (goldIdx >= 0)
-                        {
-                            CurrentBackpack.RemoveItemAt(goldIdx);
-                            CurrentBackpack.AddItem("item_ancient_relic_auto_farm");
-                            DialogueResult("Giao d?ch thnh cng", "D?i 1 Gold l?y C? V?t T? D?ng Thu Ho?ch!");
+                        else if (ConsumeItemFromOrdering("resource_gold")) {
+                            RunState.PendingRewards.Add("item_ancient_relic_auto_farm");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                         else
                         {
-                            DialogueResult("Khng d? ti?n", "Thuong nhn h? lnh v b?n khng c d? v?t ph?m trao d?i!");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                         CompleteNodeResolution();
                     }
@@ -883,26 +832,23 @@ namespace Mewtations.Expedition
             }
             else if (type == NodeType.CampBlacksmith)
             {
-                title = "ðŸ•ï¸ CAMP BLACKSMITH";
-                text = "LÃ² rÃ¨n cá»§a má»™t thá»£ rÃ¨n lang thang.\n\nTá»‘n 2 Quáº·ng Sáº¯t Ä‘á»ƒ cÆ°á»ng hÃ³a táº¡m thá»i sá»©c máº¡nh cho cáº£ Ä‘á»™i (+5 HP Max, +10 Stamina Max)?";
+                title = "(Translated Log)";
+                text = "(Translated Log)";
                 choices = new List<string> {
-                    "RÃ¨n Trang Bá»‹ (Tá»‘n 2 Sáº¯t)",
-                    "Bá» qua"
+                    "(Translated Log)",
+                    "(Translated Log)"
                 };
                 onChoice = (idx) =>
                 {
                     if (idx == 0)
                     {
-                        int oreIdx1 = CurrentBackpack.FindItemIndex("ore");
-                        if (oreIdx1 >= 0)
-                        {
-                            CurrentBackpack.RemoveItemAt(oreIdx1);
+                        if (ConsumeItemFromOrdering("ore")) {
                             foreach(var cat in ActiveCats) { if(cat != null) { cat.HealthPoints += 5; cat.Stamina += 10; } }
-                            DialogueResult("CÆ°á»ng HÃ³a", "Cáº£ Ä‘á»™i Ä‘Æ°á»£c nÃ¢ng cáº¥p Ã¡o giÃ¡p vÃ  vÅ© khÃ­ táº¡m thá»i!");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                         else
                         {
-                            DialogueResult("Thiáº¿u Quáº·ng Sáº¯t", "Thá»£ rÃ¨n láº¯c Ä‘áº§u, báº¡n khÃ´ng cÃ³ Ä‘á»§ quáº·ng sáº¯t (Ore).");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     }
                     else
@@ -913,10 +859,10 @@ namespace Mewtations.Expedition
             }
             else if (type == NodeType.Reward)
             {
-                title = "ðŸŽ REWARD NODE";
-                text = "TrÆ°á»›c máº¯t báº¡n lÃ  má»™t rÆ°Æ¡ng kho bÃ¡u khá»•ng lá»“ bá»‹ bá» hoang. Ai Ä‘Ã³ Ä‘Ã£ gom ráº¥t nhiá»u váº­t pháº©m vÃ o Ä‘Ã¢y.";
+                title = "(Translated Log)";
+                text = "(Translated Log)";
                 choices = new List<string> {
-                    "Má»Ÿ RÆ°Æ¡ng!"
+                    "(Translated Log)"
                 };
                 onChoice = (idx) =>
                 {
@@ -939,13 +885,13 @@ namespace Mewtations.Expedition
                 if (UnityEngine.Random.value <= 0.50f)
                 {
                     TriggerWearyDogEncounter();
-                    return; // Return early since TriggerWearyDogEncounter handles dialogue triggering
+                    return; // Translated comment
                 }
                 else
                 {
-                    title = "BÃ­ch Há»a Cá»• XÆ°a";
-                    text = "Tráº£i rá»™ng trÃªn bá»©c tÆ°á»ng Ä‘Ã¡ rÃªu phong lÃ  nhá»¯ng bÃ­ch há»a mÃ´ táº£ vá» thá»i ká»³ 'Tháº§n MÃ¨o SÃ¡ng Tháº¿' vÃ  cuá»™c viá»…n chinh cá»• Ä‘áº¡i.\n\nLinh há»“n cá»§a toÃ n Ä‘á»™i Ä‘Æ°á»£c gá»™t rá»­a, giÃºp gia tÄƒng Speed táº¡m thá»i!";
-                    choices = new List<string> { "Tiáº¿p thu tinh hoa" };
+                    title = "(Translated Log)";
+                    text = "(Translated Log)";
+                    choices = new List<string> { "(Translated Log)" };
                     onChoice = (idx) =>
                     {
                         foreach (var cat in ActiveCats)
@@ -958,21 +904,21 @@ namespace Mewtations.Expedition
             }
             else // Ruins
             {
-                title = "Pháº¿ TÃ­ch Hoang Pháº¿";
-                text = "Äá»™i hÃ¬nh mÃ¨o tiáº¿n vÃ o má»™t pháº¿ tÃ­ch cung Ä‘iá»‡n Ä‘á»• nÃ¡t. á»ž giá»¯a cÃ³ má»™t lÃ² Ä‘an dÆ°á»£c cÅ© ká»¹ váº«n Ä‘ang chÃ¡y Ã¢m á»‰.\nBáº¡n cÃ³ muá»‘n lá»¥c lá»i khÃ´ng?";
-                choices = new List<string> { "Má»Ÿ lÃ² Ä‘an dÆ°á»£c", "RÃºt lui" };
+                title = "(Translated Log)";
+                text = "(Translated Log)";
+                choices = new List<string> { "(Translated Log)", "(Translated Log)" };
                 onChoice = (idx) =>
                 {
                     if (idx == 0)
                     {
                         if (UnityEngine.Random.value < 0.5f)
                         {
-                            CurrentBackpack.AddItem("item_revive_pill");
-                            DialogueResult("Luyá»‡n Äan Ká»³ TÃ­ch!", "Tuyá»‡t vá»i! BÃªn trong lÃ² Ä‘an váº«n cÃ²n lÆ°u giá»¯ má»™t viÃªn Linh Äan Há»“i Sinh cá»±c ká»³ quÃ½ hiáº¿m!");
+                            RunState.PendingRewards.Add("item_revive_pill");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                         else
                         {
-                            DialogueResult("KhÃ³i Ä‘en mÃ¹ má»‹t", "LÃ² Ä‘an ná»• tung! KhÃ³i Ä‘en ká»‹t pháº£ tháº³ng vÃ o máº·t khiáº¿n toÃ n Ä‘á»™i bÃ¡m Ä‘áº§y tro bá»¥i (KhÃ´ng cÃ³ tá»•n tháº¥t thá»±c táº¿).");
+                            DialogueResult("(Translated Log)", "(Translated Log)");
                         }
                     }
                     else
@@ -1003,7 +949,7 @@ namespace Mewtations.Expedition
 
             // Option 1: Fight
             choices.Add(new Mewtations.Dialogue.DialogueChoice(
-                MewtationsLoc.Translate("opt_fight", "âš”ï¸ Force breakthrough (+20 Corruption)"),
+                MewtationsLoc.Translate("opt_fight", "(Translated Log)"),
                 () =>
                 {
                     RunState.AddCorruption(20);
@@ -1014,9 +960,9 @@ namespace Mewtations.Expedition
                 }
             ));
 
-            // Option 2: Stealth
+            // Translated comment
             choices.Add(new Mewtations.Dialogue.DialogueChoice(
-                MewtationsLoc.Translate("opt_stealth", "ðŸƒ Sneak past silently (Requires Speed > 115)"),
+                MewtationsLoc.Translate("opt_stealth", "(Translated Log)"),
                 () =>
                 {
                     int avgSpeed = 100;
@@ -1046,9 +992,9 @@ namespace Mewtations.Expedition
                 }
             ));
 
-            // Option 3: Comfort (Thiá»n Äáº¡o Cáº£m HÃ³a)
+            // Translated comment
             choices.Add(new Mewtations.Dialogue.DialogueChoice(
-                MewtationsLoc.Translate("opt_comfort", "â˜¯ï¸ [Zen Dao Comfort] Teach human philosophy & soothe his soul"),
+                MewtationsLoc.Translate("opt_comfort", "(Translated Log)"),
                 () =>
                 {
                     string hintId = "item_secret_lore_hint_1";
@@ -1065,7 +1011,7 @@ namespace Mewtations.Expedition
                     }
 
                     ChronicleManager.UnlockHint(hintId);
-                    CurrentBackpack.AddItem(hintId);
+                    RunState.PendingRewards.Add(hintId);
 
                     RunState.CorruptionLevel = Mathf.Max(0, RunState.CorruptionLevel - 25);
 
@@ -1075,7 +1021,7 @@ namespace Mewtations.Expedition
                     );
                 },
                 () => ActiveCats.Any(c => c.Specialization == Mewtations.Cards.Cats.DaoSpecialization.ZenDao),
-                MewtationsLoc.Translate("opt_comfort_req", "Cáº§n cÃ³ MÃ¨o Thiá»n Äáº¡o / Requires Zen Cat")
+                MewtationsLoc.Translate("opt_comfort_req", "(Translated Log)")
             ));
 
             Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices);
@@ -1083,14 +1029,41 @@ namespace Mewtations.Expedition
 
         private void DialogueResult(string title, string text)
         {
-            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "Tiáº¿p tá»¥c" }, (idx) =>
+            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { "(Translated Log)" }, (idx) =>
             {
                 CompleteNodeResolution();
             });
         }
 
-                public void CompleteNodeResolution()
+                        public bool ConsumeItemFromOrdering(string itemId)
         {
+            if (Context == null || Context.Ordering == null || Context.Ordering.MyGameCard == null) return false;
+            var container = Context.Ordering.MyGameCard.InventoryContainer;
+            if (container == null) return false;
+            foreach (var child in container.GetChildren())
+            {
+                if (child != null && child.CardData != null && child.CardData.Id == itemId)
+                {
+                    child.DestroyCard(true, true);
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        public void CompleteNodeResolution()
+        {
+            if (RunState.PendingRewards.Count > 0)
+            {
+                var rewards = new List<string>(RunState.PendingRewards);
+                RunState.PendingRewards.Clear();
+                if (ExpeditionRewardUI.Instance != null)
+                {
+                    ExpeditionRewardUI.Instance.ShowRewards(rewards);
+                    return; // Translated comment
+                }
+            }
+
             if (ActiveNode != null && ActiveNode.Type == NodeType.SpecialMap)
             {
                 if (Mewtations.Legacy.Stacklands.SaveManager.instance != null && Mewtations.Legacy.Stacklands.SaveManager.instance.CurrentSave != null)
@@ -1107,21 +1080,21 @@ namespace Mewtations.Expedition
             }
             State = ExpeditionState.MapNavigation;
 
-            // Automation Relic Tick logic
+            // Translated comment
             ApplyRelicAutomationProgress();
 
-            // Node is cleared. Check connections of visited nodes to unlock next layer nodes
+            // Translated comment
             UpdateConnections();
 
-            // Check if final boss node was visited and solved
+            // Translated comment
             if (ActiveNode != null && ActiveNode.Type == NodeType.Boss)
             {
-                Debug.Log("[Expedition] HoÃ n thÃ nh boss viá»…n chinh! Tháº¯ng lá»£i lá»›n!");
+                Debug.Log("[Expedition] (Translated Log)");
                 ReturnToBase(isDefeat: false);
             }
             else
             {
-                // Return to map overlay
+                // Translated comment
                 if (ExpeditionMapUI.Instance != null)
                 {
                     ExpeditionMapUI.Instance.ShowWindow();
@@ -1131,10 +1104,10 @@ namespace Mewtations.Expedition
 
         private void ApplyRelicAutomationProgress()
         {
-            if (RunState == null || string.IsNullOrEmpty(RunState.EquippedRelicId)) return;
+            if (RunState == null || RunState.ActiveRelicList.Count == 0) return;
 
-            string relic = RunState.EquippedRelicId;
-            Debug.Log($"[Relic Automation] KÃ­ch hoáº¡t Cá»• Váº­t {relic} tá»± Ä‘á»™ng hÃ³a cÄƒn cá»© tá»« xa!");
+            foreach (var relic in RunState.ActiveRelicList) {
+            Debug.Log("[Expedition] (Translated Log)");
 
             foreach (var gc in WorldManager.instance.AllCards)
             {
@@ -1144,18 +1117,18 @@ namespace Mewtations.Expedition
                     
                     if (relic == "item_ancient_relic_smelt" && (cid.Contains("smelter") || cid.Contains("furnace")))
                     {
-                        gc.CurrentTimerTime += 15f; // Smelting automation ticks by 15s!
-                        Debug.Log($"   â€¢ [Cá»• Váº­t Tá»± Äá»™ng Nung] Tá»± Ä‘á»™ng thÃºc tiáº¿n +15s cho {gc.CardData.Name}!");
+                        gc.CurrentTimerTime += 15f; // Translated comment
+                        Debug.Log("[Expedition] (Translated Log)");
                     }
                     else if (relic == "item_ancient_relic_wood" && (cid.Contains("sawmill") || cid.Contains("mill")))
                     {
-                        gc.CurrentTimerTime += 15f; // Wood processing automation ticks by 15s!
-                        Debug.Log($"   â€¢ [Cá»• Váº­t Tá»± Äá»™ng Xáº»] Tá»± Ä‘á»™ng thÃºc tiáº¿n +15s cho {gc.CardData.Name}!");
+                        gc.CurrentTimerTime += 15f; // Translated comment
+                        Debug.Log("[Expedition] (Translated Log)");
                     }
                     else if (relic == "item_ancient_relic_booster")
                     {
-                        gc.CurrentTimerTime += 5f; // Universal booster ticks all timers by 5s!
-                        Debug.Log($"   â€¢ [Linh Tháº§n Thu Hoáº¡ch] Tá»± Ä‘á»™ng thÃºc tiáº¿n +5s cho cÃ´ng trÃ¬nh {gc.CardData.Name}!");
+                        gc.CurrentTimerTime += 5f; // Translated comment
+                        Debug.Log("[Expedition] (Translated Log)");
                     }
                 }
             }
@@ -1165,7 +1138,7 @@ namespace Mewtations.Expedition
         {
             if (ActiveNode == null) return;
 
-            // Lock all nodes first
+            // Translated comment
             foreach (var n in MapNodes)
             {
                 if (n.State == NodeState.Available)
@@ -1174,7 +1147,7 @@ namespace Mewtations.Expedition
                 }
             }
 
-            // Unlock nodes connected to the current active node
+            // Translated comment
             foreach (int connectedId in ActiveNode.OutgoingConnections)
             {
                 var targetNode = MapNodes.Find(n => n.Id == connectedId);
@@ -1184,7 +1157,7 @@ namespace Mewtations.Expedition
                 }
             }
 
-            // Always make layer 0 available if nothing has been visited yet
+            // Translated comment
             if (!MapNodes.Any(n => n.State == NodeState.Visited))
             {
                 foreach (var n in MapNodes.Where(n => n.Layer == 0))
@@ -1198,7 +1171,7 @@ namespace Mewtations.Expedition
         {
             if (Mewtations.Legacy.Stacklands.SaveManager.instance != null && Mewtations.Legacy.Stacklands.SaveManager.instance.CurrentSave != null)
             {
-                // If it's not a defeat and we survived a run (or even if we retreated? The rule says "Sau má»—i map thÆ°á»ng: Counter++")
+                // Translated comment
                 bool visitedSpecial = MapNodes != null && MapNodes.Any(n => n.State == NodeState.Visited && n.Type == NodeType.SpecialMap);
                 if (!visitedSpecial)
                 {
@@ -1208,26 +1181,32 @@ namespace Mewtations.Expedition
             IsExpeditionActive = false;
             State = ExpeditionState.Idle;
 
-            // Close UI overlays
+            // Translated comment
             if (ExpeditionMapUI.Instance != null) ExpeditionMapUI.Instance.HideWindow();
             if (CombatOverlayUI.Instance != null) CombatOverlayUI.Instance.HideWindow();
             if (Mewtations.Dialogue.DialogueSystem.Instance != null) Mewtations.Dialogue.DialogueSystem.Instance.HideWindow();
 
-            // Resume base board time
+            // Translated comment
             WorldManager.WorldSimulationPaused = false;
 
-            if (PortalCardSource != null)
+            if (Context != null && Context.Ordering != null && Context.Ordering.MyGameCard != null)
             {
-                Vector3 spawnPos = PortalCardSource.transform.position + Vector3.back * 1.5f;
+                var gatewayCard = Context.Ordering.MyGameCard.Parent;
+                Vector3 spawnPos = (gatewayCard != null ? gatewayCard.transform.position : Context.Ordering.MyGameCard.transform.position) + Vector3.back * 1.5f;
 
-                // Return cats to base board and clear active temporary mutations
+                // Translated comment
+                Context.Ordering.MyGameCard.RemoveFromStack();
+                Context.Ordering.MyGameCard.transform.position = spawnPos + Vector3.right * 1.5f;
+                WorldManager.instance.SendToBoard(Context.Ordering.MyGameCard, WorldManager.instance.CurrentBoard, Context.Ordering.MyGameCard.transform.position);
+
+                // Translated comment
                 foreach (var cat in ActiveCats)
                 {
                     if (cat != null)
                     {
-                        cat.ClearMutations(); // Mutations cleared upon returning to base!
+                        cat.ClearMutations(); // Translated comment
                         
-                        // Apply state from RuntimeCatStates
+                        // Translated comment
                         if (RuntimeCatStates.TryGetValue(cat.UniqueId, out var state))
                         {
                             cat.HealthPoints = state.HP;
@@ -1237,24 +1216,24 @@ namespace Mewtations.Expedition
                             cat.ExhaustionLevel = state.ExhaustionLevel;
                         }
 
-                        // Phase 3: Expedition Aftermath (Exhaustion Debt)
-                        int staminaDebt = 20; // Base stamina cost of going on an expedition
+                        // Translated comment
+                        int staminaDebt = 20; // Translated comment
                         if (RunState != null) {
-                            staminaDebt += (RunState.CurrentLayer * 5); // +5 stamina per layer deepened
+                            staminaDebt += (RunState.CurrentLayer * 5); // Translated comment
                         }
                         cat.Stamina = UnityEngine.Mathf.Max(0, cat.Stamina - staminaDebt);
                         
-                        // Adding Memoirs
+                        // Translated comment
                         if (cat.Stamina == 0) {
-                            cat.AddMemoir("Trá»Ÿ vá» trong tráº¡ng thÃ¡i kiá»‡t sá»©c! (Exhausted Return)");
+                            cat.AddMemoir("Returned in an exhausted state! (Exhausted Return)");
                         }
                         if (RunState != null && RunState.CorruptionLevel > 50) {
-                            cat.AddMemoir("Trá»Ÿ vá» vá»›i tÃ  khÃ­ (Corrupted Return)");
+                            cat.AddMemoir("Returned with dark aura (Corrupted Return)");
                         }
                           int insuredSlots = 0;
                           if (BackpackCardSource is Mewtations.Legacy.Stacklands.OrderingCardData ringData) insuredSlots = ringData.InsuredSlots;
                         if (isManualRetreat) {
-                            cat.AddMemoir("Bá» trá»‘n khá»i viá»…n chinh (Retreat)");
+                            cat.AddMemoir("Fled from the expedition (Retreat)");
                         }
 
                         if (cat.MyGameCard != null)
@@ -1286,79 +1265,52 @@ namespace Mewtations.Expedition
 
                 if (!isDefeat)
                 {
-                    // Dung há»£p thiÃªn phÃº vÄ©nh viá»…n (Song Trá»ng Dá»‹ Biáº¿n: tá»‘i Ä‘a 2 Ä‘á»™t biáº¿n vÄ©nh viá»…n)
+                    // Translated comment
                     MutationPersistenceSystem.ProcessRunVictoryTraits(ActiveCats);
 
-                    // Spawn Backpack loot items around the portal safely
-                    foreach (var cardId in CurrentBackpack.ContainedCardIds)
-                    {
-                        var spawnedCard = WorldManager.instance.GetCardWithUniqueId(cardId);
-                        if (spawnedCard != null)
-                        {
-                            spawnedCard.transform.position = spawnPos;
-                            spawnedCard.gameObject.SetActive(true);
-                            WorldManager.instance.SendToBoard(spawnedCard, WorldManager.instance.CurrentBoard, spawnPos);
-                            
-                            // Randomize spread
-                            spawnPos.x += UnityEngine.Random.Range(-0.5f, 0.5f);
-                            spawnPos.z += UnityEngine.Random.Range(-0.5f, 0.5f);
-                        }
-                    }
+                    // Translated comment
+                    
 
-                    // Special Boss Victory Reward: A new Heavenly Talent cat!
+                    // Translated comment
                     if (ActiveNode != null && ActiveNode.Type == NodeType.Boss)
                     {
                         var summoning = new CatSummoningSystem(WorldManager.instance);
-                        summoning.SummonCat(spawnPos, highestBreakthroughLevel: 2); // Guaranteed breakthrough potential
-                        Debug.Log("[Expedition] Triá»‡u há»“i ThiÃªn KiÃªu mÃ¨o lÃ m pháº§n thÆ°á»Ÿng chiáº¿n tháº¯ng Boss!");
+                        summoning.SummonCat(spawnPos, highestBreakthroughLevel: 2); // Translated comment
+                        Debug.Log("[Expedition] (Translated Log)");
                     }
                 }
                 else
                 {
-                    // Calculate and apply scaled drop penalty on force abandon/retreat/defeat
-                    if (CurrentBackpack != null)
-                    {
-                          int insuredSlots = 0;
-                          if (BackpackCardSource is Mewtations.Legacy.Stacklands.OrderingCardData ringData) insuredSlots = ringData.InsuredSlots;
+                    // Translated comment
+                    if (Context != null && Context.Ordering != null && Context.Ordering.MyGameCard != null && Context.Ordering.MyGameCard.InventoryContainer != null) { int insuredSlots = Context.Ordering.InsuredSlots;
                         if (isManualRetreat)
                         {
-                            // Cowardice Tax: lose exactly 50% of backpack items randomly, and add +15 Greed!
+                            // Translated comment
                             if (RunState != null)
                             {
                                 RunState.GreedLevel = Mathf.Min(100, RunState.GreedLevel + 15);
                             }
-                            ExpeditionExtractionSystem.ApplyManualRetreatPenalty(CurrentBackpack, insuredSlots);
-                            Debug.Log("[Expedition] NgÆ°á»i chÆ¡i chá»§ Ä‘á»™ng rÃºt lui! Ãp dá»¥ng Thuáº¿ NhÃ¡t Gan: Máº¥t ngáº«u nhiÃªn 50% balo, +15 Greed khÃ­ váº­n.");
+                            ExpeditionExtractionSystem.ApplyManualRetreatPenalty(Context.Ordering.MyGameCard.InventoryContainer, insuredSlots);
+                            Debug.Log("[Expedition] (Translated Log)");
                         }
                         else
                         {
-                            float rate = ExpeditionExtractionSystem.CalculateLootRetentionRate(RunState, CurrentBackpack);
-                              ExpeditionExtractionSystem.ApplyAbandonPenalty(CurrentBackpack, rate, insuredSlots);
-                            Debug.Log("[Expedition] Viá»…n chinh tháº¥t báº¡i hoáº·c bá»‹ tiÃªu diá»‡t! Ãp dá»¥ng hÃ¬nh pháº¡t hao há»¥t balo nghiÃªm trá»ng.");
+                            float rate = ExpeditionExtractionSystem.CalculateLootRetentionRate(RunState, Context.Ordering.MyGameCard.InventoryContainer, Context.Ordering.StorageCapacity);
+                              ExpeditionExtractionSystem.ApplyAbandonPenalty(Context.Ordering.MyGameCard.InventoryContainer, rate, insuredSlots);
+                            Debug.Log("[Expedition] (Translated Log)");
                         }
-                        foreach (var cardId in CurrentBackpack.ContainedCardIds)
-                        {
-                            var spawnedCard = WorldManager.instance.GetCardWithUniqueId(cardId);
-                            if (spawnedCard != null)
-                            {
-                                spawnedCard.transform.position = spawnPos;
-                                spawnedCard.gameObject.SetActive(true);
-                                WorldManager.instance.SendToBoard(spawnedCard, WorldManager.instance.CurrentBoard, spawnPos);
-                                spawnPos.x += UnityEngine.Random.Range(-0.5f, 0.5f);
-                                spawnPos.z += UnityEngine.Random.Range(-0.5f, 0.5f);
-                            }
-                        }
+                        
                     }
                 }
 
-                // Restore Backpack Card if present
+                // Translated comment
                 if (BackpackCardSource != null && BackpackCardSource.MyGameCard != null)
                 {
                     BackpackCardSource.MyGameCard.transform.position = spawnPos + Vector3.right * 1.0f;
                     BackpackCardSource.MyGameCard.gameObject.SetActive(true);
                 }
 
-                // Restore Relic Card if present
+                // Translated comment
                 if (RelicCardSource != null && RelicCardSource.MyGameCard != null)
                 {
                     RelicCardSource.MyGameCard.transform.position = spawnPos + Vector3.left * 1.0f;
@@ -1367,14 +1319,14 @@ namespace Mewtations.Expedition
                 RelicCardSource = null;
                 RunState.EquippedRelicId = "";
 
-                // If portal is strange/one-time, destroy it
+                // Translated comment
                 if (PortalCardSource.CardData.Id == "strange_portal")
                 {
                     PortalCardSource.DestroyCard(false, true);
                 }
             }
 
-            Debug.Log("[Expedition] Káº¿t thÃºc viá»…n chinh. Trá»Ÿ vá» base.");
+            Debug.Log("[Expedition] (Translated Log)");
         }
 
         public void SaveToExtraKeyValues(List<SerializedKeyValuePair> list)
@@ -1391,11 +1343,8 @@ namespace Mewtations.Expedition
             list.SetOrAdd("Expedition_PortalCardUniqueId", PortalCardSource != null ? PortalCardSource.UniqueId : "");
             list.SetOrAdd("Expedition_BackpackCardUniqueId", BackpackCardSource != null ? BackpackCardSource.UniqueId : "");
             list.SetOrAdd("Expedition_RelicCardUniqueId", RelicCardSource != null ? RelicCardSource.UniqueId : "");
-            list.SetOrAdd("Expedition_EquippedRelicId", RunState.EquippedRelicId);
+            list.SetOrAdd("Expedition_ActiveRelicList", string.Join(",", RunState.ActiveRelicList));
             list.SetOrAdd("Expedition_ActiveCatsUniqueIds", string.Join(",", ActiveCats.Select(c => c.UniqueId)));
-            list.SetOrAdd("Expedition_BackpackMaxCapacity", CurrentBackpack != null ? CurrentBackpack.MaxCapacity.ToString() : "10");
-            list.SetOrAdd("Expedition_BackpackItems", CurrentBackpack != null ? string.Join(",", CurrentBackpack.ContainedCardIds) : "");
-            
             list.SetOrAdd("Expedition_GreedLevel", RunState.GreedLevel.ToString());
             list.SetOrAdd("Expedition_CorruptionLevel", RunState.CorruptionLevel.ToString());
             list.SetOrAdd("Expedition_CurrentLayer", RunState.CurrentLayer.ToString());
@@ -1425,7 +1374,7 @@ namespace Mewtations.Expedition
                 return;
             }
 
-            // Load persisted unlocked hints
+            // Translated comment
             string unlockedHints = GetValueOrDefault(list, "Mewtations_UnlockedHints", "");
             ChronicleManager.Deserialize(unlockedHints);
 
@@ -1461,7 +1410,13 @@ namespace Mewtations.Expedition
             {
                 RelicCardSource = null;
             }
-            RunState.EquippedRelicId = GetValueOrDefault(list, "Expedition_EquippedRelicId", "");
+            
+            string activeRelicsStr = GetValueOrDefault(list, "Expedition_ActiveRelicList", "");
+            RunState.ActiveRelicList.Clear();
+            if (!string.IsNullOrEmpty(activeRelicsStr))
+            {
+                RunState.ActiveRelicList.AddRange(activeRelicsStr.Split(','));
+            }
 
             string activeCatsUidsStr = GetValueOrDefault(list, "Expedition_ActiveCatsUniqueIds", "");
             ActiveCats.Clear();
@@ -1476,14 +1431,12 @@ namespace Mewtations.Expedition
                 }
             }
 
-            int backpackCap = int.Parse(GetValueOrDefault(list, "Expedition_BackpackMaxCapacity", "10"));
-            CurrentBackpack = new Backpack(backpackCap);
             string backpackItemsStr = GetValueOrDefault(list, "Expedition_BackpackItems", "");
             if (!string.IsNullOrEmpty(backpackItemsStr))
             {
                 foreach (string item in backpackItemsStr.Split(','))
                 {
-                    CurrentBackpack.AddItem(item);
+                    RunState.PendingRewards.Add(item);
                 }
             }
 
@@ -1518,7 +1471,7 @@ namespace Mewtations.Expedition
             ActiveNode = activeNodeId >= 0 ? MapNodes.Find(n => n.Id == activeNodeId) : null;
 
 
-            // Hide the actual game cards of cats and backpack from board
+            // Translated comment
             foreach (var cat in ActiveCats)
             {
                 if (cat != null && cat.MyGameCard != null)
@@ -1535,7 +1488,7 @@ namespace Mewtations.Expedition
                 BackpackCardSource.MyGameCard.gameObject.SetActive(false);
             }
 
-            // Re-open UI overlay based on state
+            // Translated comment
             if (State == ExpeditionState.MapNavigation && ExpeditionMapUI.Instance != null)
             {
                 ExpeditionMapUI.Instance.ShowWindow();
@@ -1543,6 +1496,17 @@ namespace Mewtations.Expedition
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

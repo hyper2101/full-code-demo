@@ -41,7 +41,7 @@ public class Portal : CardData
 
 	private bool CardIsAllowedInPortal(CardData otherCard)
 	{
-		return otherCard.MyCardType == CardType.Humans || otherCard is CatCardData || otherCard is GatewayExpeditionCardData || otherCard.BackpackCapacity > 0 || otherCard.Id.StartsWith("item_ancient_relic_");
+		return otherCard.MyCardType == CardType.Humans;
 	}
 
 	public override void UpdateCard()
@@ -65,7 +65,7 @@ public class Portal : CardData
 		List<GameCard> childCards = this.MyGameCard.GetChildCards();
 		for (int i = childCards.Count - 1; i >= 0; i--)
 		{
-			if (childCards[i].CardData is BaseVillager || childCards[i].CardData is CatCardData)
+			if (childCards[i].CardData is BaseVillager)
 			{
 				childCards[i].RemoveFromParent();
 				break;
@@ -83,7 +83,7 @@ public class Portal : CardData
 		List<GameCard> childCards = this.MyGameCard.GetChildCards();
 		for (int i = childCards.Count - 1; i >= this.MaxVillagerCount; i--)
 		{
-			if (childCards[i].CardData is BaseVillager || childCards[i].CardData is CatCardData)
+			if (childCards[i].CardData is BaseVillager)
 			{
 				childCards[i].RemoveFromParent();
 			}
@@ -99,15 +99,7 @@ public class Portal : CardData
 	{
 		if (!TransitionScreen.InTransition && !WorldManager.instance.InAnimation)
 		{
-			bool hasExpeditionTriggers = this.MyGameCard.GetAllCardsInStack().Any(c => c.CardData is CatCardData || c.CardData is GatewayExpeditionCardData);
-			if (hasExpeditionTriggers)
-			{
-				this.GoAway();
-			}
-			else
-			{
-				GameCanvas.instance.ChangeLocationPrompt(new Action(this.GoAway), new Action(this.Stay), "forest");
-			}
+			GameCanvas.instance.ChangeLocationPrompt(new Action(this.GoAway), new Action(this.Stay), "forest");
 		}
 	}
 
@@ -134,43 +126,6 @@ public class Portal : CardData
 
 	private void GoAway()
 	{
-		List<CardData> catsInStack = this.MyGameCard.GetAllCardsInStack().Select(c => c.CardData).Where(d => d is CatCardData).ToList();
-		bool hasGatewayExpeditionCard = this.MyGameCard.GetAllCardsInStack().Any(c => c.CardData is GatewayExpeditionCardData);
-
-		if (catsInStack.Count > 0 || hasGatewayExpeditionCard)
-		{
-			CardData backpackCard = this.MyGameCard.GetAllCardsInStack().Select(c => c.CardData).FirstOrDefault(d => d.BackpackCapacity > 0);
-			CardData relicCard = this.MyGameCard.GetAllCardsInStack().Select(c => c.CardData).FirstOrDefault(d => d.Id.StartsWith("item_ancient_relic_"));
-			CardData gatewayExpeditionCard = this.MyGameCard.GetAllCardsInStack().Select(c => c.CardData).FirstOrDefault(d => d is GatewayExpeditionCardData);
-			
-			foreach (var cat in catsInStack)
-			{
-				if (cat.MyGameCard != null)
-				{
-					cat.MyGameCard.RemoveFromStack();
-					cat.MyGameCard.gameObject.SetActive(false);
-				}
-			}
-			if (backpackCard != null && backpackCard.MyGameCard != null)
-			{
-				backpackCard.MyGameCard.RemoveFromStack();
-				backpackCard.MyGameCard.gameObject.SetActive(false);
-			}
-			if (relicCard != null && relicCard.MyGameCard != null)
-			{
-				relicCard.MyGameCard.RemoveFromStack();
-				relicCard.MyGameCard.gameObject.SetActive(false);
-			}
-			if (gatewayExpeditionCard != null && gatewayExpeditionCard.MyGameCard != null)
-			{
-				gatewayExpeditionCard.MyGameCard.RemoveFromStack();
-				gatewayExpeditionCard.MyGameCard.gameObject.SetActive(false);
-			}
-
-			Mewtations.Expedition.ExpeditionManager.Instance.StartExpedition(this.MyGameCard, backpackCard, relicCard);
-			return;
-		}
-
 		this.RemoveStacksFromAllPortals();
 		GameCanvas.instance.SetScreen<CutsceneScreen>();
 		GameBoard targetBoard = WorldManager.instance.GetBoardWithId("forest");

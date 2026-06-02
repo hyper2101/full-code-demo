@@ -72,7 +72,8 @@ namespace Mewtations.Expedition
         
         public int BaseAppeasementGreed = 0;
         public int BaseAppeasementCorruption = 0;
-        public string EquippedRelicId = ""; // Lưu trữ ID cổ vật đang trang bị
+        public List<string> ActiveRelicList = new List<string>(); // Phase 7: Relic cache
+        public List<string> PendingRewards = new List<string>(); // Phase 5: Unify rewards before screen
 
         public void AddGreed(int val)
         {
@@ -93,7 +94,8 @@ namespace Mewtations.Expedition
             RunActiveMutations.Clear();
             BaseAppeasementGreed = 0;
             BaseAppeasementCorruption = 0;
-            EquippedRelicId = "";
+            ActiveRelicList.Clear();
+            PendingRewards.Clear();
         }
     }
 

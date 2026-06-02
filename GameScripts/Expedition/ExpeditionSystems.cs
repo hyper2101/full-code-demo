@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -124,79 +124,57 @@ namespace Mewtations.Expedition
 
     public static class ExpeditionExtractionSystem
     {
-        public static float CalculateLootRetentionRate(ExpeditionRunState state, Backpack backpack)
+        public static float CalculateLootRetentionRate(ExpeditionRunState state, Mewtations.Legacy.Stacklands.InventoryContainer container, int maxCapacity)
         {
-            // Base retention is 60% (base loss penalty is 40%)
             float rate = 0.60f;
-
-            // Greed reduces retention rate (up to -20% at 100 Greed)
             float greedMod = (state.GreedLevel / 100f) * 0.20f;
             rate -= greedMod;
-
-            // Corruption reduces retention rate (up to -25% at 100 Corruption)
             float corruptionMod = (state.CorruptionLevel / 100f) * 0.25f;
             rate -= corruptionMod;
 
-            // Backpack carrying load reduces retention (up to -15% if full)
-            if (backpack.MaxCapacity > 0)
+            if (maxCapacity > 0 && container != null)
             {
-                float weightRatio = (float)backpack.ContainedCardIds.Count / backpack.MaxCapacity;
+                float weightRatio = (float)container.GetChildren().Count / maxCapacity;
                 rate -= weightRatio * 0.15f;
             }
-
-            // Layer depth reduces escape probability (each layer deeper decreases retention by 3%)
             rate -= state.CurrentLayer * 0.03f;
-
-            // Clamp retention between 10% (severe loss) and 90% (mild loss)
             return Mathf.Clamp(rate, 0.10f, 0.90f);
         }
 
-                public static void ApplyAbandonPenalty(Backpack backpack, float retentionRate, int insuredSlots = 0)
+        public static void ApplyAbandonPenalty(Mewtations.Legacy.Stacklands.InventoryContainer container, float retentionRate, int insuredSlots = 0)
         {
-            int originalCount = backpack.ContainedCardIds.Count;
+            if (container == null) return;
+            var items = container.GetChildren();
+            int originalCount = items.Count;
             if (originalCount == 0) return;
 
-            List<string> items = new List<string>(backpack.ContainedCardIds);
             int vulnerableCount = Mathf.Max(0, originalCount - insuredSlots);
             int keepVulnerableCount = Mathf.Clamp(Mathf.RoundToInt(vulnerableCount * retentionRate), 0, vulnerableCount);
 
-            backpack.Clear();
-            int keptCount = 0;
-            List<string> vulnerableItems = new List<string>();
-
+            List<Mewtations.Legacy.Stacklands.GameCard> vulnerableItems = new List<Mewtations.Legacy.Stacklands.GameCard>();
             for (int i = 0; i < items.Count; i++) {
-                if (i < insuredSlots) {
-                    backpack.AddItem(items[i]);
-                    keptCount++;
-                } else {
+                if (i >= insuredSlots) {
                     vulnerableItems.Add(items[i]);
                 }
             }
 
-            System.Random rnd = new System.Random();
-            vulnerableItems = vulnerableItems.OrderBy(x => rnd.Next()).ToList();
-
-            for (int i = 0; i < keepVulnerableCount && i < vulnerableItems.Count; i++) {
-                backpack.AddItem(vulnerableItems[i]);
-                keptCount++;
+            for (int i = 0; i < vulnerableItems.Count; i++) {
+                var temp = vulnerableItems[i];
+                int randomIndex = UnityEngine.Random.Range(i, vulnerableItems.Count);
+                vulnerableItems[i] = vulnerableItems[randomIndex];
+                vulnerableItems[randomIndex] = temp;
             }
-                public static void ApplyManualRetreatPenalty(Backpack backpack, int insuredSlots = 0)
+
+            for (int i = keepVulnerableCount; i < vulnerableItems.Count; i++) {
+                vulnerableItems[i].DestroyCard(true, true);
+            }
+        }
+
+        public static void ApplyManualRetreatPenalty(Mewtations.Legacy.Stacklands.InventoryContainer container, int insuredSlots = 0)
         {
-            int originalCount = backpack.ContainedCardIds.Count;
-            if (originalCount == 0) return;
-
-            List<string> items = new List<string>(backpack.ContainedCardIds);
-            backpack.Clear();
-
-            int keptCount = 0;
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (i < insuredSlots || UnityEngine.Random.value < 0.50f)
-                {
-                    backpack.AddItem(items[i]);
-                    keptCount++;
-                }
-            }
+            ApplyAbandonPenalty(container, 0.5f, insuredSlots);
+        }
+    }
     public static class MutationPersistenceSystem
     {
         public static void ProcessRunVictoryTraits(List<CatCardData> cats)
