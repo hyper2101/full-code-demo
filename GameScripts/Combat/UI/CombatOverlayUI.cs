@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -806,7 +806,6 @@ namespace Mewtations.Combat.UI
 
             string weaponArchetypeDesc = "Hệ phái tiêu chuẩn";
             string weaponEfficiencyVi = "Bậc C (1.0x sát thương)";
-            string weaponResistanceVi = "Giảm 0% sát thương gánh chịu";
 
             if (tooltipTarget is CombatUnit unit)
             {
@@ -829,7 +828,6 @@ namespace Mewtations.Combat.UI
                     attackPatternVi = GetWeaponPatternVi(pattern);
                     
                     weaponEfficiencyVi = GetEfficiencyRank(weapon.OutputEfficiency);
-                    weaponResistanceVi = $"Giảm {Mathf.RoundToInt(weapon.DamageResistance * 100f)}% sát thương gánh chịu";
                     weaponArchetypeDesc = GetArchetypeDesc(weapon.WeaponArchetype);
                 }
 
@@ -864,7 +862,6 @@ namespace Mewtations.Combat.UI
                     attackPatternVi = GetWeaponPatternVi(pattern);
                     
                     weaponEfficiencyVi = GetEfficiencyRank(weapon.OutputEfficiency);
-                    weaponResistanceVi = $"Giảm {Mathf.RoundToInt(weapon.DamageResistance * 100f)}% sát thương gánh chịu";
                     weaponArchetypeDesc = GetArchetypeDesc(weapon.WeaponArchetype);
                 }
 
@@ -912,7 +909,6 @@ namespace Mewtations.Combat.UI
             // Dynamic Weapon Details Display
             GUILayout.Label($"<color=#abc><b>Vũ Khí: {weaponName}</b> ({weaponEfficiencyVi})</color>", _logStyle);
             GUILayout.Label($"<size=11>Khu vực đánh: {attackPatternVi}</size>", _logStyle);
-            GUILayout.Label($"<size=11>Phòng thủ: {weaponResistanceVi}</size>", _logStyle);
             GUILayout.Label($"<size=11>Hệ phái: <color=#fda>{weaponArchetypeDesc}</color></size>", _logStyle);
             GUILayout.Space(5);
 
@@ -1013,7 +1009,7 @@ namespace Mewtations.Combat.UI
             if (ringItem == null || cat == null) return;
 
             var ringCard = WorldManager.instance.AllCards
-                .FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.StorageRingCardData && !c.Destroyed);
+                .FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.OrderingCardData && !c.Destroyed);
             if (ringCard == null) return;
 
             if (ringItem.CardData is Equipable eq)
@@ -1060,9 +1056,9 @@ namespace Mewtations.Combat.UI
             GUILayout.BeginVertical(_sidebarCardStyle, GUILayout.ExpandWidth(true));
             
             var ringCard = WorldManager.instance.AllCards
-                .FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.StorageRingCardData && !c.Destroyed);
+                .FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.OrderingCardData && !c.Destroyed);
 
-            string title = "<b>NHẪN TRỮ VẬT (EXPEDITION STORAGE RING) - LƯỚI 6x5 TIỂU THẾ GIỚI</b>";
+            string title = "<b>HÀNH TRANG (ORDERING) - LƯỚI 6x5 TIỂU THẾ GIỚI</b>";
             if (ringCard == null)
             {
                 GUILayout.Label($"{title} <color=red>(Không tìm thấy Nhẫn Trữ Vật trên Board!)</color>", _headerStyle);

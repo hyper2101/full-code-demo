@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 
-public class OrderingCampCardData : CardData
+public class GatewayExpeditionCardData : CardData
 {
     public override bool CanHaveCardsWhileHasStatus()
     {

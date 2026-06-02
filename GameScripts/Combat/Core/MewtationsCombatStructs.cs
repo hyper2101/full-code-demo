@@ -397,11 +397,10 @@ namespace Mewtations.Combat
 
         public void TakeDamage(int damage)
         {
-            var weapon = Source.GetEquipableOfEquipableType(EquipableType.Weapon) as Equipable;
-            if (weapon != null && weapon.DamageResistance > 0f)
-            {
-                damage = Mathf.RoundToInt(damage * (1f - weapon.DamageResistance));
-            }
+            float def = Source.ProcessedCombatStats.Defence;
+            float clampedDef = Mathf.Clamp(def, -20f, 95f);
+            float resistance = clampedDef / 100f;
+            damage = Mathf.RoundToInt(damage * (1f - resistance));
 
             if (Shield > 0)
             {

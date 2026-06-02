@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -1252,7 +1252,7 @@ namespace Mewtations.Expedition
                             cat.AddMemoir("Trá»Ÿ vá» vá»›i tÃ  khÃ­ (Corrupted Return)");
                         }
                           int insuredSlots = 0;
-                          if (BackpackCardSource is Mewtations.Legacy.Stacklands.StorageRingCardData ringData) insuredSlots = ringData.InsuredSlots;
+                          if (BackpackCardSource is Mewtations.Legacy.Stacklands.OrderingCardData ringData) insuredSlots = ringData.InsuredSlots;
                         if (isManualRetreat) {
                             cat.AddMemoir("Bá» trá»‘n khá»i viá»…n chinh (Retreat)");
                         }
@@ -1319,7 +1319,7 @@ namespace Mewtations.Expedition
                     if (CurrentBackpack != null)
                     {
                           int insuredSlots = 0;
-                          if (BackpackCardSource is Mewtations.Legacy.Stacklands.StorageRingCardData ringData) insuredSlots = ringData.InsuredSlots;
+                          if (BackpackCardSource is Mewtations.Legacy.Stacklands.OrderingCardData ringData) insuredSlots = ringData.InsuredSlots;
                         if (isManualRetreat)
                         {
                             // Cowardice Tax: lose exactly 50% of backpack items randomly, and add +15 Greed!

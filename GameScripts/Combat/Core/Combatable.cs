@@ -136,26 +136,12 @@ public class Combatable : CardData
 		base.OnLanguageChange();
 	}
 
-	public virtual float GetAccuracyScore()
-	{
-		float num = this.ProcessedCombatStats.Accuracy;
-		if (base.HasStatusEffectOfType<StatusEffect_Drunk>())
-		{
-			num *= 0.6f;
-		}
-		if (this is CatCardData cat && cat.HasScar(Mewtations.Combat.PermanentScar.HeartDemonPossessed))
-		{
-			num *= 0.8f; // Giảm 20% tỷ lệ đánh trúng
-		}
-		return num;
-	}
-
 	public virtual float GetInitiativeScore()
 	{
 		float baseInitiative = this.ProcessedCombatStats.Initiative;
 		if (base.HasStatusEffectOfType<StatusEffect_Frenzy>())
 		{
-			baseInitiative = CombatStats.IncrementAttackSpeed(baseInitiative, 1);
+			baseInitiative += 1f;
 		}
 		if (_statusEffectPipeline != null)
 		{
@@ -924,28 +910,16 @@ public class Combatable : CardData
 	public string GetCombatableDescriptionAdvanced()
 	{
 		string text = MewtationsLoc.Translate("label_combat_speed");
-		string text2 = MewtationsLoc.Translate("label_hit_chance");
 		string text3 = MewtationsLoc.Translate("label_damage");
 		string text4 = MewtationsLoc.Translate("label_defence");
 		CombatStats processedCombatStats = this.ProcessedCombatStats;
-		string attackSpeedTranslation = processedCombatStats.GetAttackSpeedTranslation();
-		string attackDamageTranslation = processedCombatStats.GetAttackDamageTranslation();
-		string hitChanceTranslation = processedCombatStats.GetHitChanceTranslation();
-		string defenceTranslation = processedCombatStats.GetDefenceTranslation();
-		string text5 = MewtationsLoc.Translate("label_seconds_format", new LocParam[] { LocParam.Create("seconds", processedCombatStats.AttackSpeed.ToString()) });
-		return string.Format("<size=80%>{0} {1} ({2})\n{3} {4} ({5}%)\n{6} {7} ({8})\n{9}: {10} ({11})</size>", new object[]
+		return string.Format("<size=80%>{0}: {1}\n{2}: {3}\n{4}: {5}</size>", new object[]
 		{
 			text,
-			attackSpeedTranslation,
-			text5,
-			text2,
-			hitChanceTranslation,
-			processedCombatStats.HitChance * 100f,
+			processedCombatStats.Initiative,
 			text3,
-			attackDamageTranslation,
 			processedCombatStats.AttackDamage,
 			text4,
-			defenceTranslation,
 			processedCombatStats.Defence
 		});
 	}

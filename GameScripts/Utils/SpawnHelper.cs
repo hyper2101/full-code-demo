@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -130,12 +130,17 @@ public static class SpawnHelper
 		return possibleEnemies[possibleEnemies.Count - 1];
 	}
 
+	private static float GetPowerScore(CombatStats stats)
+	{
+		return stats.MaxHealth + stats.AttackDamage * 5f;
+	}
+
 	private static List<SpawnHelper.CardIdWithEquipmentCombat> GetAllPossibleEnemiesWithEquipment(List<Combatable> enemyPool)
 	{
 		List<SpawnHelper.CardIdWithEquipmentCombat> list = new List<SpawnHelper.CardIdWithEquipmentCombat>();
 		foreach (Combatable combatable in enemyPool)
 		{
-			list.Add(new SpawnHelper.CardIdWithEquipmentCombat(combatable.Id, new List<string>(), combatable.RealBaseCombatStats.CombatLevel));
+			list.Add(new SpawnHelper.CardIdWithEquipmentCombat(combatable.Id, new List<string>(), SpawnHelper.GetPowerScore(combatable.RealBaseCombatStats)));
 			if (combatable.HasInventory)
 			{
 				List<Equipable> equipableOfType = SpawnHelper.GetEquipableOfType(combatable.PossibleEquipables, EquipableType.Head);
@@ -170,7 +175,7 @@ public static class SpawnHelper
 							}
 							if (list2.Count > 0)
 							{
-								list.Add(new SpawnHelper.CardIdWithEquipmentCombat(combatable.Id, list2, combatStats.CombatLevel));
+								list.Add(new SpawnHelper.CardIdWithEquipmentCombat(combatable.Id, list2, SpawnHelper.GetPowerScore(combatStats)));
 							}
 						}
 					}

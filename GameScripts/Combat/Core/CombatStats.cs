@@ -8,7 +8,6 @@ public class CombatStats
 {
 	public void InitStats(CombatStats stats)
 	{
-		this.Accuracy = stats.Accuracy;
 		this.Initiative = stats.Initiative;
 		this.SpecialHits = new List<SpecialHit>(stats.SpecialHits);
 		this.MaxHealth = stats.MaxHealth;
@@ -18,12 +17,11 @@ public class CombatStats
 
 	public void AddStats(CombatStats equipment)
 	{
-		this.Accuracy = CombatStats.IncrementHitChance(this.Accuracy, equipment.AccuracyIncrement);
-		this.Initiative = CombatStats.IncrementAttackSpeed(this.Initiative, equipment.InitiativeIncrement);
+		this.Initiative += equipment.InitiativeIncrement;
 		this.SpecialHits = this.AddSpecialHits(equipment.SpecialHits);
 		this.MaxHealth += equipment.MaxHealth;
-		this.AttackDamage = CombatStats.IncrementAttackDefence(this.AttackDamage, equipment.AttackDamageIncrement);
-		this.Defence = CombatStats.IncrementAttackDefence(this.Defence, equipment.DefenceIncrement);
+		this.AttackDamage += equipment.AttackDamageIncrement;
+		this.Defence += equipment.DefenceIncrement;
 	}
 
 	public string SummarizeSpecialHits()
@@ -75,293 +73,17 @@ public class CombatStats
 		return list;
 	}
 
-	public float CombatLevel
-	{
-		get
-		{
-			float num = 0f;
-			num += this.CalculateAverageAttackDamagePerSecond() * 5f;
-			num += (float)this.MaxHealth * 0.5f;
-			num += (float)(this.Defence + this.DefenceIncrement) * 2f;
-			if (this.SpecialHits.Count > 0)
-			{
-				float num2 = 0f;
-				foreach (SpecialHit specialHit in this.SpecialHits)
-				{
-					bool flag = specialHit.Target == SpecialHitTarget.Self || specialHit.Target == SpecialHitTarget.RandomFriendly || specialHit.Target == SpecialHitTarget.AllFriendly;
-					if (specialHit.IsDebuff())
-					{
-						if (flag)
-						{
-							num2 -= specialHit.Chance / 10f;
-						}
-						else
-						{
-							num2 += specialHit.Chance / 10f;
-						}
-					}
-					else if (flag)
-					{
-						num2 += specialHit.Chance / 10f;
-					}
-					else
-					{
-						num2 -= specialHit.Chance / 10f;
-					}
-				}
-				num += num2 * 2f;
-			}
-			return Mathf.Max(1f, num);
-		}
-	}
-
-	public float ItemLevel
-	{
-		get
-		{
-			float num = 0f;
-			num += (float)CombatStats.IncrementAttackDefence(2, this.AttackDamageIncrement) / CombatStats.IncrementAttackSpeed(2.9f, this.InitiativeIncrement) * CombatStats.IncrementHitChance(0.68f, this.AccuracyIncrement) * 5f;
-			num += (float)(15 + this.MaxHealth) * 0.5f;
-			num += (float)CombatStats.IncrementAttackDefence(2, this.DefenceIncrement) * 2f;
-			if (this.SpecialHits.Count > 0)
-			{
-				float num2 = 0f;
-				foreach (SpecialHit specialHit in this.SpecialHits)
-				{
-					bool flag = specialHit.Target == SpecialHitTarget.Self || specialHit.Target == SpecialHitTarget.RandomFriendly || specialHit.Target == SpecialHitTarget.AllFriendly;
-					if (specialHit.IsDebuff())
-					{
-						if (flag)
-						{
-							num2 -= specialHit.Chance / 10f;
-						}
-						else
-						{
-							num2 += specialHit.Chance / 10f;
-						}
-					}
-					else if (flag)
-					{
-						num2 += specialHit.Chance / 10f;
-					}
-					else
-					{
-						num2 -= specialHit.Chance / 10f;
-					}
-				}
-				num += num2 * 2f;
-			}
-			num -= 14f;
-			return Mathf.Max(1f, num);
-		}
-	}
-
-	private float CalculateAverageAttackDamagePerSecond()
-	{
-		return (float)this.AttackDamage / this.Initiative * this.Accuracy;
-	}
-
-	public string GetHitChanceTranslation()
-	{
-		return CombatStats.GetHitChanceEnum(this.Accuracy).TranslateEnum<HitChance>();
-	}
-
-	public string GetAttackSpeedTranslation()
-	{
-		return CombatStats.GetAttackTimeEnum(this.Initiative).TranslateEnum<AttackSpeed>();
-	}
-
-	public string GetAttackDamageTranslation()
-	{
-		return CombatStats.GetAttackDamageEnum(this.AttackDamage).TranslateEnum<AttackDamage>();
-	}
-
-	public string GetDefenceTranslation()
-	{
-		return CombatStats.GetDefenceEnum(this.Defence).TranslateEnum<Defence>();
-	}
-
-	public static HitChance GetHitChanceEnum(float hitChange)
-	{
-		if (CombatStats.EqualsFloat(hitChange, 0.5f))
-		{
-			return global::HitChance.VerySmall;
-		}
-		if (CombatStats.EqualsFloat(hitChange, 0.59f))
-		{
-			return global::HitChance.Small;
-		}
-		if (CombatStats.EqualsFloat(hitChange, 0.68f))
-		{
-			return global::HitChance.Normal;
-		}
-		if (CombatStats.EqualsFloat(hitChange, 0.77f))
-		{
-			return global::HitChance.High;
-		}
-		if (CombatStats.EqualsFloat(hitChange, 0.86f))
-		{
-			return global::HitChance.VeryHigh;
-		}
-		if (CombatStats.EqualsFloat(hitChange, 0.95f))
-		{
-			return global::HitChance.ExtremelyHigh;
-		}
-		return global::HitChance.Normal;
-	}
-
-	public static AttackSpeed GetAttackTimeEnum(float attackTime)
-	{
-		if (CombatStats.EqualsFloat(attackTime, 3.5f))
-		{
-			return global::AttackSpeed.VerySlow;
-		}
-		if (CombatStats.EqualsFloat(attackTime, 2.9f))
-		{
-			return global::AttackSpeed.Slow;
-		}
-		if (CombatStats.EqualsFloat(attackTime, 2.3f))
-		{
-			return global::AttackSpeed.Normal;
-		}
-		if (CombatStats.EqualsFloat(attackTime, 1.7f))
-		{
-			return global::AttackSpeed.Fast;
-		}
-		if (CombatStats.EqualsFloat(attackTime, 1.1f))
-		{
-			return global::AttackSpeed.VeryFast;
-		}
-		if (CombatStats.EqualsFloat(attackTime, 0.5f))
-		{
-			return global::AttackSpeed.ExtremelyFast;
-		}
-		return global::AttackSpeed.Normal;
-	}
-
-	public static AttackDamage GetAttackDamageEnum(int attackDamage)
-	{
-		if (attackDamage == 1)
-		{
-			return global::AttackDamage.VeryWeak;
-		}
-		if (attackDamage == 2)
-		{
-			return global::AttackDamage.Weak;
-		}
-		if (attackDamage == 3)
-		{
-			return global::AttackDamage.Normal;
-		}
-		if (attackDamage == 4)
-		{
-			return global::AttackDamage.Strong;
-		}
-		if (attackDamage == 5)
-		{
-			return global::AttackDamage.VeryStrong;
-		}
-		if (attackDamage >= 6)
-		{
-			return global::AttackDamage.ExtremelyStrong;
-		}
-		return global::AttackDamage.Normal;
-	}
-
-	public static Defence GetDefenceEnum(int defence)
-	{
-		if (defence == 1)
-		{
-			return global::Defence.VeryWeak;
-		}
-		if (defence == 2)
-		{
-			return global::Defence.Weak;
-		}
-		if (defence == 3)
-		{
-			return global::Defence.Normal;
-		}
-		if (defence == 4)
-		{
-			return global::Defence.Strong;
-		}
-		if (defence == 5)
-		{
-			return global::Defence.VeryStrong;
-		}
-		if (defence >= 6)
-		{
-			return global::Defence.ExtremelyStrong;
-		}
-		return global::Defence.Normal;
-	}
-
-	private static bool EqualsFloat(float a, float b)
-	{
-		return (double)Mathf.Abs(a - b) < 0.01;
-	}
-
-	private static int GetEnumLength<T>()
-	{
-		if (!CombatStats.enumLengths.ContainsKey(typeof(T)))
-		{
-			CombatStats.enumLengths[typeof(T)] = Enum.GetNames(typeof(T)).Length;
-		}
-		return CombatStats.enumLengths[typeof(T)];
-	}
-
-	public static float IncrementAttackSpeed(float current, int increment)
-	{
-		return Mathf.Clamp(current - (float)increment * 0.6f, 0.5f, 3.5f);
-	}
-
-	public static float IncrementHitChance(float current, int increment)
-	{
-		return Mathf.Clamp(current + (float)increment * 0.09f, 0.5f, 0.95f);
-	}
-
-	public static int IncrementAttackDefence(int current, int increment)
-	{
-		return current + increment;
-	}
-
 	public int MaxHealth;
 
 	[SerializeField]
 	[FormerlySerializedAs("AttackSpeed")]
-	[HideInInspector]
-	private float attackSpeed = 3.5f;
-
-	[Obsolete("Legacy realtime property. Use Initiative instead.")]
-	public float AttackSpeed
-	{
-		get => attackSpeed;
-		set => attackSpeed = value;
-	}
+	[FormerlySerializedAs("attackSpeed")]
+	private float initiative = 0f;
 
 	public float Initiative
 	{
-		get => attackSpeed;
-		set => attackSpeed = value;
-	}
-
-	[SerializeField]
-	[FormerlySerializedAs("HitChance")]
-	[HideInInspector]
-	private float hitChance = 0.5f;
-
-	[Obsolete("Legacy realtime property. Use Accuracy instead.")]
-	public float HitChance
-	{
-		get => hitChance;
-		set => hitChance = value;
-	}
-
-	public float Accuracy
-	{
-		get => hitChance;
-		set => hitChance = value;
+		get => initiative;
+		set => initiative = value;
 	}
 
 	public int AttackDamage = 1;
@@ -370,45 +92,18 @@ public class CombatStats
 
 	[SerializeField]
 	[FormerlySerializedAs("AttackSpeedIncrement")]
-	[HideInInspector]
-	private int attackSpeedIncrement;
+	[FormerlySerializedAs("attackSpeedIncrement")]
+	private float initiativeIncrement;
 
-	[Obsolete("Legacy realtime property. Use InitiativeIncrement instead.")]
-	public int AttackSpeedIncrement
+	public float InitiativeIncrement
 	{
-		get => attackSpeedIncrement;
-		set => attackSpeedIncrement = value;
-	}
-
-	public int InitiativeIncrement
-	{
-		get => attackSpeedIncrement;
-		set => attackSpeedIncrement = value;
-	}
-
-	[SerializeField]
-	[FormerlySerializedAs("HitChanceIncrement")]
-	[HideInInspector]
-	private int hitChanceIncrement;
-
-	[Obsolete("Legacy realtime property. Use AccuracyIncrement instead.")]
-	public int HitChanceIncrement
-	{
-		get => hitChanceIncrement;
-		set => hitChanceIncrement = value;
-	}
-
-	public int AccuracyIncrement
-	{
-		get => hitChanceIncrement;
-		set => hitChanceIncrement = value;
+		get => initiativeIncrement;
+		set => initiativeIncrement = value;
 	}
 
 	public int AttackDamageIncrement;
 
 	public int DefenceIncrement;
 
-	public List<SpecialHit> SpecialHits;
-
-	private static Dictionary<Type, int> enumLengths = new Dictionary<Type, int>();
+	public List<SpecialHit> SpecialHits = new List<SpecialHit>();
 }

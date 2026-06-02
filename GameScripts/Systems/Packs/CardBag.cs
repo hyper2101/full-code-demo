@@ -188,7 +188,7 @@ public class CardBag
 			chancesForSetCardBag.RemoveAll(delegate(CardChance x)
 			{
 				Combatable combatable = loader.GetCardFromId(x.Id, true) as Combatable;
-				return combatable != null && combatable.ProcessedCombatStats.CombatLevel > this.StrengthLevel;
+				return combatable != null && (combatable.ProcessedCombatStats.MaxHealth + combatable.ProcessedCombatStats.AttackDamage * 5) > this.StrengthLevel;
 			});
 			return chancesForSetCardBag.SelectMany<CardChance, string>((CardChance x) => CardBag.CardChanceToIds(x, loader)).ToList<string>();
 		}
@@ -201,7 +201,14 @@ public class CardBag
 		{
 			SetCardBagType setCardBagForEnemyCardBag = loader.GetSetCardBagForEnemyCardBag(c.EnemyBag);
 			List<CardChance> chancesForSetCardBag = CardBag.GetChancesForSetCardBag(loader, setCardBagForEnemyCardBag, null);
-			chancesForSetCardBag.RemoveAll((CardChance x) => (loader.GetCardFromId(x.Id, true) as Combatable).ProcessedCombatStats.CombatLevel > x.Strength);
+			if (setCardBagForEnemyCardBag == SetCardBagType.BasicEnemy)
+			{
+				chancesForSetCardBag.RemoveAll((CardChance x) =>
+				{
+					var combatable = loader.GetCardFromId(x.Id, true) as Combatable;
+					return combatable != null && (combatable.ProcessedCombatStats.MaxHealth + combatable.ProcessedCombatStats.AttackDamage * 5) > x.Strength;
+				});
+			}
 			return chancesForSetCardBag.Select<CardChance, string>((CardChance x) => x.Id).ToList<string>();
 		}
 		return c.Id.AsList<string>();

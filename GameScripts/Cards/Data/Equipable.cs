@@ -53,8 +53,7 @@ public class Equipable : CardData
 
 	private string GetAdvancedEquipableInfo()
 	{
-		string text = MewtationsLoc.Translate("label_combat_speed");
-		string text2 = MewtationsLoc.Translate("label_hit_chance");
+		string text = MewtationsLoc.Translate("label_combat_speed"); // Will be updated to Initiative
 		string text3 = MewtationsLoc.Translate("label_damage");
 		string text4 = MewtationsLoc.Translate("label_defence");
 		string text5 = MewtationsLoc.Translate("label_health");
@@ -70,25 +69,14 @@ public class Equipable : CardData
 				"\n"
 			});
 		}
-		if (this.MyStats.AttackSpeedIncrement != 0)
+		if (this.MyStats.InitiativeIncrement != 0f)
 		{
 			text6 = string.Concat(new string[]
 			{
 				text6,
 				text,
-				" ",
-				this.NumberToStringWithPlus(this.MyStats.AttackSpeedIncrement),
-				"\n"
-			});
-		}
-		if (this.MyStats.HitChanceIncrement != 0)
-		{
-			text6 = string.Concat(new string[]
-			{
-				text6,
-				text2,
-				" ",
-				this.NumberToStringWithPlus(this.MyStats.HitChanceIncrement),
+				": ",
+				this.NumberToStringWithPlus(this.MyStats.InitiativeIncrement),
 				"\n"
 			});
 		}
@@ -117,13 +105,13 @@ public class Equipable : CardData
 		return text6;
 	}
 
-	private string NumberToStringWithPlus(int n)
+	private string NumberToStringWithPlus(float n)
 	{
-		if (n > 0)
+		if (n > 0f)
 		{
 			return string.Format("+{0}", n);
 		}
-		if (n < 0)
+		if (n < 0f)
 		{
 			return string.Format("{0}", n);
 		}
@@ -137,8 +125,6 @@ public class Equipable : CardData
 			return this._equipableInfo;
 		}
 		string text = "";
-		text += MewtationsLoc.Translate("label_itemlevel", new LocParam[] { LocParam.Create("level", Mathf.RoundToInt(this.MyStats.ItemLevel).ToString()) });
-		text += "\\d<size=90%>";
 		string text2 = this.MyStats.SummarizeSpecialHits();
 		if (text2.Length > 0)
 		{
@@ -156,7 +142,7 @@ public class Equipable : CardData
 
 	public string GetEquipableCombatLevel()
 	{
-		return "" + MewtationsLoc.Translate("label_itemlevel", new LocParam[] { LocParam.Create("level", Mathf.RoundToInt(this.MyStats.ItemLevel).ToString()) });
+		return "";
 	}
 
 	public override void UpdateCard()
@@ -207,7 +193,6 @@ public class Equipable : CardData
 	[Header("Mewtations Tactical Weapon Properties")]
 	public Mewtations.Combat.WeaponAttackPattern MewtationsAttackPattern = Mewtations.Combat.WeaponAttackPattern.Single;
 	public float OutputEfficiency = 1.0f;
-	public float DamageResistance = 0.0f;
 	public Mewtations.Combat.WeaponArchetype WeaponArchetype = Mewtations.Combat.WeaponArchetype.None;
 	public List<Mewtations.Combat.WeaponPassiveEffect> PassiveEffects = new List<Mewtations.Combat.WeaponPassiveEffect>();
 

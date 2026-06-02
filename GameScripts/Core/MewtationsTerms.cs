@@ -5292,6 +5292,28 @@ public static class MewtationsTerms
 
 	public const string card_pack_sale_description = "card_pack_sale_description";
 
+	public const string refinement_furnace_name = "refinement_furnace_name";
+
+	public const string refinement_furnace_description = "refinement_furnace_description";
+
+	public const string refinement_material_name = "refinement_material_name";
+
+	public const string refinement_material_description = "refinement_material_description";
+
+	public const string refinement_in_progress = "refinement_in_progress";
+
+	public const string refinement_upgrade_success = "refinement_upgrade_success";
+
+	public const string refinement_upgrade_failed = "refinement_upgrade_failed";
+
+	public const string refinement_max_tier = "refinement_max_tier";
+
+	public const string refinement_invalid_target = "refinement_invalid_target";
+
+	public const string refinement_missing_material = "refinement_missing_material";
+
+	public const string refinement_missing_item = "refinement_missing_item";
+
 	public static string[] all = new string[]
 	{
 		"card_animal_pen_description", "card_animal_pen_name", "card_apple_description", "card_apple_name", "card_apple_tree_description", "card_apple_tree_name", "card_apple_tree_status", "card_bear_description", "card_bear_name", "card_berry_description",

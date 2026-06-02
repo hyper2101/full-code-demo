@@ -725,7 +725,7 @@ public static class AllQuests
 		OnActionComplete = delegate(CardData card, string action)
 		{
 			Combatable combatable = card as Combatable;
-			return combatable != null && Mathf.RoundToInt(combatable.ProcessedCombatStats.CombatLevel) >= 20 && action == "equip_item";
+			return combatable != null && (combatable.ProcessedCombatStats.MaxHealth + combatable.ProcessedCombatStats.AttackDamage * 5) >= 20 && action == "equip_item";
 		},
 		QuestGroup = QuestGroup.Equipment,
 		IsSteamAchievement = true

@@ -52,5 +52,13 @@ public class HiddenInventoryContainer : ICardContainer
         return capacity;
     }
 
+    public void SetCapacity(int newCapacity)
+    {
+        // As per constraints:
+        // Do not delete existing items, do not drop items, do not recreate container.
+        // Just update the capacity variable. If newCapacity < items.Count, it just blocks new inserts.
+        this.capacity = newCapacity;
+    }
+
     public ContainerType Type => ContainerType.HiddenInventory;
 }

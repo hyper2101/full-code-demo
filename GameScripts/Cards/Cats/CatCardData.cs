@@ -126,7 +126,7 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
             {
                 if (TurnBasedCombatManager.Instance != null && TurnBasedCombatManager.Instance.IsCombatActive)
                 {
-                    var ringCard = WorldManager.instance.AllCards.FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.StorageRingCardData && !c.Destroyed);
+                    var ringCard = WorldManager.instance.AllCards.FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.OrderingCardData && !c.Destroyed);
                     if (ringCard != null)
                     {
                         var context = new ContainerInsertContext { SourceCard = this.MyGameCard, ContextSource = "Unequip" };
