@@ -1,6 +1,6 @@
 ﻿using System;
 
-public class WaterTreatmentPlant : EnergyHarvestable
+$attrpublic class WaterTreatmentPlant : EnergyHarvestable
 {
 	protected override bool CanStartHarvesting()
 	{
@@ -15,3 +15,4 @@ public class WaterTreatmentPlant : EnergyHarvestable
 		return base.CanStartHarvesting();
 	}
 }
+

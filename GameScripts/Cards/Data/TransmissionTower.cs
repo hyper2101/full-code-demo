@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public class TransmissionTower : CardData
+$attrpublic class TransmissionTower : CardData
 {
 	public override bool HasEnergyOutput(CardConnector outputConnector, List<CardConnector> nodeTracker)
 	{
@@ -65,3 +65,4 @@ public class TransmissionTower : CardData
 
 	private bool prevHasEnergy;
 }
+

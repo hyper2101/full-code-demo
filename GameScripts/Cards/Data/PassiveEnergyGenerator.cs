@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-public class PassiveEnergyGenerator : EnergyGenerator
+$attrpublic class PassiveEnergyGenerator : EnergyGenerator
 {
 	public override void UpdateCard()
 	{
@@ -44,3 +44,4 @@ public class PassiveEnergyGenerator : EnergyGenerator
 
 	private bool prevHasEnergy;
 }
+

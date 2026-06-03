@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-public class IndustrialRevolution : CardData
+$attrpublic class IndustrialRevolution : CardData
 {
 	public override void OnInitialCreate()
 	{
@@ -47,3 +47,4 @@ public class IndustrialRevolution : CardData
 		return otherCard is BaseVillager;
 	}
 }
+

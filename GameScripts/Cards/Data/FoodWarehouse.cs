@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class FoodWarehouse : Food
+$attrpublic class FoodWarehouse : Food
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -212,3 +212,4 @@ public class FoodWarehouse : Food
 
 	private CardConnector outputConnector;
 }
+

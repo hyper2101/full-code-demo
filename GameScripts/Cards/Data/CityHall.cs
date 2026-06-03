@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Linq;
 using UnityEngine;
 
-public class CityHall : Landmark
+$attrpublic class CityHall : Landmark
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -64,3 +64,4 @@ public class CityHall : Landmark
 
 	public static int DollarPerCardcap = 5;
 }
+

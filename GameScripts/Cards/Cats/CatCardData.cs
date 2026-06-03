@@ -414,9 +414,22 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
     public int Level = 1;
 
     [ExtraData("cat_exp")]
-    public int Experience = 0;
+    public int CurrentExp = 0;
 
-    public int MaxExperience => Level * 50;
+    [ExtraData("cat_overflow_exp")]
+    public int StoredOverflowExp = 0;
+
+    [ExtraData("cat_cultivation_speed")]
+    public float CultivationSpeed = 1f;
+
+    public Sprite BottleneckIcon;
+
+    public int MaxExperience => Mathf.RoundToInt(20f * Mathf.Pow(1.16f, Level));
+
+    public int GetMaxLevelForRealm()
+    {
+        return (BreakthroughLevel * 10) + 9;
+    }
 
     [Header("Inspector Stat Gains")]
     public int StatHpGainPerLevel = 1;
@@ -429,52 +442,56 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
 
     public void GainExperience(int amount)
     {
+        GainExp(amount);
+    }
+
+    public void GainExp(int amount)
+    {
         if (HasScar(Mewtations.Combat.PermanentScar.ShatteredSoul))
         {
             return; // Khóa nhận Exp thường!
         }
         if (Level <= 0) Level = 1;
 
-        // Cấp độ chẵn 9, 19, 29... chuẩn bị lên 10, 20, 30... thì cần đột phá lôi kiếp mới vượt qua được!
-        bool isAtCap = (Level + 1) % 10 == 0;
+        int maxLevel = GetMaxLevelForRealm();
+        bool isAtCap = Level >= maxLevel;
 
-        if (isAtCap && Experience >= MaxExperience - 1)
+        if (isAtCap)
         {
-            Experience = MaxExperience - 1;
+            StoredOverflowExp += amount;
             return;
         }
 
-        Experience += amount;
+        CurrentExp += amount;
 
-        while (Experience >= MaxExperience)
+        while (CurrentExp >= MaxExperience)
         {
-            if (isAtCap)
+            if (Level >= GetMaxLevelForRealm())
             {
-                Experience = MaxExperience - 1;
+                StoredOverflowExp += CurrentExp - MaxExperience;
+                CurrentExp = MaxExperience;
 
-                string alertTitle = "⚠️ CỔ CHAI TU VI / NGHẼN MẠCH!";
-                string alertText = $"Thần Miêu <b>{Name}</b> đã tu luyện đạt đến đỉnh phong của cảnh giới hiện tại (Cấp {Level})!\n\n" +
-                                   $"Linh lực cuồng bạo đang bị tắc nghẽn. <b>{Name}</b> bắt buộc phải vào <b>Đột Phá Trận</b> vượt qua Lôi Kiếp để thăng tiến lên cảnh giới mới, không thể tiếp tục tích lũy kinh nghiệm!";
+                string alertTitle = MewtationsLoc.Translate("mew_bottleneck_title", "CỔ CHAI TU VI / NGHẼN MẠCH!");
+                string alertText = MewtationsLoc.TranslateFormat("mew_bottleneck_desc", "Thần Miêu <b>{0}</b> đã đạt đỉnh phong cảnh giới (Cấp {1})!\nLinh khí tích tụ quá mức, cần Đột Phá để mở giới hạn.", Name, Level);
 
                 if (Mewtations.Dialogue.DialogueSystem.Instance != null)
                 {
-                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(alertTitle, alertText, new List<string> { "Đã hiểu!" }, (cIdx) => {});
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(alertTitle, alertText, new List<string> { MewtationsLoc.Translate("mew_bottleneck_ack", "Đã hiểu!") }, (cIdx) => {});
                 }
                 break;
             }
 
-            Experience -= MaxExperience;
+            CurrentExp -= MaxExperience;
             Level++;
 
-            // Tăng chỉ số thường
+            // Tăng chỉ số thưởng
             this.BaseCombatStats.MaxHealth += StatHpGainPerLevel;
             this.HealthPoints += StatHpGainPerLevel;
             this.BaseCombatStats.AttackDamage += StatAtkGainPerLevel;
             this.Speed += StatSpeedGainPerLevel;
 
-            AddMemoir(Mewtations.Expedition.MemoirType.Breakthrough, $"Thăng tu vi", $"Đột phá tu vi đạt Cấp {Level} (+{StatHpGainPerLevel} HP, +{StatAtkGainPerLevel} ATK, +{StatSpeedGainPerLevel} Speed)");
-
-            isAtCap = (Level + 1) % 10 == 0;
+            AddMemoir(Mewtations.Expedition.MemoirType.Breakthrough, MewtationsLoc.Translate("mew_memoir_level_up_title", "Thăng tu vi"), 
+                      MewtationsLoc.TranslateFormat("mew_memoir_level_up_desc", "Đạt Cấp {0} (+{1} HP, +{2} ATK, +{3} Speed)", Level, StatHpGainPerLevel, StatAtkGainPerLevel, StatSpeedGainPerLevel));
         }
     }
 
@@ -842,7 +859,7 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
             }
         }
 
-        // Tĩnh dưỡng dưỡng thương / Hồi phục Stamina & HP trên Mainland
+        // Tĩnh dưỡng dùng thuốc / Hồi phục Stamina & HP trên Mainland
         if (this.MyGameCard != null && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData.IsRecoveryItem)
         {
             if (!this.MyGameCard.TimerRunning)
@@ -859,9 +876,49 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
                 WorldManager.instance.CreateFloatingText(this.MyGameCard, false, 0, "⚠️ [TĨNH DƯỠNG BỊ GIÁN ĐOẠN] Di chuyển thẻ làm gián đoạn phục hồi!", "", false, 0, 2f, true);
             }
         }
+
+        // Tu Luyện (Cultivation Progression)
+        if (this.MyGameCard != null && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData is SpiritStoneData spiritStone)
+        {
+            if (!this.MyGameCard.TimerRunning)
+            {
+                float duration = spiritStone.StoneAbsorptionTime / CultivationSpeed;
+                string title = MewtationsLoc.Translate("mew_cultivating_title", "Đang tu luyện...");
+                
+                int maxLevel = GetMaxLevelForRealm();
+                if (Level >= maxLevel)
+                {
+                    title = MewtationsLoc.Translate("mew_bottleneck_cultivating", "Đang tích tụ linh khí...");
+                }
+
+                this.MyGameCard.StartTimer(duration, new TimerAction(ConsumeSpiritStone), title, "cultivate_spirit_stone");
+            }
+        }
+        else
+        {
+            if (this.MyGameCard != null && this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "cultivate_spirit_stone")
+            {
+                this.MyGameCard.CancelTimer("cultivate_spirit_stone");
+            }
+        }
     }
 
-        public void ConsumeRecoveryItem()
+    public void ConsumeSpiritStone()
+    {
+        if (this.MyGameCard != null && this.MyGameCard.HasChild && this.MyGameCard.Child.CardData is SpiritStoneData stoneData)
+        {
+            int exp = stoneData.ExpValue;
+            this.MyGameCard.Child.DestroyCard(true, true);
+            GainExp(exp);
+
+            if (AudioManager.me != null && AudioManager.me.Eat != null)
+            {
+                AudioManager.me.PlaySound2D(AudioManager.me.Eat, UnityEngine.Random.Range(0.85f, 1.15f), 0.5f);
+            }
+        }
+    }
+
+    public void ConsumeRecoveryItem()
     {
         if (this.MyGameCard != null && this.MyGameCard.HasChild)
         {
@@ -1329,8 +1386,9 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
         }
 
         Level++; // Phá vỡ xiềng xích, thăng cấp lên 10.x thành công!
-        Experience = 0;
-
+        CurrentExp += StoredOverflowExp;
+        StoredOverflowExp = 0;
+        GainExp(0);
         string simpleCảnhGiới = cảnhGiới.Split(' ')[0];
         AddMemoir(Mewtations.Expedition.MemoirType.Breakthrough, "Đột phá thành công", "Thăng tiến vượt trội lên " + simpleCảnhGiới);
 
@@ -1509,8 +1567,19 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
 
     public override void UpdateCardText()
     {
-        string desc = $"<b>CẢNH GIỚI:</b> <color=#ffcc00>{GetCảnhGiớiName()}</color>\n";
-        desc += $"<b>VAI TRÒ:</b> <color=#5dade2>{Role}</color> | <b>LINH CĂN:</b> <color=#ff33cc>{Element}</color>\n";
+        string desc = $"<b>{MewtationsLoc.Translate("mew_realm_label", "CẢNH GIỚI:")}</b> <color=#ffcc00>{GetCảnhGiớiName()}</color>\n";
+        
+        int maxLevel = GetMaxLevelForRealm();
+        if (Level >= maxLevel)
+        {
+            desc += $"<color=#ff9900><b>⚠️ {MewtationsLoc.Translate("mew_bottleneck_warning", "CẦN ĐỘT PHÁ")} ({MewtationsLoc.Translate("mew_overflow_label", "L.Khí:")} {StoredOverflowExp})</b></color>\n";
+        }
+        else
+        {
+            desc += $"<b>{MewtationsLoc.Translate("mew_level_label", "CẤP:")}</b> {Level} | <b>EXP:</b> {CurrentExp}/{MaxExperience}\n";
+        }
+
+        desc += $"<b>{MewtationsLoc.Translate("mew_role_label", "VAI TRÒ:")}</b> <color=#5dade2>{Role}</color> | <b>{MewtationsLoc.Translate("mew_element_label", "LINH CĂN:")}</b> <color=#ff33cc>{Element}</color>\n";
         if (Constitution != Mewtations.Combat.CatConstitution.None)
         {
             desc += $"<b>THỂ CHẤT:</b> <color=#e74c3c>{Mewtations.Combat.MewtationsConstitutionRegistry.GetDisplayName(Constitution)}</color>\n";

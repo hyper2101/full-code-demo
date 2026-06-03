@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class MewtationsRecipes : MonoBehaviour
 {
+    [LegacyRecipe]
+    public RecipeCategory Category = RecipeCategory.Legacy;
     private void Start()
     {
         // Hệ thống Stacklands thông thường load Blueprint từ ScriptableObjects

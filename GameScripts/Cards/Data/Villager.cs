@@ -1,5 +1,6 @@
 ﻿using System;
 
-public class Villager : BaseVillager
+$attrpublic class Villager : BaseVillager
 {
 }
+

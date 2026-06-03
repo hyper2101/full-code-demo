@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Linq;
 using UnityEngine;
 
-public class EnergyHarvestable : Harvestable, IEnergyConsumer
+$attrpublic class EnergyHarvestable : Harvestable, IEnergyConsumer
 {
 	public override void OnInitialCreate()
 	{
@@ -96,3 +96,4 @@ public class EnergyHarvestable : Harvestable, IEnergyConsumer
 	[Header("Cities options")]
 	public int PollutionPerHarvest;
 }
+

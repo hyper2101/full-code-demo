@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Worker : CardData, HousingConsumer
+$attrpublic class Worker : CardData, HousingConsumer
 {
 	[HideInInspector]
 	public Apartment Housing
@@ -220,3 +220,4 @@ public class Worker : CardData, HousingConsumer
 	[ExtraData("housingUniqueId")]
 	public string HousingUniqueId;
 }
+

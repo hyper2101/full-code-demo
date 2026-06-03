@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class EnergyGenerator : CardData
+$attrpublic class EnergyGenerator : CardData
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -23,3 +23,4 @@ public class EnergyGenerator : CardData
 
 	public List<string> AcceptedCards;
 }
+

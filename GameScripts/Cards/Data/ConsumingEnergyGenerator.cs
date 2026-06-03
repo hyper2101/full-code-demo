@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class ConsumingEnergyGenerator : EnergyGenerator
+$attrpublic class ConsumingEnergyGenerator : EnergyGenerator
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -84,3 +84,4 @@ public class ConsumingEnergyGenerator : EnergyGenerator
 
 	private bool prevHasEnergy;
 }
+

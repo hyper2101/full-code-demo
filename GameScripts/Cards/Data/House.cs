@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-public class House : CardData
+$attrpublic class House : CardData
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -42,3 +42,4 @@ public class House : CardData
 		cardData.MyGameCard.SendIt();
 	}
 }
+

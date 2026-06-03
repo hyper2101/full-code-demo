@@ -1,6 +1,6 @@
 ﻿using System;
 
-public class IndustrialSmelter : EnergyConsumer
+$attrpublic class IndustrialSmelter : EnergyConsumer
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -17,3 +17,4 @@ public class IndustrialSmelter : EnergyConsumer
 		return true;
 	}
 }
+

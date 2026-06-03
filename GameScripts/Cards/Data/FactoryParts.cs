@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class FactoryParts : Resource
+$attrpublic class FactoryParts : Resource
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -11,3 +11,4 @@ public class FactoryParts : Resource
 	[Card]
 	public List<string> AcceptedCards = new List<string>();
 }
+

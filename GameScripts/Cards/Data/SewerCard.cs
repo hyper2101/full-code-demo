@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SewerCard : CardData
+$attrpublic class SewerCard : CardData
 {
 	private bool HasSewerConnector()
 	{
@@ -62,3 +62,4 @@ public class SewerCard : CardData
 
 	private bool shouldRunTimer;
 }
+

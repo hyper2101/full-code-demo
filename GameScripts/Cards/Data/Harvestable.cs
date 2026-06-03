@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Mewtations.Systems.Labor;
 
-public class Harvestable : CardData
+$attrpublic class Harvestable : CardData
 {
 	public string StatusText
 	{
@@ -143,7 +143,7 @@ public class Harvestable : CardData
         {
             if (worker != null && LaborUtility.IsLaborCapable(worker))
             {
-                // Sử dụng StaminaCost từ Inspector thay vì hardcode
+                // Sá»­ dá»¥ng StaminaCost tá»« Inspector thay vÃ¬ hardcode
                 LaborUtility.ConsumeLaborStamina(worker, this.StaminaCost);
             }
         }
@@ -210,6 +210,7 @@ public class Harvestable : CardData
 	[Card]
 	public List<string> CanHaveCardIds = new List<string>();
 }
+
 
 
 

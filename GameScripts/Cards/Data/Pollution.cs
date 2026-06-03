@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Linq;
 
-public class Pollution : CardData
+$attrpublic class Pollution : CardData
 {
 	public override void UpdateCard()
 	{
@@ -77,3 +77,4 @@ public class Pollution : CardData
 	[ExtraData("pollution_amount")]
 	public int PollutionAmount = 1;
 }
+

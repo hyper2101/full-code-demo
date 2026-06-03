@@ -1,6 +1,6 @@
 ﻿using System;
 
-public class ToyFactory : Landmark
+$attrpublic class ToyFactory : Landmark
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -12,3 +12,4 @@ public class ToyFactory : Landmark
 		return true;
 	}
 }
+

@@ -1,14 +1,19 @@
-﻿using System;
+using System;
+using UnityEngine;
 
 public class Trash : Harvestable
 {
 	public override ICardId GetCardToGive()
 	{
-		if (!WorldManager.instance.CurrentRunVariables.OpenedFirstTrash)
+		// 70% item_rotten_food, 30% item_spirit_ore
+		if (UnityEngine.Random.value <= 0.70f)
 		{
-			return new CardId("muesli");
+			return new CardId("item_rotten_food");
 		}
-		return base.GetCardToGive();
+		else
+		{
+			return new CardId("item_spirit_ore");
+		}
 	}
 
 	public override void OnHarvestComplete()

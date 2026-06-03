@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-public class Dollar : Resource, ICurrency
+$attrpublic class Dollar : Resource, ICurrency
 {
 	public CardData Card
 	{
@@ -49,3 +49,4 @@ public class Dollar : Resource, ICurrency
 
 	public int DollarValue;
 }
+

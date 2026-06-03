@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-public class AngryRoyal : Enemy
+$attrpublic class AngryRoyal : Enemy
 {
 	public override void Die()
 	{
@@ -16,3 +16,4 @@ public class AngryRoyal : Enemy
 		WorldManager.instance.ChangeToCard(this.MyGameCard, "corpse");
 	}
 }
+

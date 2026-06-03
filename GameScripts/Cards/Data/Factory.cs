@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class Factory : EnergyConsumer
+$attrpublic class Factory : EnergyConsumer
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -29,3 +29,4 @@ public class Factory : EnergyConsumer
 	[Card]
 	public List<string> AcceptedCards = new List<string>();
 }
+

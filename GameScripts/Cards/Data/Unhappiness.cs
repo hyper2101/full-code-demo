@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-public class Unhappiness : CardData
+$attrpublic class Unhappiness : CardData
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -16,3 +16,4 @@ public class Unhappiness : CardData
 		base.OnInitialCreate();
 	}
 }
+

@@ -1,9 +1,10 @@
 ﻿using System;
 
-public class PassiveEnergyConsumer : EnergyConsumer
+$attrpublic class PassiveEnergyConsumer : EnergyConsumer
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
 		return true;
 	}
 }
+

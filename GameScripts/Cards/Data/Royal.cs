@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using UnityEngine;
 
-public class Royal : CardData
+$attrpublic class Royal : CardData
 {
 	public override void UpdateCard()
 	{
@@ -139,3 +139,4 @@ public class Royal : CardData
 	[ExtraData("attack_tries")]
 	public int AttackTries;
 }
+

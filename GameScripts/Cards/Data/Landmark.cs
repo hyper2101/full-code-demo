@@ -1,6 +1,6 @@
 ﻿using System;
 
-public class Landmark : EnergyConsumer
+$attrpublic class Landmark : EnergyConsumer
 {
 	protected override bool CanSelectOutput()
 	{
@@ -12,3 +12,4 @@ public class Landmark : EnergyConsumer
 		return (this.Id == "laboratory" && (otherCard.Id == "science" || otherCard.Id == "fossil")) || base.CanHaveCard(otherCard);
 	}
 }
+

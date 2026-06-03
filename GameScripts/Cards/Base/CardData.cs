@@ -2002,6 +2002,15 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 
 	public int Value = 1;
 
+	[SerializeField]
+	private int devotionValue = 0;
+
+	[SerializeField]
+	private int blasphemyValue = 0;
+
+	public virtual int DevotionValue => devotionValue;
+	public virtual int BlasphemyValue => blasphemyValue;
+
 	public Sprite Icon;
 
 	[HideInInspector]

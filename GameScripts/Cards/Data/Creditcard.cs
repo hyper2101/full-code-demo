@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Creditcard : CardData, ICurrency
+$attrpublic class Creditcard : CardData, ICurrency
 {
 	public CardData Card
 	{
@@ -139,3 +139,4 @@ public class Creditcard : CardData, ICurrency
 
 	public string BankDescriptionTerm;
 }
+

@@ -1,4 +1,4 @@
-﻿# Mewtations: Dogma - Expedition GDD (V1 Finalized)
+# Mewtations: Dogma - Expedition GDD (V1 Finalized)
 
 Tài liệu này lưu trữ các quyết định thiết kế cuối cùng cho hệ thống Viễn Chinh (Expedition V1) và các cơ chế Sinh Tồn Đầu Game. Bất kỳ thay đổi nào cũng phải tuân thủ nghiêm ngặt các nguyên tắc dưới đây.
 
@@ -699,26 +699,38 @@ Shrine có thể:
 
 ---
 
-# 12. Miệng Thần Mèo
+# 12. Miệng Thần Mèo (Cat God Mouth)
 
-Miệng Thần Mèo là hệ thống gacha.
+Miệng Thần Mèo là "Hệ thống hiến tế cống phẩm tà đạo" cốt lõi, không còn là máy gacha tổng hợp. Nó đóng vai trò tiêu hủy vật phẩm dư thừa và chuyển hóa tài nguyên thành tiến trình nghi lễ (ritual progression) với rủi ro cao nếu báng bổ thần linh.
 
-Người chơi có thể:
+## 12.1. Cấu Trúc Slot & Hiến Tế
 
-* ném tài nguyên vào
-* nhận phần thưởng random.
+Miệng Thần Mèo sở hữu cấu trúc 2 slot ngang rành mạch:
+* **Slot Nghi Lễ (Ritual Slot):** Chỉ nhận duy nhất 1 thẻ bài Nghi Lễ (`RitualCardData`). Thẻ này xác định yêu cầu và phần thưởng của nghi lễ.
+* **Slot Hiến Tế:** Nơi thả các vật phẩm dâng lên thần linh. Nếu người chơi thả nguyên một cọc (stack), hệ thống sẽ tự động quét từ trên cùng xuống, nuốt các vật phẩm hợp lệ và đẩy các vật phẩm không hợp lệ (Mèo, Người...) văng ra ngoài. Cống phẩm thừa sau khi nghi lễ hoàn thành cũng tự động được hất ra để trả lại.
 
-Đây là nơi có thể nhận:
+## 12.2. Hệ Thống Devotion & Blasphemy (Lòng Thành và Báng Bổ)
 
-* mèo đột biến hiếm
-* vật phẩm lạ
-* phần thưởng giá trị cao.
+Mọi vật phẩm hiến tế đều mang 2 chỉ số ngầm:
+* **Devotion (Lòng thành):** Đẩy nhanh tiến trình hoàn thành nghi lễ. (Linh khoáng sạch sẽ mang điểm này).
+* **Blasphemy (Sự báng bổ):** Tích tụ khi dâng đồ ô uế (ví dụ: Thức ăn hôi thiu từ Bãi rác).
 
-Đây là hệ thống:
+Nếu tổng tỷ lệ Blasphemy của các vật phẩm hiến tế vượt mức cho phép so với yêu cầu của nghi lễ:
+* **20%:** Thần Mèo sẽ đưa ra các dòng text cảnh báo khó chịu.
+* **40%:** Cơn thịnh nộ giáng xuống (`GodCatThreat`). Nghi lễ vẫn hoàn thành nhưng một khe nứt Hư Không sẽ mở ra, triệu hồi quái vật tấn công trực tiếp vào trại của người chơi.
 
-* tham lam
-* khó đoán
-* nhiều rủi ro.
+## 12.3. Đài Tẩy Tủy (Cleansing Altar) & Chữa Bệnh
+
+Các tính năng Y tế trước đây đã được bóc tách hoàn toàn khỏi Miệng Thần Mèo và chuyển sang cấu trúc riêng mang tên **Đài Tẩy Tủy**, bao gồm:
+* **Nghi Lễ Hộ Mệnh Trị Liệu:** Khai thông kinh mạch, mở khóa an toàn mọi ô khe cắm (slot) bị kẹt do Mèo bị Tẩu Hỏa Nhập Ma.
+* **Nghi Lễ Tẩy Tủy Sẹo:** Tẩy sạch vết sẹo vĩnh cửu với rủi ro 50% thất bại khiến Mèo bị phế mạch nặng hơn.
+
+## 12.4. Phần Thưởng (GodCatPackCard)
+
+Hoàn thành nghi lễ Miệng Thần Mèo không rớt đồ vung vãi như cũ. Hệ thống sẽ trả về một gói quà **GodCatPackCard**.
+Người chơi có thể chủ động click mở gói này để nhận:
+* Nguồn cung chính để thu thập **Linh Thạch** (Tiền tệ nền kinh tế mới).
+* Tỷ lệ nhỏ rơi ra các loại vũ khí/trang bị hiếm.
 
 ---
 

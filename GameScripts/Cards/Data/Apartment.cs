@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Apartment : EnergyConsumer
+$attrpublic class Apartment : EnergyConsumer
 {
 	public void UpdateUsedSpace()
 	{
@@ -135,3 +135,4 @@ public class Apartment : EnergyConsumer
 
 	private float updateTimer = 1f;
 }
+

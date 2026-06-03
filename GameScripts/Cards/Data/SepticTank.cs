@@ -1,9 +1,10 @@
 ﻿using System;
 
-public class SepticTank : CardData
+$attrpublic class SepticTank : CardData
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
 		return false;
 	}
 }
+

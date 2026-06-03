@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using UnityEngine;
 
-public class Farmland : CardData
+$attrpublic class Farmland : CardData
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -111,3 +111,4 @@ public class Farmland : CardData
 
 	public Sprite NormalIcon;
 }
+

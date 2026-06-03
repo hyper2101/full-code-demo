@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using UnityEngine;
 
@@ -304,3 +304,4 @@ namespace Mewtations.Legacy.Stacklands
 		public bool CanBreed = true;
 	}
 }
+

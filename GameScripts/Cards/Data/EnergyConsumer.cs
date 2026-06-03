@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Linq;
 
-public class EnergyConsumer : SewerCard, IEnergyConsumer
+$attrpublic class EnergyConsumer : SewerCard, IEnergyConsumer
 {
 	public override void OnInitialCreate()
 	{
@@ -56,3 +56,4 @@ public class EnergyConsumer : SewerCard, IEnergyConsumer
 		return base.GetEnergyInputString();
 	}
 }
+

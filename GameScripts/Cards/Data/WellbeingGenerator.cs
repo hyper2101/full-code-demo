@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-public class WellbeingGenerator : Landmark, IEnergyConsumer
+$attrpublic class WellbeingGenerator : Landmark, IEnergyConsumer
 {
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -58,3 +58,4 @@ public class WellbeingGenerator : Landmark, IEnergyConsumer
 	[Term]
 	public string StatusTerm;
 }
+
