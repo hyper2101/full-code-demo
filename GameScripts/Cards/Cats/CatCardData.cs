@@ -55,6 +55,7 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
             EquipmentSlots[Mewtations.Expedition.CatSlotType.Weapon].IsUnlocked = !this.IsEquipmentSlotsLocked;
             EquipmentSlots[Mewtations.Expedition.CatSlotType.Torso].IsUnlocked = !this.IsEquipmentSlotsLocked;
             EquipmentSlots[Mewtations.Expedition.CatSlotType.Head].IsUnlocked = !this.IsEquipmentSlotsLocked;
+            EquipmentSlots[Mewtations.Expedition.CatSlotType.SpecialCombat].IsUnlocked = false;
             return;
         }
         
@@ -67,6 +68,7 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
         
         EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive1] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Passive1, "THIÊN PHÚ 1", this.HasPassive1Slot && !this.IsPassiveSlotsLocked);
         EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive2] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Passive2, "THIÊN PHÚ 2", this.HasPassive2Slot && !this.IsPassiveSlotsLocked);
+        EquipmentSlots[Mewtations.Expedition.CatSlotType.SpecialCombat] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.SpecialCombat, "ĐẶC BIỆT", false);
     }
 
     public bool EquipToSlot(CardData equipable, Mewtations.Expedition.CatSlotType type)

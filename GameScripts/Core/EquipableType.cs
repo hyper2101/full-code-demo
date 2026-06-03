@@ -6,6 +6,7 @@ public enum EquipableType
 	Torso,
 	Weapon,
 	Food,
-	Talisman
+	Talisman,
+	SpecialCombat
 }
 

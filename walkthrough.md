@@ -248,3 +248,25 @@ We have successfully completed **Phase 5 (Purge & Standardization)** of our comb
 - **Turn Determinism:** Verified that the stable initiative tie-breaker coupled with the event-driven transition loop guarantees deterministic simulation behavior.
 
 
+
+## Dog Enemy Framework Refactor (Today, June 2026)
+
+We have successfully completed the massive architecture refactoring to introduce the **Dog Enemy Framework**, completely decoupling enemy combat from the legacy Stacklands card logic.
+
+### 1. Final Damage Pipeline (Phase 1-2)
+- Implemented CombatCalculationService for standardized damage formulas (Base -> Element -> Crit -> Defense -> Final Damage Modifiers).
+- Refactored CombatUnit into a pure data struct, safely decoupling it from CatCardData.
+
+### 2. DogEnemy Data & Generation (Phase 3 & 7)
+- Created DogEnemyDefinition (ScriptableObject) and DogEnemyInstance for scalable, card-less runtime enemies.
+- Implemented DogEnemyGenerator to dynamically spawn enemies based on Expedition layer.
+
+### 3. Skill Execution Framework (Phase 3.5 & 6)
+- Introduced CombatSkillDefinition and CombatSkillExecutor.
+- Added logic in CombatLoopRoutine for ActiveCombatSkill triggering via Rage system.
+
+### 4. Integration & Sandbox Testing (Phase 8-9)
+- Updated TurnBasedCombatManager.StartCombat overloads to natively accept DogEnemyInstance alongside legacy cards.
+- Refactored ExpeditionEncounter to seamlessly trigger the new generator when useDogEnemySystem is true.
+- Fixed CombatOverlayUI hovering tooltip NREs to gracefully display card-less Dog Enemy stats and skill descriptions using the fallback localization.
+

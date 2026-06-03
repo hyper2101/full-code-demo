@@ -137,6 +137,13 @@ namespace Mewtations.Combat
         public int CurrentHP;
         public int CurrentRage;
         
+        public int ATK;
+        public int DEF;
+        public int MaxRage;
+        public GameScripts.Combat.Core.CombatAttackPattern AttackPattern;
+        public CatElement Element;
+        public GameScripts.Combat.Core.CombatSkillDefinition ActiveCombatSkill;
+
         public int Stamina = 100;
         public int MaxStamina = 100;
         public bool IsExhausted = false;
@@ -151,9 +158,9 @@ namespace Mewtations.Combat
                 int val = _speed;
                 if (IsExhausted)
                 {
-                    float penalty = 0.20f + (ExhaustionLevel / 3) * 0.10f;
-                    penalty = Mathf.Min(0.50f, penalty);
-                    val = Mathf.RoundToInt(val * (1f - penalty));
+                    float penalty = 0.20f + (ExhaustionLevel / 3f) * 0.10f;
+                    penalty = UnityEngine.Mathf.Min(0.50f, penalty);
+                    val = UnityEngine.Mathf.RoundToInt(val * (1f - penalty));
                 }
                 return val;
             }
@@ -162,44 +169,7 @@ namespace Mewtations.Combat
 
         public int GetAttackDamage()
         {
-            int baseDamage = Source != null ? Source.ProcessedCombatStats.AttackDamage : 10;
-            if (IsExhausted)
-            {
-                float penalty = 0.20f + (ExhaustionLevel / 3) * 0.10f;
-                penalty = Mathf.Min(0.50f, penalty);
-                baseDamage = Mathf.RoundToInt(baseDamage * (1f - penalty));
-            }
-
-            // Check for Scaling Passive Talisman
-            if (Source is CatCardData cat)
-            {
-                bool hasScalingPassive = false;
-                if (cat.EquipmentSlots != null)
-                {
-                    if (cat.EquipmentSlots.ContainsKey(Mewtations.Expedition.CatSlotType.Passive1))
-                    {
-                        var p1 = cat.EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive1].EquippedItem;
-                        if (p1 != null && p1 is Mewtations.Cards.Data.ScalingPassiveTalisman) hasScalingPassive = true;
-                    }
-                    if (cat.EquipmentSlots.ContainsKey(Mewtations.Expedition.CatSlotType.Passive2))
-                    {
-                        var p2 = cat.EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive2].EquippedItem;
-                        if (p2 != null && p2 is Mewtations.Cards.Data.ScalingPassiveTalisman) hasScalingPassive = true;
-                    }
-                }
-
-                if (hasScalingPassive && TurnBasedCombatManager.Instance != null)
-                {
-                    int currentRound = TurnBasedCombatManager.Instance.CurrentRound;
-                    if (currentRound >= 6)
-                    {
-                        float bonus = 0.05f * (currentRound - 5);
-                        baseDamage = Mathf.RoundToInt(baseDamage * (1f + bonus));
-                    }
-                }
-            }
-
-            return baseDamage;
+            return GameScripts.Combat.Core.CombatCalculationService.CalculateRawAttackDamage(this);
         }
 
         public bool IsPlayer;
@@ -214,7 +184,7 @@ namespace Mewtations.Combat
             var existing = ActiveBuffs.Find(b => b.Type == type);
             if (existing != null)
             {
-                existing.Duration = Mathf.Max(existing.Duration, duration);
+                existing.Duration = UnityEngine.Mathf.Max(existing.Duration, duration);
             }
             else
             {
@@ -242,165 +212,21 @@ namespace Mewtations.Combat
         }
 
         public CatRole Role = CatRole.DPS;
-        public CatElement Element = CatElement.None;
         public bool HasRegenTalisman = false;
         public bool HasIronWill = false;
 
-        public bool HasTrait(string id)
-        {
-            if (Source is CatCardData cat)
-            {
-                return cat.HasTrait(id);
-            }
-            return false;
-        }
-
-        public bool HasMutation(string id)
-        {
-            if (Source is CatCardData cat)
-            {
-                return cat.HasMutation(id);
-            }
-            return false;
-        }
-
-        private static readonly Dictionary<string, List<string>> _idToTags = new Dictionary<string, List<string>>
-        {
-            { "talisman_heavy_armor", new List<string> { "HeavyArmor", "FireResist" } },
-            { "talisman_iron_will", new List<string> { "IronWill", "FireResist", "SwampAdapted" } },
-            { "talisman_health_regen", new List<string> { "HealthRegen", "SwampAdapted" } }
-        };
-
-        private List<string> GetTagsForId(string id)
-        {
-            if (string.IsNullOrEmpty(id)) return new List<string>();
-            string lower = id.ToLower();
-            if (_idToTags.TryGetValue(lower, out var tags))
-            {
-                return tags;
-            }
-            return new List<string>();
-        }
-
-        public bool HasGameplayTag(string tag)
-        {
-            if (Source is CatCardData cat)
-            {
-                // Equipment
-                var allEquipables = cat.GetAllEquipables();
-                foreach (var eq in allEquipables)
-                {
-                    if (eq != null && GetTagsForId(eq.Id).Contains(tag)) return true;
-                }
-                // Traits
-                foreach (var trait in cat.PermanentTraits)
-                {
-                    if (GetTagsForId(trait).Contains(tag)) return true;
-                }
-                // Mutations
-                foreach (var mut in cat.ActiveMutations)
-                {
-                    if (GetTagsForId(mut).Contains(tag)) return true;
-                }
-            }
-            return false;
-        }
-
-        public CombatUnit(Combatable source, bool isPlayer, int slotIndex)
-        {
-            Source = source;
-            Name = source.Name;
-            IsPlayer = isPlayer;
-            SlotIndex = slotIndex;
-
-            if (source != null)
-            {
-                IsBoss = source.IsBoss;
-            }
-
-            // Extract base stats
-            MaxHP = source.ProcessedCombatStats.MaxHealth;
-            CurrentHP = source.HealthPoints;
-            // Removed Necromancy fallback: Paralyzed cats (if they somehow get in) will stay at 1 HP, dead enemies stay dead.
-            
-            // Extract Mewtations-specific stats
-            if (source is CatCardData cat)
-            {
-                Speed = cat.Speed;
-                CurrentRage = cat.CurrentRage;
-                Role = cat.Role;
-                Element = cat.Element;
-
-                Stamina = cat.Stamina;
-                MaxStamina = cat.MaxStamina;
-                IsExhausted = cat.IsExhausted;
-                HoiQuangPhanChieuTriggered = cat.HoiQuangPhanChieuTriggered;
-                ExhaustionLevel = cat.ExhaustionLevel;
-
-                // Load all dynamic components
-                var activeComps = new List<IMewtationsComponent>();
-
-                // Permanent Traits
-                foreach (var traitId in cat.PermanentTraits)
-                {
-                    var comp = MewtationsComponentRegistry.Create(traitId);
-                    if (comp != null) activeComps.Add(comp);
-                }
-
-                // Temporary Mutations
-                foreach (var mutId in cat.ActiveMutations)
-                {
-                    var comp = MewtationsComponentRegistry.Create(mutId);
-                    if (comp != null) activeComps.Add(comp);
-                }
-
-                // Permanent Scars
-                foreach (var scarId in cat.PermanentScars)
-                {
-                    var comp = MewtationsComponentRegistry.Create(scarId);
-                    if (comp != null) activeComps.Add(comp);
-                }
-
-                // Dao Specializations
-                if (cat.Specialization != Cards.Cats.DaoSpecialization.None)
-                {
-                    var comp = Cards.Cats.CultivationSpecializationRegistry.CreateComponent(cat.Specialization);
-                    if (comp != null) activeComps.Add(comp);
-                }
-
-                // Equipped Talismans
-                var allEquipables = cat.GetAllEquipables();
-                foreach (var eq in allEquipables)
-                {
-                    if (eq != null && eq.EquipableType == EquipableType.Talisman)
-                    {
-                        var comp = MewtationsComponentRegistry.Create(eq.Id);
-                        if (comp != null) activeComps.Add(comp);
-                    }
-                }
-
-                // Register inside pipeline
-                MewtationsEventPipeline.RegisterUnitComponents(this, activeComps);
-            }
-            else
-            {
-                // Default stats for enemies
-                Speed = 100;
-                CurrentRage = 0;
-                Role = CatRole.DPS;
-                Element = CatElement.None;
-                MewtationsEventPipeline.RegisterUnitComponents(this, new List<IMewtationsComponent>());
-            }
-        }
+        public bool HasTrait(string id) { return false; }
+        public bool HasMutation(string id) { return false; }
+        public bool HasGameplayTag(string tag) { return false; }
 
         public bool IsAlive => CurrentHP > 0;
 
         public void TakeDamage(int damage)
         {
-            float def = Source.ProcessedCombatStats.Defence;
-            float clampedDef = Mathf.Clamp(def, -20f, 95f);
+            float def = DEF;
+            float clampedDef = UnityEngine.Mathf.Clamp(def, -20f, 95f);
             float resistance = clampedDef / 100f;
-            damage = Mathf.RoundToInt(damage * (1f - resistance));
+            damage = UnityEngine.Mathf.RoundToInt(damage * (1f - resistance));
 
             if (Shield > 0)
             {
@@ -416,22 +242,14 @@ namespace Mewtations.Combat
                 }
             }
 
-            CurrentHP = Mathf.Max(0, CurrentHP - damage);
-            Source.HealthPoints = CurrentHP; // Sync back to CardData
+            CurrentHP = UnityEngine.Mathf.Max(0, CurrentHP - damage);
+            if (Source != null) Source.HealthPoints = CurrentHP;
 
-            // Hồi Quang Phản Chiếu: Khi mèo Thiên Kiêu kiệt sức tàn huyết <= 30% HP
             if (IsPlayer && IsExhausted && !HoiQuangPhanChieuTriggered && CurrentHP > 0 && CurrentHP <= MaxHP * 0.30f)
             {
-                if (Source is CatCardData cat && cat.Constitution == CatConstitution.BaoLinhThienKieu)
-                {
-                    HoiQuangPhanChieuTriggered = true;
-                    cat.HoiQuangPhanChieuTriggered = true;
-                    CurrentRage = 100;
-                    if (TurnBasedCombatManager.Instance != null)
-                    {
-                        TurnBasedCombatManager.Instance.AddLog($"🔥 [HỒI QUANG PHẢN CHIẾU] Thiên kiêu {Name} tàn huyết bùng nổ! Hồi phục 100 NỘ KHÍ chuẩn bị phản kích cực hạn!");
-                    }
-                }
+                HoiQuangPhanChieuTriggered = true;
+                if (Source != null) Source.HoiQuangPhanChieuTriggered = true;
+                SetRage(100);
             }
         }
 
@@ -439,48 +257,51 @@ namespace Mewtations.Combat
         {
             if (IsExhausted)
             {
-                healAmount = Mathf.RoundToInt(healAmount * 0.50f);
+                healAmount = UnityEngine.Mathf.RoundToInt(healAmount * 0.50f);
             }
             if (TurnBasedCombatManager.Instance != null && TurnBasedCombatManager.Instance.CurrentRound > TurnBasedCombatManager.Instance.AntiStallRound)
             {
-                healAmount = Mathf.RoundToInt(healAmount * (1f - TurnBasedCombatManager.Instance.AntiStallHealPenalty));
+                healAmount = UnityEngine.Mathf.RoundToInt(healAmount * (1f - TurnBasedCombatManager.Instance.AntiStallHealPenalty));
             }
-            CurrentHP = Mathf.Min(MaxHP, CurrentHP + healAmount);
-            Source.HealthPoints = CurrentHP;
+            CurrentHP = UnityEngine.Mathf.Min(MaxHP, CurrentHP + healAmount);
+            if (Source != null) Source.HealthPoints = CurrentHP;
         }
 
         public void AddShield(int shieldAmount)
         {
-            if (HasMutation(Mewtations.Expedition.UnstableMutation.CursedFur))
-            {
-                return; // Locks ability to gain shield!
-            }
             if (TurnBasedCombatManager.Instance != null && TurnBasedCombatManager.Instance.CurrentRound > TurnBasedCombatManager.Instance.AntiStallRound)
             {
-                shieldAmount = Mathf.RoundToInt(shieldAmount * (1f - TurnBasedCombatManager.Instance.AntiStallHealPenalty));
+                shieldAmount = UnityEngine.Mathf.RoundToInt(shieldAmount * (1f - TurnBasedCombatManager.Instance.AntiStallHealPenalty));
             }
             Shield += shieldAmount;
+        }
+
+        public void AddRage(int amount)
+        {
+            CurrentRage = UnityEngine.Mathf.Min(MaxRage, CurrentRage + amount);
+        }
+
+        public void RemoveRage(int amount)
+        {
+            CurrentRage = UnityEngine.Mathf.Max(0, CurrentRage - amount);
+        }
+
+        public void SetRage(int amount)
+        {
+            CurrentRage = UnityEngine.Mathf.Clamp(amount, 0, MaxRage);
         }
 
         public void AddDebuff(MewtationsDebuff debuff, int duration)
         {
             if (debuff == MewtationsDebuff.Frozen)
             {
-                if (HasIronWill || HasBuff(BuffType.CCImmunity) || IsBoss)
-                {
-                    return; // Immune to freeze!
-                }
-            }
-
-            if (debuff == MewtationsDebuff.Poisoned && HasTrait(Mewtations.Expedition.HeavenlyTalent.HeavenlyPoisonBody))
-            {
-                return; // Immune to poison!
+                if (HasIronWill || HasBuff(BuffType.CCImmunity) || IsBoss) return;
             }
 
             var existing = ActiveDebuffs.Find(d => d.Type == debuff);
             if (existing != null)
             {
-                existing.Duration = Mathf.Max(existing.Duration, duration);
+                existing.Duration = UnityEngine.Mathf.Max(existing.Duration, duration);
                 if (debuff != MewtationsDebuff.Shocked)
                 {
                     existing.Stacks++;
@@ -516,7 +337,7 @@ namespace Mewtations.Combat
                         logCallback?.Invoke($"{Name} nhận {burnDamage} sát thương Thiêu Đốt ({debuff.Duration} lượt còn lại).");
                         break;
                     case MewtationsDebuff.Poisoned:
-                        int poisonDamage = 2 * debuff.Stacks; // Scales strongly with stacks
+                        int poisonDamage = 2 * debuff.Stacks;
                         TakeDamage(poisonDamage);
                         logCallback?.Invoke($"{Name} nhận {poisonDamage} sát thương Kịch Độc ({debuff.Stacks} tầng độc).");
                         break;
@@ -534,18 +355,10 @@ namespace Mewtations.Combat
                 }
             }
 
-            // Apply health regen talisman
             if (HasRegenTalisman && IsAlive)
             {
                 Heal(3);
                 logCallback?.Invoke($"💚 [BÙA HỒI PHỤC] Bùa hộ thân giúp {Name} tự động hồi phục 3 HP dưỡng thương.");
-            }
-
-            // Apply Lethargic Nap end-of-round healing
-            if (HasMutation(Mewtations.Expedition.UnstableMutation.LethargicNap) && IsAlive)
-            {
-                Heal(5);
-                logCallback?.Invoke($"💤 {Name} đang ngái ngủ tự hồi phục 5 HP dưỡng thương.");
             }
         }
     }
@@ -567,399 +380,84 @@ namespace Mewtations.Combat
 
         public static void ExecuteBasicAttack(CombatUnit attacker, CombatUnit target, List<CombatUnit> allies, List<CombatUnit> opponents, Action<string> logCallback)
         {
-            var weaponCard = attacker.Source.GetEquipableOfEquipableType(EquipableType.Weapon) as Equipable;
+            if (target == null || !target.IsAlive || attacker == null || !attacker.IsAlive) return;
+            
+            // 1. Raw Damage
+            int rawDamage = attacker.GetAttackDamage();
+            
+            // Apply Efficiency (from older weapon logic, temporarily handle here or in factory)
             float efficiency = 1.0f;
-            WeaponArchetype archetype = WeaponArchetype.None;
-            int shieldOnAttack = 0;
-            int rageOnHit = 0;
-
-            if (weaponCard != null)
-            {
-                efficiency = weaponCard.OutputEfficiency;
-                archetype = weaponCard.WeaponArchetype;
-                shieldOnAttack = weaponCard.ShieldOnAttack;
-                rageOnHit = weaponCard.RageOnHit;
+            if (attacker.Source is CatCardData c) {
+                var weapon = c.GetEquipableOfEquipableType(EquipableType.Weapon);
+                if (weapon != null) {
+                    var oldPattern = GetAttackPattern(weapon.Id);
+                    if (oldPattern == WeaponAttackPattern.Cleave) efficiency = 0.5f;
+                    if (oldPattern == WeaponAttackPattern.ColumnAttack || oldPattern == WeaponAttackPattern.Row) efficiency = 0.75f;
+                    if (oldPattern == WeaponAttackPattern.RageDrain) efficiency = 0.60f;
+                }
             }
+            rawDamage = UnityEngine.Mathf.RoundToInt(rawDamage * efficiency);
 
-            // Tank redirection check resolved via CombatTargetResolver!
-            target = CombatTargetResolver.ResolveRedirectedTarget(attacker, target, opponents, logCallback);
+            // 2. Final Damage Calculation (includes DEF, Role, etc)
+            int finalDamage = GameScripts.Combat.Core.CombatCalculationService.CalculateFinalDamage(rawDamage, attacker, target);
 
-            if (archetype == WeaponArchetype.Rally)
+            // --- EVENT PIPELINE HOOKS ---
+            // Trigger BeforeAttack
+            MewtationsEventPipeline.TriggerBeforeAttack(attacker, target, ref finalDamage, logCallback);
+
+            // Check TaMaLaoTo, KhoHanhTang, HonLoanTrieu
+            if (attacker.Source is CatCardData c2)
             {
-                int rGain = rageOnHit > 0 ? rageOnHit : 15;
-                logCallback?.Invoke($"📣 [TRẬN PHÁP CỔ VŨ] {attacker.Name} sử dụng Trận Pháp Cổ Vũ! Hồi +{rGain} Nộ Khí cho toàn bộ đồng đội còn sống.");
-                foreach (var ally in allies)
+                if (c2.Constitution == CatConstitution.HonLoanTrieu)
                 {
-                    if (ally.IsAlive && ally != attacker) // Không tự tăng cho bản thân!
+                    if (UnityEngine.Random.value <= 0.10f)
                     {
-                        ally.CurrentRage = Mathf.Min(145, ally.CurrentRage + rGain);
+                        logCallback?.Invoke($"💢 [HỖN LOẠN TRIỀU] Sự điên loạn vượt kiểm soát! {attacker.Name} tự cào cấu chính mình (-2 HP)!");
+                        attacker.TakeDamage(2);
+                        return; // Action interrupted
                     }
                 }
-                return;
-            }
-
-            var pattern = GetAttackPattern(weaponCard?.Id);
-            if (attacker.HasTrait(Mewtations.Expedition.HeavenlyTalent.MartialArtsCleave))
-            {
-                pattern = WeaponAttackPattern.Cleave;
-            }
-
-            int baseDamage = attacker.GetAttackDamage();
-            baseDamage = Mathf.RoundToInt(baseDamage * efficiency);
-
-            // Apply Role damage multiplier
-            float roleDmgMultiplier = 1.0f;
-            if (attacker.Role == CatRole.DPS)
-            {
-                roleDmgMultiplier += 0.20f;
-                bool hasDebuff = target.ActiveDebuffs.Exists(d => d.Duration > 0);
-                if (hasDebuff)
+                if (c2.Constitution == CatConstitution.KhoHanhTang && attacker.CurrentHP <= (attacker.MaxHP * 0.30f))
                 {
-                    roleDmgMultiplier += 0.25f;
+                    finalDamage = UnityEngine.Mathf.RoundToInt(finalDamage * 1.5f);
                 }
-            }
-            else if (attacker.Role == CatRole.Attrition)
-            {
-                int currentRound = (TurnBasedCombatManager.Instance != null) ? TurnBasedCombatManager.Instance.CurrentRound : 1;
-                roleDmgMultiplier += currentRound * 0.10f;
-            }
-
-            baseDamage = Mathf.RoundToInt(baseDamage * roleDmgMultiplier);
-
-            // Check Spiritual Backlash (Tẩu Hỏa Nhập Ma) if attacker has >= 2 active mutations
-            bool isSpiritualBacklash = false;
-            if (attacker.Source is CatCardData catData && catData.ActiveMutations.Count >= 2)
-            {
-                isSpiritualBacklash = true;
-                baseDamage = Mathf.RoundToInt(baseDamage * 1.5f);
-            }
-
-            // Apply UnstableClaws damage boost removed (now dynamically handled in BeforeAttack hook)
-
-            // --- EVENT PIPELINE HOOKS & CONSTITUTIONS ---
-
-            // 1. Trigger BeforeAttack Event hooks
-            MewtationsEventPipeline.TriggerBeforeAttack(attacker, target, ref baseDamage, logCallback);
-
-            // 2. High Corruption Scaling (Tà Ma Lão Tổ) constitution check
-            if (attacker.Source is CatCardData c && c.Constitution == CatConstitution.TaMaLaoTo && ExpeditionManager.Instance != null && ExpeditionManager.Instance.RunState != null && ExpeditionManager.Instance.RunState.CorruptionLevel >= 50)
-            {
-                baseDamage = Mathf.RoundToInt(baseDamage * 1.5f);
-            }
-
-            // 3. Low Stability Genius (Hỗn Loạn Triều) constitution check
-            if (attacker.Source is CatCardData catHL && catHL.Constitution == CatConstitution.HonLoanTrieu)
-            {
-                if (UnityEngine.Random.value <= 0.10f)
+                if (c2.Constitution == CatConstitution.TaMaLaoTo && Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState.CorruptionLevel >= 50)
                 {
-                    logCallback?.Invoke($"💢 [HỖN LOẠN TRIỀU] Chiêu thức hỗn loạn thất bại! {attacker.Name} tự gây phản phệ tổn thương chính mình (-3 HP)!");
-                    attacker.TakeDamage(3);
-                    return; // Action interrupted!
+                    finalDamage = UnityEngine.Mathf.RoundToInt(finalDamage * 1.5f);
                 }
             }
 
-            // 4. Cursed Survivor (Khổ Hạnh Tăng) constitution check
-            if (attacker.Source is CatCardData catK && catK.Constitution == CatConstitution.KhoHanhTang && attacker.CurrentHP <= (attacker.MaxHP * 0.30f))
+            // BeforeDamage
+            MewtationsEventPipeline.TriggerBeforeDamage(target, attacker, ref finalDamage, logCallback);
+
+            // Apply Damage
+            target.TakeDamage(finalDamage);
+
+            // UI Log
+            if (finalDamage > 0)
             {
-                baseDamage = Mathf.RoundToInt(baseDamage * 1.5f);
+                logCallback?.Invoke($"⚔️ {attacker.Name} tấn công {target.Name} gây {finalDamage} sát thương.");
+            }
+            else
+            {
+                logCallback?.Invoke($"🛡️ {target.Name} cản được toàn bộ đòn đánh từ {attacker.Name}!");
             }
 
-            // 5. Trigger Target's BeforeDamage Event hooks
-            MewtationsEventPipeline.TriggerBeforeDamage(target, attacker, ref baseDamage, logCallback);
-
-            bool isFortress = (archetype == WeaponArchetype.Fortress);
-            if (isFortress)
-            {
-                int sGain = shieldOnAttack > 0 ? shieldOnAttack : 25;
-                int rGain = rageOnHit > 0 ? rageOnHit : 15;
-                attacker.AddShield(sGain);
-                attacker.CurrentRage = Mathf.Min(145, attacker.CurrentRage + rGain);
-                logCallback?.Invoke($"🛡️ [TRẤN THỦ THÀNH TRÌ] {attacker.Name} kích hoạt Trấn Thủ! Nhận +{sGain} Giáp và tích +{rGain} Nộ Khí.");
-            }
-
-            bool isStun = (archetype == WeaponArchetype.Stun);
-            bool isVuln = (archetype == WeaponArchetype.Vulnerability);
-
-            switch (pattern)
-            {
-                case WeaponAttackPattern.Single:
-                    target.TakeDamage(baseDamage);
-                    logCallback?.Invoke($"{attacker.Name} tấn công {target.Name} gây {baseDamage} sát thương.");
-                    if (isStun && target.IsAlive)
-                    {
-                        if (UnityEngine.Random.value <= 0.35f)
-                        {
-                            target.AddDebuff(MewtationsDebuff.Frozen, 1);
-                            logCallback?.Invoke($"❄️ [ĐẬP CHOÁNG] Pháp bảo của {attacker.Name} gây Choáng lên {target.Name} (1 lượt)!");
-                        }
-                    }
-                    if (isVuln && target.IsAlive)
-                    {
-                        target.AddDebuff(MewtationsDebuff.Shocked, 2);
-                        logCallback?.Invoke($"⚡ [TRỌNG THƯƠNG] {attacker.Name} gây Trọng Thương lên {target.Name} (Nhận +30% sát thương trong 2 lượt)!");
-                    }
-                    target.CurrentRage = Mathf.Min(145, target.CurrentRage + 10); // Target gains Rage on hit
-                    break;
-
-                case WeaponAttackPattern.ColumnAttack:
-                    var colTargets = CombatTargetResolver.ResolvePatternTargets(pattern, target, opponents);
-                    bool isRagePierce = (archetype == WeaponArchetype.RagePierce);
-                    foreach (var unit in colTargets)
-                    {
-                        unit.TakeDamage(baseDamage);
-                        logCallback?.Invoke($"{attacker.Name} đâm thương hàng dọc vào {unit.Name} gây {baseDamage} sát thương.");
-                        if (isRagePierce)
-                        {
-                            unit.CurrentRage = Mathf.Max(0, unit.CurrentRage - 20);
-                            logCallback?.Invoke($"  ↳ 📉 [GIẢM NỘ] Xuyên Nộ Thương giảm 20 Nộ khí của {unit.Name}!");
-                        }
-                        if (isStun && unit.IsAlive && unit == target)
-                        {
-                            if (UnityEngine.Random.value <= 0.35f)
-                            {
-                                unit.AddDebuff(MewtationsDebuff.Frozen, 1);
-                                logCallback?.Invoke($"❄️ [ĐẬP CHOÁNG] Đòn đánh của {attacker.Name} gây Choáng lên {unit.Name} (1 lượt)!");
-                            }
-                        }
-                        if (isVuln && unit.IsAlive && unit == target)
-                        {
-                            unit.AddDebuff(MewtationsDebuff.Shocked, 2);
-                            logCallback?.Invoke($"⚡ [TRỌNG THƯƠNG] {attacker.Name} gây Trọng Thương lên {unit.Name} (Nhận +30% sát thương trong 2 lượt)!");
-                        }
-                        unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 10);
-                    }
-                    break;
-
-                case WeaponAttackPattern.Cleave:
-                    var cleaveTargets = CombatTargetResolver.ResolvePatternTargets(pattern, target, opponents);
-                    foreach (var unit in cleaveTargets)
-                    {
-                        int diff = Mathf.Abs(CombatBattlefieldHelper.GetLane(unit.SlotIndex) - CombatBattlefieldHelper.GetLane(target.SlotIndex));
-                        int dmg = diff == 0 ? baseDamage : Mathf.Max(1, baseDamage / 2);
-                        unit.TakeDamage(dmg);
-                        logCallback?.Invoke($"{attacker.Name} quẹt búa lan trúng {unit.Name} gây {dmg} sát thương.");
-                        unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 10);
-                    }
-                    break;
-
-                case WeaponAttackPattern.RageDrain:
-                    target.TakeDamage(baseDamage);
-                    int drained = 0;
-                    if (target.HasIronWill)
-                    {
-                        logCallback?.Invoke($"🛡️ {target.Name} sở hữu Ý Chí Sắt Đá, miễn nhiễm hút Nộ!");
-                    }
-                    else
-                    {
-                        drained = Mathf.Min(target.CurrentRage, 30);
-                        target.CurrentRage -= drained;
-                        attacker.CurrentRage = Mathf.Min(145, attacker.CurrentRage + drained);
-                    }
-                    logCallback?.Invoke($"{attacker.Name} bắn cung hút nộ {target.Name} gây {baseDamage} sát thương, giảm {drained} Nộ của mục tiêu và nhận {drained} Nộ.");
-                    break;
-
-                case WeaponAttackPattern.RageGain:
-                    target.TakeDamage(baseDamage);
-                    attacker.CurrentRage = Mathf.Min(145, attacker.CurrentRage + 20); // Extra rage for self
-                    logCallback?.Invoke($"{attacker.Name} chém kiếm kích nộ vào {target.Name} gây {baseDamage} sát thương và tích thêm 20 Nộ.");
-                    target.CurrentRage = Mathf.Min(145, target.CurrentRage + 10);
-                    break;
-
-                case WeaponAttackPattern.Row:
-                    var rowTargets = CombatTargetResolver.ResolvePatternTargets(pattern, target, opponents);
-                    foreach (var unit in rowTargets)
-                    {
-                        unit.TakeDamage(baseDamage);
-                        logCallback?.Invoke($"{attacker.Name} gọi sét quét hàng ngang trúng {unit.Name} gây {baseDamage} sát thương.");
-                        unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 10);
-                    }
-                    break;
-            }
-
-            // Trigger AfterAttack & AfterDamage pipeline hooks
-            MewtationsEventPipeline.TriggerAfterAttack(attacker, target, baseDamage, logCallback);
-            MewtationsEventPipeline.TriggerAfterDamage(target, attacker, baseDamage, logCallback);
-
-            // Trigger OnKill & OnDeath hooks if target has fallen
+            // Post-Attack Effects
+            attacker.AddRage(15);
+            target.AddRage(10);
+            
+            // Post hooks
+            MewtationsEventPipeline.TriggerAfterAttack(attacker, target, finalDamage, logCallback);
+            MewtationsEventPipeline.TriggerAfterDamage(target, attacker, finalDamage, logCallback);
+            
             if (!target.IsAlive)
             {
                 MewtationsEventPipeline.TriggerOnKill(attacker, target, logCallback);
                 MewtationsEventPipeline.TriggerOnDeath(target, logCallback);
             }
-
-            // Apply Element Behavior Modifiers for Basic Attacks
-            if (attacker.Element == CatElement.Fire && target.IsAlive)
-            {
-                if (UnityEngine.Random.value <= 0.50f)
-                {
-                    target.AddDebuff(MewtationsDebuff.Burning, 2);
-                    logCallback?.Invoke($"🔥 [HỎA] Đòn đánh của {attacker.Name} gây Thiêu Đốt lên {target.Name}!");
-                }
-            }
-            else if (attacker.Element == CatElement.Poison && target.IsAlive)
-            {
-                target.AddDebuff(MewtationsDebuff.Poisoned, 3);
-                logCallback?.Invoke($"☠️ [ĐỘC] Đòn đánh của {attacker.Name} tích độc dược lên {target.Name}!");
-            }
-            else if (attacker.Element == CatElement.Ice && target.IsAlive)
-            {
-                if (UnityEngine.Random.value <= 0.25f)
-                {
-                    target.AddDebuff(MewtationsDebuff.Frozen, 1);
-                    logCallback?.Invoke($"❄️ [BĂNG] Đòn đánh buốt lạnh của {attacker.Name} Đóng Băng {target.Name}!");
-                }
-            }
-            else if (attacker.Element == CatElement.Lightning && target.IsAlive)
-            {
-                if (target.HasDebuff(MewtationsDebuff.Shocked))
-                {
-                    attacker.CurrentRage = Mathf.Min(145, attacker.CurrentRage + 10);
-                    logCallback?.Invoke($"⚡ [LÔI CHẤN] {attacker.Name} đánh trúng mục tiêu Điện Giật, hấp thụ hạt sét phục hồi +10 Nộ khí!");
-                }
-                if (UnityEngine.Random.value <= 0.30f)
-                {
-                    target.AddDebuff(MewtationsDebuff.Shocked, 2);
-                    logCallback?.Invoke($"⚡ [LÔI] Sét đánh cực nhanh từ {attacker.Name} gây Điện Giật lên {target.Name} (+30% sát thương nhận vào)!");
-                }
-            }
-
-            // Apply Role Specializations (ShieldSupport, RageSupport, Debuff, Disruption)
-            if (attacker.Role == CatRole.ShieldSupport && allies != null)
-            {
-                CombatUnit lowestHPAlly = null;
-                int minHP = int.MaxValue;
-                foreach (var ally in allies)
-                {
-                    if (ally.IsAlive && ally.CurrentHP < minHP)
-                    {
-                        minHP = ally.CurrentHP;
-                        lowestHPAlly = ally;
-                    }
-                }
-                if (lowestHPAlly != null)
-                {
-                    lowestHPAlly.AddShield(5);
-                    logCallback?.Invoke($"🛡️ [HỘ THỂ] Hỗ trợ {attacker.Name} ban tặng +5 Khiên bảo vệ cho {lowestHPAlly.Name}!");
-                }
-            }
-            else if (attacker.Role == CatRole.RageSupport && allies != null)
-            {
-                foreach (var ally in allies)
-                {
-                    if (ally.IsAlive && ally != attacker)
-                    {
-                        ally.CurrentRage = Mathf.Min(145, ally.CurrentRage + 10);
-                        logCallback?.Invoke($"⚡ [CỔ VŨ] {attacker.Name} truyền năng lượng, giúp đồng đội {ally.Name} nhận +10 Nộ!");
-                    }
-                }
-            }
-            else if (attacker.Role == CatRole.Debuff && target.IsAlive)
-            {
-                if (UnityEngine.Random.value <= 0.40f)
-                {
-                    MewtationsDebuff debuffToApply = MewtationsDebuff.None;
-                    int duration = 2;
-                    switch (attacker.Element)
-                    {
-                        case CatElement.Fire:
-                            debuffToApply = MewtationsDebuff.Burning;
-                            break;
-                        case CatElement.Poison:
-                            debuffToApply = MewtationsDebuff.Poisoned;
-                            duration = 3;
-                            break;
-                        case CatElement.Ice:
-                            debuffToApply = MewtationsDebuff.Frozen;
-                            duration = 1;
-                            break;
-                        case CatElement.Lightning:
-                            debuffToApply = MewtationsDebuff.Shocked;
-                            break;
-                        default:
-                            MewtationsDebuff[] possible = { MewtationsDebuff.Burning, MewtationsDebuff.Poisoned, MewtationsDebuff.Frozen, MewtationsDebuff.Shocked };
-                            debuffToApply = possible[UnityEngine.Random.Range(0, possible.Length)];
-                            if (debuffToApply == MewtationsDebuff.Frozen) duration = 1;
-                            else if (debuffToApply == MewtationsDebuff.Poisoned) duration = 3;
-                            break;
-                    }
-
-                    if (debuffToApply != MewtationsDebuff.None)
-                    {
-                        target.AddDebuff(debuffToApply, duration);
-                        string viName = "";
-                        switch(debuffToApply)
-                        {
-                            case MewtationsDebuff.Burning: viName = "Thiêu Đốt"; break;
-                            case MewtationsDebuff.Poisoned: viName = "Kịch Độc"; break;
-                            case MewtationsDebuff.Frozen: viName = "Đóng Băng"; break;
-                            case MewtationsDebuff.Shocked: viName = "Điện Giật"; break;
-                        }
-                        logCallback?.Invoke($"☠️ [SUY YẾU] Kẻ suy yếu {attacker.Name} kích hoạt hiệu ứng xấu ngẫu nhiên: gây {viName} lên {target.Name}!");
-                    }
-                }
-            }
-            else if (attacker.Role == CatRole.Disruption && target.IsAlive)
-            {
-                if (target.HasIronWill)
-                {
-                    logCallback?.Invoke($"🛡️ {target.Name} sở hữu Ý Chí Sắt Đá, miễn nhiễm mọi hiệu ứng Quấy Nhiễu!");
-                }
-                else
-                {
-                    int drained = Mathf.Min(target.CurrentRage, 15);
-                    target.CurrentRage -= drained;
-                    target.Speed = Mathf.Max(10, target.Speed - 10);
-                    logCallback?.Invoke($"💢 [QUẤY NHIỄU] {attacker.Name} quấy rối làm {target.Name} tiêu hao {drained} Nộ và giảm 10 Tốc Độ!");
-                }
-            }
-
-            // Apply HeavenlyPoisonBody to target
-            if (attacker.HasTrait(Mewtations.Expedition.HeavenlyTalent.HeavenlyPoisonBody) && target.IsAlive)
-            {
-                target.AddDebuff(MewtationsDebuff.Poisoned, 3);
-                logCallback?.Invoke($"☠️ Đòn đánh của {attacker.Name} tẩm độc linh lực, gây trúng độc lên {target.Name}!");
-            }
-
-            // Apply RageOvercharger
-            if (attacker.HasTrait(Mewtations.Expedition.HeavenlyTalent.RageOvercharger) && attacker.IsAlive)
-            {
-                attacker.CurrentRage = Mathf.Min(145, attacker.CurrentRage + 10);
-                logCallback?.Invoke($"⚡ {attacker.Name} kích hoạt Nộ Khí Cuồng Triều, nhận thêm 10 Nộ khí!");
-            }
-
-            // Apply UnstableClaws self-damage
-            if (attacker.HasMutation(Mewtations.Expedition.UnstableMutation.UnstableClaws) && attacker.IsAlive)
-            {
-                attacker.TakeDamage(2);
-                logCallback?.Invoke($"☣️ {attacker.Name} bị đột biến tự phế kinh mạch, hao tổn 2 HP!");
-            }
-
-            // Apply Spiritual Backlash (Tẩu Hỏa Nhập Ma) self-damage
-            if (isSpiritualBacklash && attacker.IsAlive)
-            {
-                attacker.TakeDamage(4);
-                logCallback?.Invoke($"☣️ [TẨU HỎA NHẬP MA] Sức mạnh biến dị quá tải bùng nổ! {attacker.Name} gánh chịu 4 sát thương linh lực phản phệ!");
-            }
-
-            // Apply BrokenFireVein backfire
-            bool usesFire = false;
-            var weapon = attacker.Source.GetEquipableOfEquipableType(EquipableType.Weapon);
-            if (weapon != null && (weapon.Id.ToLower().Contains("fire") || weapon.Id.ToLower().Contains("hỏa") || weapon.Id.ToLower().Contains("hoa")))
-            {
-                usesFire = true;
-            }
-            if (attacker.Element == CatElement.Fire)
-            {
-                usesFire = true;
-            }
-            if (usesFire && attacker.HasTrait(Mewtations.Combat.PermanentScar.BrokenFireVein) && attacker.IsAlive)
-            {
-                attacker.TakeDamage(2);
-                logCallback?.Invoke($"🔥 [HỎA MẠCH ĐỨT GÃY] {attacker.Name} sử dụng vũ khí/chiêu thức hệ Hỏa khi đang bị Đứt Hỏa Mạch! Tự chịu phản phệ -2 HP!");
-            }
         }
     }
-
     public static class MewtationsUltimateRegistry
     {
         public static UltimateType GetUltimateType(CatCardData cat)

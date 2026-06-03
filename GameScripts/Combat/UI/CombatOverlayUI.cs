@@ -820,25 +820,38 @@ namespace Mewtations.Combat.UI
                 maxStamina = unit.MaxStamina;
                 isPlayer = unit.IsPlayer;
 
-                var weapon = unit.Source.GetEquipableOfEquipableType(EquipableType.Weapon) as Equipable;
-                if (weapon != null)
+                if (unit.Source != null)
                 {
-                    weaponName = weapon.Name;
-                    var pattern = MewtationsWeaponRegistry.GetAttackPattern(weapon.Id);
-                    attackPatternVi = GetWeaponPatternVi(pattern);
-                    
-                    weaponEfficiencyVi = GetEfficiencyRank(weapon.OutputEfficiency);
-                    weaponArchetypeDesc = GetArchetypeDesc(weapon.WeaponArchetype);
+                    var weapon = unit.Source.GetEquipableOfEquipableType(EquipableType.Weapon) as Equipable;
+                    if (weapon != null)
+                    {
+                        weaponName = weapon.Name;
+                        var pattern = MewtationsWeaponRegistry.GetAttackPattern(weapon.Id);
+                        attackPatternVi = GetWeaponPatternVi(pattern);
+                        
+                        weaponEfficiencyVi = GetEfficiencyRank(weapon.OutputEfficiency);
+                        weaponArchetypeDesc = GetArchetypeDesc(weapon.WeaponArchetype);
+                    }
+
+                    if (unit.Source is CatCardData cat)
+                    {
+                        traits = new List<string>(cat.PermanentTraits);
+                        mutations = new List<string>(cat.ActiveMutations);
+
+                        var ultType = MewtationsUltimateRegistry.GetUltimateType(cat);
+                        ultName = GetUltimateNameVi(ultType);
+                        ultDesc = GetUltimateDescVi(ultType);
+                    }
                 }
-
-                if (unit.Source is CatCardData cat)
+                else
                 {
-                    traits = new List<string>(cat.PermanentTraits);
-                    mutations = new List<string>(cat.ActiveMutations);
-
-                    var ultType = MewtationsUltimateRegistry.GetUltimateType(cat);
-                    ultName = GetUltimateNameVi(ultType);
-                    ultDesc = GetUltimateDescVi(ultType);
+                    // Fallback for enemies without Source (e.g. Dogs)
+                    attackPatternVi = GetWeaponPatternVi(unit.AttackPattern);
+                    if (unit.ActiveCombatSkill != null)
+                    {
+                        ultName = Mewtations.Core.MewtationsLoc.Translate(unit.ActiveCombatSkill.NameKey);
+                        ultDesc = Mewtations.Core.MewtationsLoc.Translate(unit.ActiveCombatSkill.DescKey);
+                    }
                 }
             }
             else if (tooltipTarget is GameCard gameCard && gameCard.CardData is CatCardData catCard)

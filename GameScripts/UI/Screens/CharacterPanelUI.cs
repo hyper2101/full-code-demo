@@ -183,6 +183,7 @@ namespace Mewtations.UI
             DrawEquipmentCategory(CatSlotType.Weapon);
             DrawEquipmentCategory(CatSlotType.Torso);
             DrawEquipmentCategory(CatSlotType.Head);
+            DrawEquipmentCategory(CatSlotType.SpecialCombat); // Thêm SpecialCombat
             DrawEquipmentCategory(CatSlotType.Pill);
             DrawEquipmentCategory(CatSlotType.Skill);
             DrawEquipmentCategory(CatSlotType.Passive1);
@@ -226,7 +227,7 @@ namespace Mewtations.UI
         {
             GUIStyle sStyle = new GUIStyle(_slotStyle);
 
-            string text = "[ Khóa ]";
+            string text = slot.SlotType == CatSlotType.SpecialCombat ? "[ 🔒 KHÓA (Lv.20) ]" : "[ Khóa ]";
             if (slot.IsUnlocked)
             {
                 text = "[ Trống ]";

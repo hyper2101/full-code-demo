@@ -67,9 +67,10 @@ namespace Mewtations.Expedition
 
             // Start turn-based combat overlay
             List<Combatable> playerCombats = manager.ActiveCats.Cast<Combatable>().ToList();
-            TurnBasedCombatManager.Instance.StartCombat(playerCombats, enemies, (result) =>
+
+            Action<CombatResult> onCombatEnd = (result) =>
             {
-                // Clean up enemy cards
+                // Clean up legacy enemy cards (if any)
                 foreach (var enemy in enemies)
                 {
                     if (enemy != null && enemy.MyGameCard != null)
@@ -128,7 +129,26 @@ namespace Mewtations.Expedition
                     // Defeat or Retreat: Return to base
                     manager.ReturnToBase(isDefeat: true);
                 }
-            });
+            };
+
+            if (DogEnemyGenerator.Instance != null && DogEnemyGenerator.Instance.useDogEnemySystem)
+            {
+                // Destroy legacy physical cards that were spawned (if Dog System is active, we don't need them)
+                foreach (var enemy in enemies)
+                {
+                    if (enemy != null && enemy.MyGameCard != null)
+                    {
+                        enemy.MyGameCard.DestroyCard(true, true);
+                    }
+                }
+                
+                var dogEnemies = DogEnemyGenerator.Instance.GenerateEnemiesForLayer(_layer, _isBoss);
+                TurnBasedCombatManager.Instance.StartCombat(playerCombats, dogEnemies, onCombatEnd);
+            }
+            else
+            {
+                TurnBasedCombatManager.Instance.StartCombat(playerCombats, enemies, onCombatEnd);
+            }
         }
 
         private string RollEnemyId(int layer)
@@ -552,7 +572,8 @@ namespace Mewtations.Expedition
             Debug.LogWarning($"[Expedition] Bắt đầu trận chiến CƯƠNG GIẢ (ELITE)! Quái vật được tăng 1.8x HP & sát thương.");
 
             List<Combatable> playerCombats = manager.ActiveCats.Cast<Combatable>().ToList();
-            TurnBasedCombatManager.Instance.StartCombat(playerCombats, enemies, (result) =>
+            
+            Action<CombatResult> onCombatEnd = (result) =>
             {
                 foreach (var enemy in enemies)
                 {
@@ -590,7 +611,25 @@ namespace Mewtations.Expedition
                 {
                     manager.ReturnToBase(isDefeat: true);
                 }
-            });
+            };
+
+            if (DogEnemyGenerator.Instance != null && DogEnemyGenerator.Instance.useDogEnemySystem)
+            {
+                foreach (var enemy in enemies)
+                {
+                    if (enemy != null && enemy.MyGameCard != null)
+                    {
+                        enemy.MyGameCard.DestroyCard(true, true);
+                    }
+                }
+
+                var dogEnemies = DogEnemyGenerator.Instance.GenerateEliteForLayer(_layer);
+                TurnBasedCombatManager.Instance.StartCombat(playerCombats, dogEnemies, onCombatEnd);
+            }
+            else
+            {
+                TurnBasedCombatManager.Instance.StartCombat(playerCombats, enemies, onCombatEnd);
+            }
         }
     }
 

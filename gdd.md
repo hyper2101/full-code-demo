@@ -219,17 +219,28 @@ Người chơi chỉ nhìn thế giới từ phía mèo.
 
 # 3. Gameplay Loop Chính
 
-Gameplay chính xoay quanh chu kỳ:
+Gameplay chính xoay quanh chu kỳ sinh tồn và thám hiểm (Core Loop), kết hợp chặt chẽ giữa quản lý tài nguyên và chiến đấu chiến thuật:
 
-1. Thu thập tài nguyên
-2. Chế tạo đồ
-3. Hồi phục mèo
-4. Xây đội hình
-5. Đi thám hiểm
-6. Chiến đấu
-7. Mang tài nguyên về
-8. Mở khóa tiến triển mới
-9. Lặp lại với độ khó cao hơn.
+**Giai đoạn 1: Chuẩn bị ở Trại (Base Management)**
+1. **Thu thập tài nguyên:** Kéo thả mèo để khai thác tài nguyên từ các điểm nút hoặc công trình.
+2. **Chế tạo đồ:** Ghép các thẻ nguyên liệu để chế tạo vũ khí, áo giáp, thức ăn và vật phẩm hỗ trợ.
+3. **Hồi phục mèo:** Quản lý sức bền (stamina). Cho mèo ăn, chữa bệnh ở Trạm Y Tế (Dog Hospital) hoặc Đài Tẩy Tủy để phục hồi trạng thái chiến đấu.
+4. **Xây đội hình (Team Building):** Trang bị vũ khí, kỹ năng cho Mèo và tối ưu hóa vị trí dựa trên Archetype.
+
+**Giai đoạn 2: Viễn Chinh & Chiến Đấu (Expedition & Combat)**
+5. **Đi thám hiểm (Expedition):** Gửi đội hình vào bản đồ Viễn Chinh. Tại đây, hệ thống sẽ ngẫu nhiên (Randomization) sinh ra các Encounter (Sự kiện, Quái vật, Thương nhân).
+6. **Chạm trán Kẻ Địch (Dog Enemy & Encounter):** 
+   - Hệ thống tự động sinh ngẫu nhiên Kẻ Địch (DogEnemyGenerator) theo cấu trúc Layer và Biome (Chưa hoàn thiện: cần hệ thống pool chi tiết).
+   - Node combat sẽ tự nạp dữ liệu Enemy vào hệ thống mà không cần vật lý hóa thẻ bài.
+7. **Chiến đấu Chiến thuật (Turn-Based Combat):** 
+   - Đội hình được bố trí trên Grid 3x3. 
+   - Tốc độ và vị trí sẽ quyết định Turn Order. Sử dụng các kỹ năng đặc biệt khi Nộ (Rage) đạt mức yêu cầu.
+   - Chiến đấu diễn ra tự động thông qua Event Stream và Reaction Chain, người chơi không trực tiếp can thiệp.
+
+**Giai đoạn 3: Rút lui & Phát triển (Retreat & Progression)**
+8. **Mang tài nguyên về:** Nếu chiến thắng, Mèo nhận được điểm kinh nghiệm tu vi, loot và thẻ thưởng (chứa trong Ô Nhẫn Trữ Vật - Ordering Storage). Cần tránh giới hạn Insured Slots để không mất đồ khi rút lui thất bại.
+9. **Mở khóa tiến triển mới:** Sử dụng tài nguyên mới để xây công trình (Shrine, Relic), giải mã các bí ẩn cốt truyện (Lore Hints) và chế tạo trang bị cao cấp.
+10. **Lặp lại vòng lặp** với độ khó (Threat/Corruption) cao hơn.
 
 ---
 

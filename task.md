@@ -73,3 +73,9 @@ All core features, dialog systems, and the Localization Interceptor with refined
   - Removed temporary generator scripts (Generator.cs, Generator3.cs, FixRemnants.cs).
   - Removed redundant Expeditionlegacy.cs after extracting its text.
   - Merged GDD texts into a master gdd.md.
+
+## Dog Enemy Framework Refactor (Today)
+- [x] **Phase 1-6:** Decoupled CombatUnit, implemented Final Damage calculation, implemented CombatSkillExecutor, MultiHitPolicy.
+- [x] **Phase 7-9:** Integrated DogEnemyGenerator, updated ExpeditionEncounter to spawn DogEnemyInstance dynamically, fixed NREs in CombatOverlayUI, implemented Loc fallback.
+- [ ] **Sinh quái ng?u nhiên (Random Enemy Generation)**: Chua hoàn thành. H? th?ng DogEnemyGenerator hi?n t?i dang dùng logic placeholder d? sinh quái, c?n pool sinh ng?u nhiên chi ti?t theo biome.
+- [ ] **Spawn Node Combat / Spawn Card Enemy Board**: V?n chua hoàn thi?n logic v?t lý khi spawn node combat và th? enemy ra ngoài board chính.

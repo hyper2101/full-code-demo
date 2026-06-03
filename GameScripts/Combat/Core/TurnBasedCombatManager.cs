@@ -81,10 +81,41 @@ namespace Mewtations.Combat.Core
 
             AddLog("▶ Đang chuẩn bị trận hình...");
 
-            // Open Combat Overlay
             if (CombatOverlayUI.Instance != null)
             {
-                CombatOverlayUI.Instance.ShowWindow();
+                CombatOverlayUI.Instance.Show(Formation);
+            }
+        }
+
+        public void StartCombat(List<Combatable> playerCats, List<GameScripts.Systems.Enemies.DogEnemyInstance> dogs, Action<CombatResult> onCombatEnd)
+        {
+            if (IsCombatActive) return;
+
+            IsCombatActive = true;
+            Result = CombatResult.Ongoing;
+            State = MewtationsCombatState.Preparation;
+            CombatLog.Clear();
+            _onCombatEnd = onCombatEnd;
+
+            AvailableCats = new List<Combatable>(playerCats);
+            EnemySourceList = new List<Combatable>(); // We don't have cards for dogs yet
+
+            // Clear unified event pipeline before registering units
+            MewtationsEventPipeline.Clear();
+
+            // Freeze main board
+            WorldManager.instance.SetViewType(ViewType.Default);
+            WorldManager.WorldSimulationPaused = true;
+
+            // Set up formations
+            Formation.SetupPlayerTeam(playerCats);
+            Formation.SetupDogEnemyTeam(dogs);
+
+            AddLog("▶ Đang chuẩn bị trận hình...");
+
+            if (CombatOverlayUI.Instance != null)
+            {
+                CombatOverlayUI.Instance.Show(Formation);
             }
         }
 
@@ -108,14 +139,29 @@ namespace Mewtations.Combat.Core
             List<CombatUnit> finalPlayerUnits = new List<CombatUnit>();
             foreach (var unit in Formation.PlayerUnits)
             {
-                finalPlayerUnits.Add(new CombatUnit(unit.Source, true, unit.SlotIndex));
+                if (unit.Source is CatCardData cat)
+                {
+                    finalPlayerUnits.Add(GameScripts.Combat.Core.CombatUnitFactory.CreateFromCat(cat, unit.SlotIndex));
+                }
+                else
+                {
+                    finalPlayerUnits.Add(GameScripts.Combat.Core.CombatUnitFactory.CreateFromLegacyEnemy(unit.Source, unit.SlotIndex));
+                }
             }
             Formation.PlayerUnits = finalPlayerUnits;
 
             List<CombatUnit> finalEnemyUnits = new List<CombatUnit>();
             foreach (var unit in Formation.EnemyUnits)
             {
-                finalEnemyUnits.Add(new CombatUnit(unit.Source, false, unit.SlotIndex));
+                if (unit.Source == null)
+                {
+                    // It's a non-card enemy like DogEnemyInstance
+                    finalEnemyUnits.Add(unit);
+                }
+                else
+                {
+                    finalEnemyUnits.Add(GameScripts.Combat.Core.CombatUnitFactory.CreateFromLegacyEnemy(unit.Source, unit.SlotIndex));
+                }
             }
             Formation.EnemyUnits = finalEnemyUnits;
 
@@ -249,10 +295,20 @@ namespace Mewtations.Combat.Core
                     List<CombatUnit> allies = unit.IsPlayer ? Formation.PlayerUnits : Formation.EnemyUnits;
                     List<CombatUnit> opponents = unit.IsPlayer ? Formation.EnemyUnits : Formation.PlayerUnits;
 
-                    if (unit.CurrentRage >= 100)
+                    bool hasActiveSkill = unit.ActiveCombatSkill != null;
+                    int requiredRage = hasActiveSkill ? unit.ActiveCombatSkill.RequiredRage : 100;
+
+                    if (unit.CurrentRage >= requiredRage)
                     {
-                        // Cast Ultimate
-                        MewtationsUltimateRegistry.ExecuteUltimate(unit, allies, opponents, msg => AddLog(msg));
+                        if (hasActiveSkill)
+                        {
+                            CombatSkillExecutor.ExecuteSkill(unit, unit.ActiveCombatSkill, allies, opponents, msg => AddLog(msg));
+                        }
+                        else
+                        {
+                            // Fallback to legacy Ultimate
+                            MewtationsUltimateRegistry.ExecuteUltimate(unit, allies, opponents, msg => AddLog(msg));
+                        }
                     }
                     else
                     {

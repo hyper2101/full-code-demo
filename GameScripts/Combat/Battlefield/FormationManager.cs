@@ -19,7 +19,10 @@ namespace Mewtations.Combat.Battlefield
             // Automatically assign up to 5 cats to front/mid rows as default placement
             for (int i = 0; i < cats.Count && i < 5; i++)
             {
-                PlayerUnits.Add(new CombatUnit(cats[i], true, i));
+                if (cats[i] is CatCardData cat)
+                {
+                    PlayerUnits.Add(GameScripts.Combat.Core.CombatUnitFactory.CreateFromCat(cat, i));
+                }
             }
         }
 
@@ -29,7 +32,16 @@ namespace Mewtations.Combat.Battlefield
             // Assign enemies up to 9 slots
             for (int i = 0; i < enemies.Count && i < 9; i++)
             {
-                EnemyUnits.Add(new CombatUnit(enemies[i], false, i));
+                EnemyUnits.Add(GameScripts.Combat.Core.CombatUnitFactory.CreateFromLegacyEnemy(enemies[i], i));
+            }
+        }
+
+        public void SetupDogEnemyTeam(List<GameScripts.Systems.Enemies.DogEnemyInstance> dogs)
+        {
+            EnemyUnits.Clear();
+            for (int i = 0; i < dogs.Count && i < 9; i++)
+            {
+                EnemyUnits.Add(GameScripts.Combat.Core.CombatUnitFactory.CreateFromDog(dogs[i], i));
             }
         }
 
