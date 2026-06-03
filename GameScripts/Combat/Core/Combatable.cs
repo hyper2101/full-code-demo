@@ -7,6 +7,23 @@ using Mewtations.Combat.Battlefield;
 
 public class Combatable : CardData
 {
+	[Header("Combat Positioning")]
+	[ExtraData("grid_pos_x")]
+	public int GridPosX = 1;
+
+	[ExtraData("grid_pos_y")]
+	public int GridPosY = 1; // Mặc định là Center Midline (1,1)
+
+	public Vector2Int GridPosition
+	{
+		get => new Vector2Int(GridPosX, GridPosY);
+		set
+		{
+			GridPosX = value.x;
+			GridPosY = value.y;
+		}
+	}
+
 	public List<Equipable> PossibleEquipables
 	{
 		get

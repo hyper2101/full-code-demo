@@ -71,4 +71,7 @@ public class RunVariables
 	public List<string> BuiltLandmarks = new List<string>();
 
 	public int GlobalEntityCounter = 0;
+
+	public bool HasCatReachedLevel9;
+	public bool HasFoundBlackAltarBlueprint;
 }

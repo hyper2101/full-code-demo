@@ -57,27 +57,29 @@ namespace Mewtations.Combat
     /// </summary>
     public static class CombatBattlefieldHelper
     {
-        public static int GetLayer(int slotIndex) => slotIndex / 3;
+        // x = Depth (Frontline -> Backline)
+        public static int GetLayer(int slotIndex) => slotIndex % 3;
         
-        public static int GetLane(int slotIndex) => slotIndex % 3;
+        // y = Lane (Top -> Mid -> Bot)
+        public static int GetLane(int slotIndex) => slotIndex / 3;
         
-        public static int[] GetSlotsInLayer(int layer) => new[] { layer * 3, layer * 3 + 1, layer * 3 + 2 };
+        public static int[] GetSlotsInLane(int lane) => new[] { lane * 3, lane * 3 + 1, lane * 3 + 2 };
         
-        public static List<CombatUnit> GetAliveUnitsInLayer(List<CombatUnit> units, int layer)
+        public static List<CombatUnit> GetAliveUnitsInLane(List<CombatUnit> units, int lane)
         {
-            return units.FindAll(u => u.IsAlive && GetLayer(u.SlotIndex) == layer);
+            return units.FindAll(u => u.IsAlive && GetLane(u.SlotIndex) == lane);
         }
         
         /// <summary>
-        /// Generates the nearest-layer search order starting from attacker's layer.
-        /// Scalable, deterministic, handles arbitrary layers without hardcoded logic.
+        /// Generates the nearest-lane search order starting from attacker's lane.
+        /// Bias towards Top Lane (y=0) when distances are equal.
         /// </summary>
-        public static List<int> GetNearestLayerOrder(int attackerLayer, int maxLayers = 3)
+        public static List<int> GetNearestLaneOrder(int attackerLane, int maxLanes = 3)
         {
             return Enumerable
-                .Range(0, maxLayers)
-                .OrderBy(layer => Math.Abs(layer - attackerLayer))
-                .ThenBy(layer => layer)
+                .Range(0, maxLanes)
+                .OrderBy(lane => Math.Abs(lane - attackerLane))
+                .ThenBy(lane => lane) // Bias Top (nhỏ nhất)
                 .ToList();
         }
     }

@@ -2,6 +2,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum BreakthroughSlotRole
+{
+    Target,
+    Catalyst,
+    Support
+}
+
 public class BreakthroughArrayCardData : CardData
 {
 	public override bool UsesHorizontalSlots
@@ -29,31 +36,30 @@ public class BreakthroughArrayCardData : CardData
 	{
 		if (this.MyGameCard == null) return false;
 
-		// Đếm số lượng card con hiện tại trong stack
 		int childCount = 0;
 		GameCard curr = this.MyGameCard.Child;
-		bool hasCat = false;
 		while (curr != null)
 		{
 			childCount++;
-			if (curr.CardData is CatCardData)
-			{
-				hasCat = true;
-			}
 			curr = curr.Child;
 		}
 
-		// Đột Phá Trận tối đa 4 slot con: 1 Mèo (trung tâm) và tối đa 3 vệ tinh (hỗ trợ)
 		if (childCount >= 4) return false;
 
-		// Ô con trực tiếp đầu tiên (trung tâm) bắt buộc phải là Mèo để kích hoạt trận pháp
-		if (!hasCat)
-		{
-			return otherCard is CatCardData;
-		}
+        BreakthroughSlotRole role = (BreakthroughSlotRole)Mathf.Min(childCount, 2);
 
-		// Các ô vệ tinh tiếp theo chỉ nhận vật phẩm hỗ trợ đột phá hợp lệ
-		return otherCard.IsBreakthroughSupport;
+        if (role == BreakthroughSlotRole.Target)
+        {
+            return otherCard is CatCardData;
+        }
+        else if (role == BreakthroughSlotRole.Catalyst)
+        {
+            return otherCard.IsCultivationPill;
+        }
+        else // Support
+        {
+            return otherCard.IsBreakthroughSupport;
+        }
 	}
 
 	public override void UpdateCard()
@@ -161,25 +167,33 @@ public class BreakthroughArrayCardData : CardData
 			return;
 		}
 
-		// 1. Phân tích các vật phẩm hỗ trợ đột phá trong stack sử dụng thuộc tính generic của CardData
+		// 1. Phân tích các vật phẩm hỗ trợ đột phá trong stack
 		float damageReduction = 0f;
 		int healthBonus = 0;
 		bool hasRevivePill = false;
+		string pillToInsert = null;
 
 		List<GameCard> cardsToDestroy = new List<GameCard>();
 		GameCard curr = this.MyGameCard.Child;
 		while (curr != null)
 		{
 			CardData data = curr.CardData;
-			if (data != null && data.IsBreakthroughSupport)
+			if (data != null && data != cat)
 			{
-				cardsToDestroy.Add(curr);
-
-				damageReduction += data.BreakthroughDmgReduction;
-				healthBonus += data.BreakthroughHealthBonus;
-				if (data.BreakthroughReviveEffect)
+				if (data.IsCultivationPill && string.IsNullOrEmpty(pillToInsert))
 				{
-					hasRevivePill = true;
+					pillToInsert = data.Id;
+					cardsToDestroy.Add(curr);
+				}
+				else if (data.IsBreakthroughSupport)
+				{
+					cardsToDestroy.Add(curr);
+					damageReduction += data.BreakthroughDmgReduction;
+					healthBonus += data.BreakthroughHealthBonus;
+					if (data.BreakthroughReviveEffect)
+					{
+						hasRevivePill = true;
+					}
 				}
 			}
 			curr = curr.Child;
@@ -188,13 +202,21 @@ public class BreakthroughArrayCardData : CardData
 		// Giới hạn giảm sát thương tối đa là 90%
 		damageReduction = Mathf.Min(damageReduction, 0.90f);
 
-		// 2. Tiêu hủy các vật phẩm phụ trợ (dùng 1 lần)
+		// 2. Tiêu hủy các vật phẩm
 		foreach (GameCard gc in cardsToDestroy)
 		{
 			if (gc != null && !gc.Destroyed)
 			{
 				gc.DestroyCard(true, true);
 			}
+		}
+
+		// Cấy Linh Đan vào Mèo
+		if (!string.IsNullOrEmpty(pillToInsert))
+		{
+			cat.CultivationData.InsertPill(pillToInsert);
+			cat.SaveCultivationData();
+			cat.UpdateCardText();
 		}
 
 		// 3. Tiến hành kích hoạt lôi kiếp đột phá trên Mèo

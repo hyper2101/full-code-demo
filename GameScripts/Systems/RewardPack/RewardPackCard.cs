@@ -52,6 +52,20 @@ public class RewardPackCard : CardData
             string cardToSpawn = currentPack.GeneratedCards[currentPack.OpenedCount];
             currentPack.OpenedCount++;
 
+            // Inject Black Altar Blueprint
+            if (WorldManager.instance != null && WorldManager.instance.CurrentRunVariables != null)
+            {
+                var runVars = WorldManager.instance.CurrentRunVariables;
+                if (runVars.HasCatReachedLevel9 && !runVars.HasFoundBlackAltarBlueprint)
+                {
+                    if (UnityEngine.Random.value < 0.9f) // 90% chance to drop
+                    {
+                        cardToSpawn = "blueprint_black_altar";
+                        runVars.HasFoundBlackAltarBlueprint = true;
+                    }
+                }
+            }
+
             WorldManager.instance.CreateCard(this.MyGameCard.transform.position, cardToSpawn, faceUp: true, velocity: new Vector3(0, 5, 0));
         }
 

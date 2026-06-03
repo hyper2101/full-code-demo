@@ -397,6 +397,35 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
     [ExtraData("breakthrough_level")]
     public int BreakthroughLevel = 0;
 
+    [ExtraData("cultivation_data_json")]
+    public string CultivationDataJson = "";
+
+    private Mewtations.Cards.Cats.CatCultivationData _cultivationData;
+    public Mewtations.Cards.Cats.CatCultivationData CultivationData
+    {
+        get
+        {
+            if (_cultivationData == null)
+            {
+                _cultivationData = Mewtations.Cards.Cats.CatCultivationData.FromJson(CultivationDataJson);
+                if (BreakthroughLevel > 0 && _cultivationData.RealmStage == 0)
+                {
+                    _cultivationData.RealmStage = BreakthroughLevel;
+                }
+            }
+            return _cultivationData;
+        }
+    }
+
+    public void SaveCultivationData()
+    {
+        if (_cultivationData != null)
+        {
+            _cultivationData.RealmStage = BreakthroughLevel;
+            CultivationDataJson = _cultivationData.ToJson();
+        }
+    }
+
     [ExtraData("has_pill_slot")]
     public bool HasPillSlot = false;
     
@@ -483,6 +512,11 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
 
             CurrentExp -= MaxExperience;
             Level++;
+            
+            if (Level >= 9 && WorldManager.instance != null && WorldManager.instance.CurrentRunVariables != null)
+            {
+                WorldManager.instance.CurrentRunVariables.HasCatReachedLevel9 = true;
+            }
 
             // Tăng chỉ số thưởng
             this.BaseCombatStats.MaxHealth += StatHpGainPerLevel;
@@ -1600,6 +1634,17 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
             foreach (var t in traits)
             {
                 desc += $"• <color=#00ffcc>{Mewtations.Expedition.HeavenlyTalent.GetDisplayName(t)}</color>: {Mewtations.Expedition.HeavenlyTalent.GetDescription(t)}\n";
+            }
+            desc += "\n";
+        }
+
+        if (CultivationData.InsertedSpiritPills.Count > 0)
+        {
+            desc += "<b>💊 LINH ĐAN ĐÃ CẤY:</b>\n";
+            foreach (var pill in CultivationData.InsertedSpiritPills)
+            {
+                string pillName = MewtationsLoc.Translate($"card.{pill}.name", pill);
+                desc += $"- <color=#2ecc71>{pillName}</color>\n";
             }
             desc += "\n";
         }
