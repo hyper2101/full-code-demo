@@ -119,6 +119,57 @@ namespace Mewtations.Combat.Core
             }
         }
 
+        public void StartCombat(Mewtations.Combat.Encounters.EncounterSetupSnapshot snapshot, Action<CombatResult> onCombatEnd = null)
+        {
+            if (IsCombatActive) return;
+
+            IsCombatActive = true;
+            Result = CombatResult.Ongoing;
+            State = MewtationsCombatState.Preparation;
+            CombatLog.Clear();
+            _onCombatEnd = onCombatEnd;
+
+            AvailableCats = new List<Combatable>();
+            EnemySourceList = new List<Combatable>();
+
+            // Clear unified event pipeline before registering units
+            MewtationsEventPipeline.Clear();
+
+            // Freeze main board
+            WorldManager.instance.SetViewType(ViewType.Default);
+            WorldManager.WorldSimulationPaused = true;
+
+            // Setup Formations precisely based on the snapshot
+            Formation.PlayerUnits.Clear();
+            foreach (var pSnap in snapshot.PlayerTeam)
+            {
+                if (pSnap.CatReference != null)
+                {
+                    AvailableCats.Add(pSnap.CatReference);
+                    Formation.PlayerUnits.Add(GameScripts.Combat.Core.CombatUnitFactory.CreateFromCat(pSnap.CatReference, pSnap.FinalSlotIndex));
+                }
+            }
+
+            Formation.EnemyUnits.Clear();
+            if (snapshot.Encounter != null && snapshot.Encounter.Enemies != null)
+            {
+                foreach (var eSnap in snapshot.Encounter.Enemies)
+                {
+                    if (eSnap.Enemy != null)
+                    {
+                        Formation.EnemyUnits.Add(GameScripts.Combat.Core.CombatUnitFactory.CreateFromDog(eSnap.Enemy, eSnap.SlotIndex));
+                    }
+                }
+            }
+
+            AddLog("▶ Đang chuẩn bị trận hình từ Encounter Snapshot...");
+
+            if (CombatOverlayUI.Instance != null)
+            {
+                CombatOverlayUI.Instance.Show(Formation);
+            }
+        }
+
         public void ConfirmFight()
         {
             if (Formation.PlayerUnits.Count == 0)

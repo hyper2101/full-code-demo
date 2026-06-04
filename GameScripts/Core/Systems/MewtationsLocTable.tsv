@@ -386,3 +386,9 @@ exp_evt4_d3	Để giữ tính mạng, toàn đội giao nộp <b>{0}</b>. Chúng
 exp_trash_slot	[ TRASH BIN - DRAG AND DROP TO DELETE PERMANENTLY ]	[ THÙNG RÁC - KÉO THẢ VÀO ĐÂY ĐỂ XÓA VĨNH VIỄN ]	[ TRASH ]	[ TRASH ]	[ TRASH ]
 catgod_wrath_opt	Sacrifice 20 Gold to appease (Reduce 20 Greed)	Cúng tế 20 Vàng để xoa dịu (Giảm 20 Greed)	献祭 20 金币以进行平息（减少20贪婪）	20金貨を献祭して平息させる（強欲20減少）	20 금화를 공양하여 진정시킵니다 (탐욕 20 감소)
 card_iron_ore_name	Spirit Ore	Quặng Linh Thạch	灵石矿	霊石鉱	영석광
+ui_precombat_start	Start Battle	Bắt Đầu Chiến Đấu	开始战斗	戦闘開始	전투 시작
+ui_precombat_close	Close	Đóng	关闭	閉じる	닫기
+ui_precombat_enemy_preview	Enemy Preview	Đội Hình Địch	敌人预览	敵のプレビュー	적 미리보기
+ui_precombat_formation	Your Formation	Đội Hình Của Bạn	你的阵型	あなたのフォーメーション	당신의 진형
+ui_precombat_reserve	Reserve Cats	Mèo Dự Bị	备用猫	予備の猫	예비 고양이
+ui_precombat_detail_title	Unit Details	Chi Tiết Đơn Vị	单位详情	ユニット詳細	유닛 상세
