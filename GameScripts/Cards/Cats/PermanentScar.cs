@@ -16,6 +16,7 @@ namespace Mewtations.Combat
         public const string BrokenFireVein = "scar_broken_fire_vein";       // Đứt Mạch Hỏa Linh: Phản phệ vũ khí Hỏa
         public const string HeartDemonPossessed = "scar_heart_demon_pos";  // Tâm Ma Quấn Thân: 20% giảm trúng
         public const string ShatteredSoul = "scar_shattered_soul";         // Hồn Phách Nứt Vỡ: Khóa Exp thường
+        public const string Paralyzed = "scar_paralyzed";                  // Tê Liệt: Gục ngã không thể chiến đấu
 
         public static string GetDisplayName(string id)
         {
@@ -29,6 +30,7 @@ namespace Mewtations.Combat
                 case BrokenFireVein: return "Hỏa Mạch Đứt Gãy (Broken Fire Vein)";
                 case HeartDemonPossessed: return "Tâm Ma Xâm Nhập (Heart Demon)";
                 case ShatteredSoul: return "Hồn Phách Tổn Hao (Shattered Soul)";
+                case Paralyzed: return "Tê Liệt (Paralyzed)";
                 default: return "Vết Sẹo Lạ";
             }
         }
@@ -45,6 +47,7 @@ namespace Mewtations.Combat
                 case BrokenFireVein: return "Kinh mạch hệ Hỏa đứt gãy. Sử dụng vũ khí/kỹ năng Hỏa gây phản phệ 2 HP lên chính mình.";
                 case HeartDemonPossessed: return "Tâm ma quấy rối đạo tâm, làm giảm 20% tỷ lệ đánh trúng trong combat.";
                 case ShatteredSoul: return "Hồn phách nứt vỡ, không thể nhận Exp viễn chinh thường. Chỉ có thể thăng cấp tại Thần Mèo.";
+                case Paralyzed: return "Toàn thân tê liệt, HP bằng 0. Không thể tham gia chiến đấu hay thám hiểm cho đến khi được chữa trị.";
                 default: return "Vết thương tích tụ trong linh mạch.";
             }
         }

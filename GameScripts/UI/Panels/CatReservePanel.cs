@@ -1,25 +1,45 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+using Mewtations.Combat.Encounters;
 
 public class CatReservePanel : MonoBehaviour
 {
     [SerializeField] private Transform scrollContent;
     [SerializeField] private GameObject catDraggablePrefab;
 
-    public void RefreshAvailableCats()
+    public void PopulateSessionCats(PreCombatSession session)
+    {
+        session.AvailableCats.Clear();
+        var allCats = WorldManager.instance.AllCards
+            .Where(c => c != null && c.CardData is CatCardData && !c.Destroyed)
+            .Select(c => c.CardData as CatCardData)
+            .ToList();
+
+        foreach (var cat in allCats)
+        {
+            if (Mewtations.Combat.Core.CombatEligibilityValidator.IsEligible(cat))
+            {
+                session.AvailableCats.Add(cat);
+            }
+        }
+    }
+
+    public void RefreshAvailableCats(PreCombatSession session)
     {
         ClearList();
         
-        // Fetch valid cats from the main inventory (WorldManager / GameDataLoader)
-        // For now, this is a stub that should be filled based on actual inventory logic
-        List<string> availableCatIds = GetAvailableCatIdsFromInventory();
+        // Only show cats that are NOT currently in the sandbox formation
+        var catsInFormation = new HashSet<CatCardData>(session.Formation.Values.Select(v => v.CatReference));
 
-        foreach (var catId in availableCatIds)
+        foreach (var cat in session.AvailableCats)
         {
+            if (catsInFormation.Contains(cat)) continue;
+
             GameObject inst = Instantiate(catDraggablePrefab, scrollContent);
             // Setup the draggable UI element
             // DraggableCatUI ui = inst.GetComponent<DraggableCatUI>();
-            // ui.Init(catId);
+            // ui.Init(cat);
         }
     }
 
@@ -29,11 +49,5 @@ public class CatReservePanel : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
-    }
-
-    private List<string> GetAvailableCatIdsFromInventory()
-    {
-        // TODO: Connect to WorldManager to get CatCardData instances on the board
-        return new List<string>();
     }
 }

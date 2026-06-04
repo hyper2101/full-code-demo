@@ -23,9 +23,11 @@ public class EnemyPreviewPanel : MonoBehaviour
                 Transform slotParent = previewSlots[spawnData.SlotIndex];
                 GameObject previewInst = Instantiate(enemyPreviewPrefab, slotParent);
                 
-                // Initialize the preview UI (e.g., set sprite, HP text from spawnData.Enemy)
-                // EnemyPreviewElement element = previewInst.GetComponent<EnemyPreviewElement>();
-                // if (element != null) element.Init(spawnData.Enemy);
+                Mewtations.UI.Panels.EnemyPreviewElement element = previewInst.GetComponent<Mewtations.UI.Panels.EnemyPreviewElement>();
+                if (element != null) 
+                {
+                    element.Init(spawnData.Enemy);
+                }
             }
         }
     }

@@ -8,5 +8,6 @@ namespace Mewtations.Combat.Encounters
     {
         public EncounterData Encounter;
         public List<PlayerUnitSnapshot> PlayerTeam = new List<PlayerUnitSnapshot>();
+        public List<Combatable> LegacyEnemies; // For backward compatibility wrapper only
     }
 }

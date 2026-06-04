@@ -16,10 +16,10 @@ namespace Mewtations.Combat.TurnOrder
             var activeUnits = units.FindAll(u => u.IsAlive);
 
             // Stable Tie-Breaker Rule:
-            // 1. Sort by Speed descending.
+            // 1. Sort by Effective Speed descending (Exhausted units get 90% penalty).
             // 2. If tie, prioritize based on SlotIndex (Stable spawn order) to ensure fully deterministic results.
             return activeUnits
-                .OrderByDescending(u => u.Speed)
+                .OrderByDescending(u => u.IsExhausted ? u.Speed * 0.1f : u.Speed)
                 .ThenBy(u => u.SlotIndex)
                 .ToList();
         }

@@ -1,24 +1,54 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+using Mewtations.Combat.Encounters;
 
 public class OrderingPanel : MonoBehaviour
 {
     [SerializeField] private Transform inventoryContent;
     [SerializeField] private GameObject equipmentDraggablePrefab;
 
-    public void Initialize()
+    public void PopulateSessionEquipment(PreCombatSession session)
+    {
+        session.AvailableEquipment.Clear();
+
+        if (WorldManager.instance == null || WorldManager.instance.AllCards == null) return;
+
+        // Find the single Ordering Card (as per Phase 1f assumption)
+        var ringCard = WorldManager.instance.AllCards.FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.OrderingCardData && !c.Destroyed);
+        
+        if (ringCard != null && ringCard.InventoryContainer != null)
+        {
+            var children = ringCard.InventoryContainer.GetChildren();
+            session.AvailableEquipment.AddRange(children.Select(c => c.CardData));
+        }
+    }
+
+    public void Initialize(PreCombatSession session)
     {
         ClearList();
         
-        // Fetch valid temporary combat items (Ghost UI flow)
-        List<string> temporaryItems = GetOrderingItemsFromInventory();
-
-        foreach (var itemId in temporaryItems)
+        // Only show items that aren't already equipped in the sandbox
+        var equippedItems = new HashSet<CardData>();
+        foreach (var pSnap in session.Formation.Values)
         {
+            if (pSnap.Equipment != null)
+            {
+                foreach (var item in pSnap.Equipment.Slots.Values)
+                {
+                    equippedItems.Add(item);
+                }
+            }
+        }
+
+        foreach (var item in session.AvailableEquipment)
+        {
+            if (equippedItems.Contains(item)) continue;
+
             GameObject inst = Instantiate(equipmentDraggablePrefab, inventoryContent);
             // Setup Ghost UI element
             // GhostEquipmentUI ui = inst.GetComponent<GhostEquipmentUI>();
-            // ui.Init(itemId);
+            // ui.Init(item);
         }
     }
 
@@ -30,18 +60,11 @@ public class OrderingPanel : MonoBehaviour
         }
     }
 
-    private List<string> GetOrderingItemsFromInventory()
-    {
-        // TODO: Connect to WorldManager to get equipment cards available for combat
-        return new List<string>();
-    }
-
     // Ghost UI Swap Logic (called via Drag & Drop on Formation Slots)
-    public bool TryEquipToCat(string itemId, int targetSlotIndex)
+    public bool TryEquipToCat(CardData item, int targetSlotIndex)
     {
-        // Validate if item can be equipped to the cat in the slot
-        // If valid, return true (Swap)
-        // If not, return false (Return)
+        // Validation logic: check if the sandbox formation has a cat in targetSlotIndex
+        // and if the item is a valid Equipable for that CatSlotType
         return true; 
     }
 }

@@ -11,14 +11,7 @@ using Mewtations.Combat.UI;
 // DO NOT REMOVE DURING LEGACY COMBAT CLEANUP
 namespace Mewtations.Combat.Core
 {
-    public enum CombatResult
-    {
-        Ongoing,
-        Victory,
-        Defeat,
-        Retreated
-    }
-
+// CombatResult enum moved to CombatResultData.cs
     public enum MewtationsCombatState
     {
         Preparation,
@@ -40,6 +33,9 @@ namespace Mewtations.Combat.Core
         public int CurrentRound = 1;
         public List<ICombatHazard> ActiveHazards = new List<ICombatHazard>();
 
+        public int MaxRounds = 30;
+        public CombatEndReason EndReason = CombatEndReason.Retreat;
+
         public int AntiStallRound = 10;
         public float AntiStallHealPenalty = 0.50f;
 
@@ -48,7 +44,7 @@ namespace Mewtations.Combat.Core
         public int StaminaCostIncreasePerRound = 1;
 
         private Coroutine _combatCoroutine;
-        private Action<CombatResult> _onCombatEnd;
+        private Action<CombatResultData> _onCombatEnd;
 
         private void Awake()
         {
@@ -59,67 +55,66 @@ namespace Mewtations.Combat.Core
         {
             if (IsCombatActive) return;
 
-            IsCombatActive = true;
-            Result = CombatResult.Ongoing;
-            State = MewtationsCombatState.Preparation;
-            CombatLog.Clear();
-            _onCombatEnd = onCombatEnd;
-
-            AvailableCats = new List<Combatable>(playerCats);
-            EnemySourceList = new List<Combatable>(enemies);
-
-            // Clear unified event pipeline before registering units
-            MewtationsEventPipeline.Clear();
-
-            // Freeze main board
-            WorldManager.instance.SetViewType(ViewType.Default);
-            WorldManager.WorldSimulationPaused = true;
-
-            // Set up formations (executes CombatUnit constructors, registering components)
-            Formation.SetupPlayerTeam(playerCats);
-            Formation.SetupEnemyTeam(enemies);
-
-            AddLog("▶ Đang chuẩn bị trận hình...");
-
-            if (CombatOverlayUI.Instance != null)
+            // --- LEGACY WRAPPER ---
+            var snapshot = new Mewtations.Combat.Encounters.EncounterSetupSnapshot();
+            snapshot.PlayerTeam = new List<Mewtations.Combat.Encounters.PlayerUnitSnapshot>();
+            for (int i = 0; i < playerCats.Count && i < 5; i++)
             {
-                CombatOverlayUI.Instance.Show(Formation);
+                if (playerCats[i] is CatCardData catData)
+                {
+                    snapshot.PlayerTeam.Add(new Mewtations.Combat.Encounters.PlayerUnitSnapshot
+                    {
+                        CatReference = catData,
+                        FinalSlotIndex = i
+                    });
+                }
             }
-        }
 
+            snapshot.LegacyEnemies = new List<Combatable>(enemies);
+            StartCombat(snapshot, (resData) => {
+                CombatResultApplier.ApplyResult(resData);
+                onCombatEnd?.Invoke(resData.Result);
+            });
+        }
+        
         public void StartCombat(List<Combatable> playerCats, List<GameScripts.Systems.Enemies.DogEnemyInstance> dogs, Action<CombatResult> onCombatEnd)
         {
             if (IsCombatActive) return;
 
-            IsCombatActive = true;
-            Result = CombatResult.Ongoing;
-            State = MewtationsCombatState.Preparation;
-            CombatLog.Clear();
-            _onCombatEnd = onCombatEnd;
-
-            AvailableCats = new List<Combatable>(playerCats);
-            EnemySourceList = new List<Combatable>(); // We don't have cards for dogs yet
-
-            // Clear unified event pipeline before registering units
-            MewtationsEventPipeline.Clear();
-
-            // Freeze main board
-            WorldManager.instance.SetViewType(ViewType.Default);
-            WorldManager.WorldSimulationPaused = true;
-
-            // Set up formations
-            Formation.SetupPlayerTeam(playerCats);
-            Formation.SetupDogEnemyTeam(dogs);
-
-            AddLog("▶ Đang chuẩn bị trận hình...");
-
-            if (CombatOverlayUI.Instance != null)
+            // --- LEGACY WRAPPER ---
+            var snapshot = new Mewtations.Combat.Encounters.EncounterSetupSnapshot();
+            snapshot.Encounter = ScriptableObject.CreateInstance<Mewtations.Combat.Encounters.EncounterData>();
+            snapshot.Encounter.Enemies = new List<Mewtations.Combat.Encounters.EnemySpawnData>();
+            snapshot.PlayerTeam = new List<Mewtations.Combat.Encounters.PlayerUnitSnapshot>();
+            
+            for (int i = 0; i < playerCats.Count && i < 5; i++)
             {
-                CombatOverlayUI.Instance.Show(Formation);
+                if (playerCats[i] is CatCardData catData)
+                {
+                    snapshot.PlayerTeam.Add(new Mewtations.Combat.Encounters.PlayerUnitSnapshot
+                    {
+                        CatReference = catData,
+                        FinalSlotIndex = i
+                    });
+                }
             }
+
+            for (int i = 0; i < dogs.Count; i++)
+            {
+                snapshot.Encounter.Enemies.Add(new Mewtations.Combat.Encounters.EnemySpawnData
+                {
+                    Enemy = dogs[i],
+                    SlotIndex = i + 5 // Arbitrary slots for legacy
+                });
+            }
+
+            StartCombat(snapshot, (resData) => {
+                CombatResultApplier.ApplyResult(resData);
+                onCombatEnd?.Invoke(resData.Result);
+            });
         }
 
-        public void StartCombat(Mewtations.Combat.Encounters.EncounterSetupSnapshot snapshot, Action<CombatResult> onCombatEnd = null)
+        public void StartCombat(Mewtations.Combat.Encounters.EncounterSetupSnapshot snapshot, Action<CombatResultData> onCombatEnd = null)
         {
             if (IsCombatActive) return;
 
@@ -151,7 +146,12 @@ namespace Mewtations.Combat.Core
             }
 
             Formation.EnemyUnits.Clear();
-            if (snapshot.Encounter != null && snapshot.Encounter.Enemies != null)
+            if (snapshot.LegacyEnemies != null && snapshot.LegacyEnemies.Count > 0)
+            {
+                EnemySourceList = new List<Combatable>(snapshot.LegacyEnemies);
+                Formation.SetupEnemyTeam(snapshot.LegacyEnemies);
+            }
+            else if (snapshot.Encounter != null && snapshot.Encounter.Enemies != null)
             {
                 foreach (var eSnap in snapshot.Encounter.Enemies)
                 {
@@ -238,6 +238,7 @@ namespace Mewtations.Combat.Core
 
             AddLog("🏳 Quân ta quyết định Bỏ Cuộc! Rút lui an toàn...");
             Result = CombatResult.Retreated;
+            EndReason = CombatEndReason.Retreat;
 
             if (_combatCoroutine != null)
             {
@@ -425,10 +426,11 @@ namespace Mewtations.Combat.Core
                 }
 
                 round++;
-                if (round > 50) // Safe exit from endless loops
+                if (round > MaxRounds)
                 {
-                    AddLog("⚔️ Trận đấu kéo dài quá lâu! Tự động hòa.");
-                    Result = CombatResult.Retreated;
+                    AddLog("⚔️ Trận đấu đã đạt giới hạn hiệp (Turn Limit)! Người chơi không thể kết thúc trận đấu. Được tính là Thất bại.");
+                    Result = CombatResult.Defeat;
+                    EndReason = CombatEndReason.TurnLimitReached;
                     break;
                 }
 
@@ -440,7 +442,7 @@ namespace Mewtations.Combat.Core
 
         private void CheckUnitDeath(CombatUnit unit)
         {
-            AddLog($"☠ {unit.Name} đã gục ngã!");
+            AddLog($"💤 {unit.Name} đã mất khả năng chiến đấu và bị tê liệt!");
 
             if (unit.IsPlayer && unit.Source != null)
             {
@@ -480,7 +482,7 @@ namespace Mewtations.Combat.Core
                 else
                 {
                     // No corpse anymore! Cat is paralyzed with 0 HP
-                    AddLog($"💤 {unit.Name} bị đánh gục và rơi vào trạng thái Tê Liệt (0 HP).");
+                    AddLog($"💤 {unit.Name} bị đánh bại và rơi vào trạng thái Tê Liệt (0 HP).");
                     unit.CurrentHP = 0;
                     unit.Stamina = 0;
                     unit.IsExhausted = true;
@@ -488,11 +490,11 @@ namespace Mewtations.Combat.Core
 
                     if (unit.Source is CatCardData catData)
                     {
-                        // Write death milestone to memoirs
+                        // Write loss milestone to memoirs
                         string layerInfo = (ExpeditionManager.Instance != null && ExpeditionManager.Instance.IsExpeditionActive) 
                             ? "Tầng " + ExpeditionManager.Instance.RunState.CurrentLayer 
                             : "Căn Cứ";
-                        catData.AddMemoir("Bị đánh gục tại viễn chinh " + layerInfo);
+                        catData.AddMemoir("Bị thương nặng và tê liệt tại viễn chinh " + layerInfo);
                     }
                     
                     // We DO NOT remove them from Formation.PlayerUnits so they sync back HP=0
@@ -505,11 +507,13 @@ namespace Mewtations.Combat.Core
             if (Formation.IsPlayerDefeated())
             {
                 Result = CombatResult.Defeat;
+                EndReason = CombatEndReason.TeamDefeated;
                 AddLog("❌ Thất bại! Đội hình mèo đã bị quét sạch.");
             }
             else if (Formation.IsEnemyDefeated())
             {
                 Result = CombatResult.Victory;
+                EndReason = CombatEndReason.EnemyDefeated;
                 AddLog("🏆 Chiến thắng vang dội! Quân địch đã bị tiêu diệt.");
             }
         }
@@ -558,29 +562,35 @@ namespace Mewtations.Combat.Core
             IsCombatActive = false;
             WorldManager.WorldSimulationPaused = false;
             
-            // Sync final health states back to base units
+            // Build and send result data
+            CombatResultData resultData = new CombatResultData
+            {
+                Result = this.Result,
+                EndReason = this.EndReason,
+                CatOutcomes = new List<CatCombatOutcome>()
+            };
+
             foreach (var unit in Formation.PlayerUnits)
             {
-                if (unit.Source != null)
+                if (unit.Source is CatCardData cat)
                 {
-                    unit.Source.HealthPoints = unit.CurrentHP;
-                    if (unit.Source is CatCardData cat)
+                    resultData.CatOutcomes.Add(new CatCombatOutcome
                     {
-                        cat.CurrentRage = unit.CurrentRage;
-                        cat.Stamina = unit.Stamina;
-                        cat.IsExhausted = unit.IsExhausted;
-                        cat.HoiQuangPhanChieuTriggered = unit.HoiQuangPhanChieuTriggered;
-                        cat.RefreshConditionState();
-                        cat.ExhaustionLevel = unit.IsExhausted ? unit.ExhaustionLevel : 0;
-                    }
+                        CatReference = cat,
+                        FinalHP = unit.CurrentHP,
+                        FinalStamina = unit.Stamina,
+                        WasDefeated = !unit.IsAlive,
+                        BecameParalyzed = !unit.IsAlive,
+                        WasExhausted = unit.IsExhausted
+                    });
                 }
             }
 
             // Close UI overlay after short delay
-            StartCoroutine(CloseUiDelayRoutine());
+            StartCoroutine(CloseUiDelayRoutine(resultData));
         }
 
-        private IEnumerator CloseUiDelayRoutine()
+        private IEnumerator CloseUiDelayRoutine(CombatResultData resultData)
         {
             yield return new WaitForSeconds(3.0f); // Allow player to read end log
 
@@ -589,7 +599,7 @@ namespace Mewtations.Combat.Core
                 CombatOverlayUI.Instance.HideWindow();
             }
 
-            _onCombatEnd?.Invoke(Result);
+            _onCombatEnd?.Invoke(resultData);
         }
 
         public void AddLog(string message)

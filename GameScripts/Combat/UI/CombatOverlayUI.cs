@@ -644,9 +644,25 @@ namespace Mewtations.Combat.UI
 
             GUILayout.BeginVertical(cardStyle, GUILayout.Width(Screen.width * 0.12f), GUILayout.Height(140));
 
-            if (unit == null || !unit.IsAlive)
+            if (unit == null)
             {
                 GUILayout.Label("<color=#555>[ Trống ]</color>", _logStyle);
+            }
+            else if (!unit.IsAlive)
+            {
+                // Dead unit visual
+                GUI.color = new Color(1f, 1f, 1f, 0.4f); // Fade out
+                GUILayout.Label($"<b><color=#777>{unit.Name}</color></b>", _logStyle);
+                GUILayout.Space(10);
+                GUILayout.Label("<color=#f55><b>💤 TÊ LIỆT</b></color>", _logStyle);
+                GUILayout.Label($"HP: 0/{unit.MaxHP}", _logStyle);
+                GUI.color = Color.white; // Restore color
+                
+                Rect lastRect = GUILayoutUtility.GetLastRect();
+                if (lastRect.Contains(Event.current.mousePosition))
+                {
+                    _hoveredObject = unit;
+                }
             }
             else
             {
