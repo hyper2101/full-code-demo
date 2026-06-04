@@ -24,12 +24,6 @@ namespace Mewtations.Combat.Core
                 return false;
             }
 
-            if (ExpeditionManager.Instance != null && ExpeditionManager.Instance.ActiveCats.Contains(cat))
-            {
-                reason = "Mèo đang đi Viễn Chinh.";
-                return false;
-            }
-
             if (cat.IsLocked || (cat.MyGameCard != null && cat.MyGameCard.IsLocked))
             {
                 reason = "Mèo đang bị khóa hành động.";

@@ -101,6 +101,18 @@ Xung đột giữa mèo và chó thực chất là:
 
 ---
 
+# Hệ Thống Hồi Ký (Memoir)
+
+Bởi vì Mewtations là những cá thể đại diện cho sự cá nhân hóa (individuality), mỗi chú mèo trong game không chỉ là một đơn vị chiến đấu vô tri. 
+
+Chúng sở hữu hệ thống **Hồi Ký (Memoir)** riêng biệt:
+* Ghi chép lại nguồn gốc xuất thân.
+* Lưu dấu những lần đột phá, khai mở thiên phú.
+* Ghi nhận thành tích hạ gục các ác thú hay boss.
+* Khắc ghi những lần bị dị biến, trúng độc, hay tẩu hỏa nhập ma.
+
+Nhờ hệ thống này, người chơi có thể đọc lại toàn bộ tiểu sử thăng trầm của một chú mèo từ lúc sinh ra nghèo khó cho đến khi trở thành huyền thoại. Lịch sử của chúng định hình con người chúng.
+
 # Cultivation và tầng cấp xã hội
 
 Trong thế giới này, cultivation không chỉ là sức mạnh.

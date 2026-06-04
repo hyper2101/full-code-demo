@@ -25,12 +25,17 @@ public class DayEventSystem
         return false;
     }
 
-    public void TriggerDayEvent(int day)
-    {
-        if (GameScripts.Systems.Threat.ThreatManager.Instance != null)
+        public void TriggerDayEvent(int day)
         {
-            GameScripts.Systems.Threat.ThreatManager.Instance.OnDayPassed(day);
-        }
+            if (GameScripts.Systems.Threat.ThreatManager.Instance != null)
+            {
+                GameScripts.Systems.Threat.ThreatManager.Instance.OnDayPassed(day);
+            }
+
+            if (GameScripts.Systems.DogTax.DogTaxEventManager.Instance != null)
+            {
+                GameScripts.Systems.DogTax.DogTaxEventManager.Instance.OnMonthTick(day);
+            }
 
         if (day == 5)
         {

@@ -392,3 +392,15 @@ ui_precombat_enemy_preview	Enemy Preview	Đội Hình Địch	敌人预览	敵�
 ui_precombat_formation	Your Formation	Đội Hình Của Bạn	你的阵型	あなたのフォーメーション	당신의 진형
 ui_precombat_reserve	Reserve Cats	Mèo Dự Bị	备用猫	予備の猫	예비 고양이
 ui_precombat_detail_title	Unit Details	Chi Tiết Đơn Vị	单位详情	ユニット詳細	유닛 상세
+
+dogtax_event_title	Dogma Tax Patrol	Đội tuần tra Dogma
+dogtax_event_desc	The Dogma patrol has arrived to collect tribute. Will you pay or refuse?	Đội tuần tra Dogma tới thu cống nạp. Bạn sẽ đóng thuế hay từ chối?
+
+card_dogtax_debt_name	Dogma Debt Note	Giấy Nợ Dogma
+card_dogtax_debt_description	A heavy debt owed to the Dogma. Fulfill the resource demands or face the consequences.	Món nợ nặng nề phải trả cho Dogma. Hãy nộp đủ tài nguyên nếu không muốn chuốc lấy hậu quả.
+
+card_dogtax_threat_name	Dogma Tax Enforcer	Đội Chấp Pháp Dogma
+card_dogtax_threat_description	The Dogma Enforcers have arrived. Prepare for combat or face the consequences!	Đội Chấp Pháp Dogma đã xuất hiện. Hãy chuẩn bị chiến đấu hoặc gánh chịu hậu quả!
+
+card_blackaltar_threat_name	Black Altar Boss	Trùm Hắc Đàn
+card_blackaltar_threat_description	A powerful demon summoned from the Black Altar. Defeat it to earn legendary elixirs!	Ác quỷ cường đại được triệu hồi từ Hắc Đàn. Hãy tiêu diệt nó để đoạt lấy linh đan!

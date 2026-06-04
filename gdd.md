@@ -228,17 +228,15 @@ Gameplay chính xoay quanh chu kỳ sinh tồn và thám hiểm (Core Loop), k�
 4. **Xây đội hình (Team Building):** Trang bị vũ khí, kỹ năng cho Mèo và tối ưu hóa vị trí dựa trên Archetype.
 
 **Giai đoạn 2: Viễn Chinh & Chiến Đấu (Expedition & Combat)**
-5. **Đi thám hiểm (Expedition):** Gửi đội hình vào bản đồ Viễn Chinh. Tại đây, hệ thống sẽ ngẫu nhiên (Randomization) sinh ra các Encounter (Sự kiện, Quái vật, Thương nhân).
+5. **Đi thám hiểm (Expedition):** Gửi Cổng Viễn Chinh (Gateway) để mở bản đồ. Tại đây, hệ thống sẽ ngẫu nhiên (Randomization) sinh ra các Encounter (Sự kiện, Quái vật, Thương nhân). Đáng chú ý: **Mèo không bị nhốt vào balo hay biến mất khỏi Board khi đi Viễn Chinh**. Chúng vẫn ở nhà.
 6. **Chạm trán Kẻ Địch (Dog Enemy & Encounter):** 
-   - Hệ thống tự động sinh ngẫu nhiên Kẻ Địch (DogEnemyGenerator) theo cấu trúc Layer và Biome (Chưa hoàn thiện: cần hệ thống pool chi tiết).
-   - Node combat sẽ tự nạp dữ liệu Enemy vào hệ thống mà không cần vật lý hóa thẻ bài.
-7. **Chiến đấu Chiến thuật (Turn-Based Combat):** 
-   - Đội hình được bố trí trên Grid 3x3. 
-   - Tốc độ và vị trí sẽ quyết định Turn Order. Sử dụng các kỹ năng đặc biệt khi Nộ (Rage) đạt mức yêu cầu.
-   - Chiến đấu diễn ra tự động thông qua Event Stream và Reaction Chain, người chơi không trực tiếp can thiệp.
+   - Hệ thống tự động nạp dữ liệu Enemy vào hệ thống thông qua `EncounterManager` với các Đội Hình Cố Định (Fixed Squad Formations) nhằm đảm bảo tính ổn định và chiến thuật cho các sự kiện như Thuế Chó (Dog Tax), Boss Blackaltar, và quái Expedition.
+7. **Chuẩn Bị & Chiến đấu Chiến thuật (PreCombat & Turn-Based Combat):** 
+   - Khi có combat, UI **PreCombatScreen** luôn được kích hoạt. Nhờ cơ chế "All Hands On Deck", người chơi có thể kéo thả **BẤT KỲ chú Mèo nào** còn khỏe mạnh đang có mặt trên Board vào lưới Grid 3x3 để tham chiến, không phân biệt là đang thám hiểm hay ở nhà.
+   - Chiến đấu diễn ra tự động thông qua Event Stream và Reaction Chain, người chơi không trực tiếp can thiệp. Mèo tham chiến thực tế mới nhận được phần thưởng trận đánh.
 
 **Giai đoạn 3: Rút lui & Phát triển (Retreat & Progression)**
-8. **Mang tài nguyên về:** Nếu chiến thắng, Mèo nhận được điểm kinh nghiệm tu vi, loot và thẻ thưởng (chứa trong Ô Nhẫn Trữ Vật - Ordering Storage). Cần tránh giới hạn Insured Slots để không mất đồ khi rút lui thất bại.
+8. **Mang tài nguyên về:** Nếu chiến thắng combat Viễn Chinh, đội không nhận EXP tu vi mà nhận trực tiếp tài nguyên, đồ vật. Mèo tham chiến sẽ ghi dấu ấn vào hệ thống **Hồi Ký (Memoir)**. Cần tránh giới hạn Insured Slots để không mất đồ khi rút lui thất bại.
 9. **Mở khóa tiến triển mới:** Sử dụng tài nguyên mới để xây công trình (Shrine, Relic), giải mã các bí ẩn cốt truyện (Lore Hints) và chế tạo trang bị cao cấp.
 10. **Lặp lại vòng lặp** với độ khó (Threat/Corruption) cao hơn.
 
@@ -972,7 +970,8 @@ Sự liên kết giữa 3 hệ thống này là xương sống của cơ chế V
    - Ordering tạo ra áp lực quản lý không gian: Người chơi phải liên tục ra quyết định giữ gì, bỏ gì bằng cơ chế **Trash Slot** (ném bỏ bài vĩnh viễn) khi túi đồ đầy.
 
 3. **Kết Thúc & Phục Hồi (Return Workflow):**
-   - Khi kết thúc chuyến đi (Retreat hoặc chết sạch đội hình - Party Wipe), trạng thái của từng chú mèo được kiểm tra nghiêm ngặt.
-   - **Mèo khỏe mạnh:** Được tự động nối lại vào vị trí ban đầu trên Board thông qua ParentCardUniqueId.
-   - **Mèo kiệt sức/tê liệt:** Bị đẩy văng ra Board một cách độc lập để chờ cấp cứu tại Dog Hospital, mô phỏng chân thực chấn thương sau viễn chinh.
-   - Loot mang về từ Ordering sẽ được đổ ra Board chính (tùy thuộc vào việc có bị phạt rơi đồ do Party Wipe hay không, với ngoại lệ là các ô Insured Slots luôn được bảo hiểm).
+   - Khi kết thúc chuyến đi (Retreat hoặc chết sạch đội hình - Party Wipe), Loot mang về từ Ordering sẽ được đổ ra Board chính (tùy thuộc vào việc có bị phạt rơi đồ do Party Wipe hay không, với ngoại lệ là các ô Insured Slots luôn được bảo hiểm).
+   - Trạng thái Mèo bị thương (tê liệt/kiệt sức) trong combat sẽ chờ cấp cứu tại Dog Hospital, mô phỏng chân thực chấn thương sau viễn chinh.
+
+## 19.3. Hệ Thống Hồi Ký (Memoir System)
+Hệ thống **Memoir** thay thế cho việc theo dõi chỉ số khô khan. Mỗi khi một chú mèo trải qua sinh tử (BossKill, Combat, Đột biến, Khai mở Thiên Phú...), game sẽ ghi lại một dòng hồi ký. Điều này tạo tính nhập vai (Roleplay) cực lớn, biến mỗi chú mèo thành một nhân vật có câu chuyện cá nhân độc nhất, đồng thời giải thích rõ ràng nguồn gốc sức mạnh (hoặc sẹo/debuff) mà chúng sở hữu.

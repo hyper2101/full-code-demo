@@ -50,17 +50,47 @@ namespace GameScripts.Systems.Threat.UI
             {
                 HoldProgress = Mathf.Max(0f, HoldProgress - Time.deltaTime * 2f);
             }
+            
+            // Right-click for Preview
+            bool isRightClicked = isHovered && InputController.instance != null && InputController.instance.GetInputDown(1);
+            if (isRightClicked)
+            {
+                OpenPreview();
+            }
+        }
+
+        private void OpenPreview()
+        {
+            if (InstanceData == null) return;
+            
+            var encounter = Mewtations.Combat.Encounters.EncounterManager.Instance?.GetEncounter(InstanceData.EncounterId);
+            if (encounter == null) return;
+            
+            Debug.Log($"[ThreatCard] Opening Preview for {encounter.EncounterName} (Context: {encounter.Context})");
+            // TODO: Call standard UI Preview manager if one exists
         }
 
         private void TriggerEngagement()
         {
-            Debug.Log($"Bắt đầu Combat với {InstanceData.BaseData.DisplayName}");
-            // TODO: Truyền InstanceData.GeneratedEnemyTeam vào Combat System (Mewtations.Combat.Core.TurnBasedCombatManager)
-            // Lấy top 5 mèo hoặc toàn bộ mèo trên board để đánh.
+            if (InstanceData == null) return;
             
-            // Xử lý sau trận:
-            // Thắng -> GameScripts.Systems.Threat.ThreatManager.Instance.ResolveThreat(InstanceData);
-            // Thua -> Mèo bị thương, Threat thêm delay hồi phục.
+            var encounter = Mewtations.Combat.Encounters.EncounterManager.Instance?.GetEncounter(InstanceData.EncounterId);
+            if (encounter == null)
+            {
+                Debug.LogError($"[ThreatCard] Failed to trigger combat: Could not find Encounter {InstanceData.EncounterId} in EncounterManager!");
+                return;
+            }
+            
+            Debug.Log($"[ThreatCard] Kích hoạt PreCombat cho {encounter.EncounterName}");
+            
+            if (Mewtations.UI.Screens.PreCombatScreen.Instance != null)
+            {
+                Mewtations.UI.Screens.PreCombatScreen.Instance.Setup(encounter);
+            }
+            else
+            {
+                Debug.LogError("[ThreatCard] PreCombatScreen.Instance is null! Cannot launch combat setup.");
+            }
         }
     }
 }

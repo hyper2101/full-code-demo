@@ -48,6 +48,38 @@ namespace Mewtations.Combat.Core
                 // Force refresh UI/Visuals
                 cat.RefreshConditionState();
             }
+
+            // Route Context-specific events
+            if (resultData.Snapshot != null && resultData.Snapshot.Encounter != null)
+            {
+                var encounter = resultData.Snapshot.Encounter;
+                if (encounter.Context == Mewtations.Combat.Encounters.EncounterContext.DogTax)
+                {
+                    bool isVictory = resultData.Result == CombatResult.Victory;
+                    if (GameScripts.Systems.DogTax.DogTaxEventManager.Instance != null)
+                    {
+                        GameScripts.Systems.DogTax.DogTaxEventManager.Instance.OnCombatEnded(encounter.Id, isVictory);
+                    }
+                }
+                else if (encounter.Context == Mewtations.Combat.Encounters.EncounterContext.BlackAltar)
+                {
+                    bool isVictory = resultData.Result == CombatResult.Victory;
+                    if (isVictory)
+                    {
+                        // TODO: Determine exact threat card position if needed, otherwise use board center
+                        Vector3 rewardPos = WorldManager.instance != null && WorldManager.instance.CurrentBoard != null ? WorldManager.instance.CurrentBoard.MiddleOfBoard() : Vector3.zero;
+                        EncounterRewardResolver.ResolveRewards(encounter.Context, rewardPos);
+                    }
+                }
+                else if (encounter.Context == Mewtations.Combat.Encounters.EncounterContext.Expedition)
+                {
+                    if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.CurrentCombatCallback != null)
+                    {
+                        Mewtations.Expedition.ExpeditionManager.Instance.CurrentCombatCallback.Invoke(resultData);
+                        Mewtations.Expedition.ExpeditionManager.Instance.CurrentCombatCallback = null;
+                    }
+                }
+            }
         }
     }
 }

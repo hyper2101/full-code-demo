@@ -154,58 +154,57 @@ public class BlackAltarCardData : CardData
 
     private void SpawnBossFromAffinity()
     {
-        string encounterName = "Encounter_BlackAltar_Fire"; // Default fallback
-        if (CurrentAffinity == OfferingAffinityType.Poison) encounterName = "Encounter_BlackAltar_Poison";
-        else if (CurrentAffinity == OfferingAffinityType.Lightning) encounterName = "Encounter_BlackAltar_Lightning";
+        string encounterName = "Black Altar Boss (Fire)"; // Default fallback
+        if (CurrentAffinity == OfferingAffinityType.Poison) encounterName = "Black Altar Boss (Poison)";
+        else if (CurrentAffinity == OfferingAffinityType.Lightning) encounterName = "Black Altar Boss (Lightning)";
 
-        Debug.Log($"[BlackAltar] Spawning Encounter: {encounterName}!");
+        Debug.Log($"[BlackAltar] Spawning Threat Card for: {encounterName}");
 
-        // Load BossEncounterDefinition from Resources
-        BossEncounterDefinition encounterDef = Resources.Load<BossEncounterDefinition>($"Encounters/{encounterName}");
-        
-        if (encounterDef != null && encounterDef.Units != null)
+        // 1. Prepare temporary Encounter Data
+        EncounterData newEncounter = new EncounterData
         {
-            float xOffset = 2f;
-            foreach (var unitConfig in encounterDef.Units)
-            {
-                CardData prefab = WorldManager.instance.GameDataLoader.GetCardFromId(unitConfig.CardId, true);
-                if (prefab != null)
-                {
-                    Vector3 spawnPos = this.MyGameCard.transform.position + new Vector3(xOffset, 0f, 0f); // Tản ra 1 chút
-                    CardData spawnedCard = WorldManager.instance.CreateCard(spawnPos, prefab, true, false, true, true);
-                    
-                    // Ép tọa độ GridPosition và Cấp Trang bị vào Thẻ thực tế trên bàn chơi
-                    if (spawnedCard is Combatable combatable)
-                    {
-                        combatable.GridPosition = unitConfig.GridPosition;
-                        
-                        if (unitConfig.EquipmentCardIds != null && unitConfig.EquipmentCardIds.Count > 0)
-                        {
-                            foreach (string equipId in unitConfig.EquipmentCardIds)
-                            {
-                                if (!string.IsNullOrEmpty(equipId))
-                                {
-                                    combatable.CreateAndEquipCard(equipId, false);
-                                    Debug.Log($"[BlackAltar] Equipped {equipId} onto {combatable.Id}");
-                                }
-                            }
-                        }
-                        
-                        Debug.Log($"[BlackAltar] Slotted {unitConfig.CardId} at Depth {unitConfig.GridPosition.x}, Lane {unitConfig.GridPosition.y}");
-                    }
+            EncounterName = encounterName,
+            Context = EncounterContext.BlackAltar,
+            TurnLimit = 50
+        };
+        // TODO: Populate temporary enemies. The user will carefully edit this later.
+        
+        int encounterId = 999;
+        if (EncounterManager.Instance != null)
+        {
+            encounterId = EncounterManager.Instance.RegisterEncounter(newEncounter);
+        }
 
-                    spawnedCard.MyGameCard.SendIt();
-                    xOffset += 1.5f; // Xếp cách nhau ra 1 tí trên bàn chơi
-                }
-                else
-                {
-                    Debug.LogWarning($"[BlackAltar] Cannot find Boss card with id {unitConfig.CardId} defined in {encounterName}");
-                }
+        // 2. Create Threat Instance
+        var bossThreat = new GameScripts.Systems.Threat.ThreatInstance(null, GameScripts.Systems.Threat.ThreatSourceType.Event)
+        {
+            CurrentSeverity = Mewtations.Core.Severity.Critical,
+            ThreatExpiryMonth = WorldManager.instance.CurrentMonth + 7, // 7 months to fight the boss before consequence
+            EncounterId = encounterId
+        };
+
+        // 3. Spawn Physical Threat Card
+        Vector3 spawnPos = this.MyGameCard.transform.position + new Vector3(2f, 0f, 0f); // Spawn right next to the altar
+        GameCard spawnedCard = WorldManager.instance.CreateCard(spawnPos, "blackaltar_threat", true, true, true);
+        
+        if (spawnedCard != null)
+        {
+            var threatComp = spawnedCard.GetComponent<GameScripts.Systems.Threat.UI.ThreatCardComponent>();
+            if (threatComp == null)
+            {
+                threatComp = spawnedCard.gameObject.AddComponent<GameScripts.Systems.Threat.UI.ThreatCardComponent>();
+            }
+            threatComp.Initialize(bossThreat);
+            
+            // Focus camera on the new threat
+            if (GameScripts.Visuals.GameCamera.instance != null)
+            {
+                GameScripts.Visuals.GameCamera.instance.FocusOn(spawnedCard.CardData);
             }
         }
         else
         {
-            Debug.LogError($"[BlackAltar] Missing BossEncounterDefinition in Resources/Encounters/{encounterName}. Asset must be created in Unity Editor!");
+            Debug.LogError("[BlackAltar] Failed to spawn 'blackaltar_threat' card! Please ensure the prefab or card ID exists.");
         }
     }
 

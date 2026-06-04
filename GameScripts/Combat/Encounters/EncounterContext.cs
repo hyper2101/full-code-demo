@@ -8,6 +8,7 @@ namespace Mewtations.Combat.Encounters
         Expedition,
         DogTax,
         Boss,
-        Event
+        Event,
+        BlackAltar
     }
 }

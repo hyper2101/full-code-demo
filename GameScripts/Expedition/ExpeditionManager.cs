@@ -23,6 +23,7 @@ namespace Mewtations.Expedition
         public CardData RelicCardSource = null; //
         
         public ExpeditionRunContext Context = null; //
+        public Action<Mewtations.Combat.Core.CombatResultData> CurrentCombatCallback;
 
 
         public Dictionary<string, ExpeditionCatState> RuntimeCatStates = new Dictionary<string, ExpeditionCatState>();
@@ -107,30 +108,8 @@ namespace Mewtations.Expedition
             ActiveCats = cats;
             BackpackCardSource = null; //
 
-            RuntimeCatStates.Clear();
-            foreach (var cat in ActiveCats)
-            {
-                RuntimeCatStates[cat.UniqueId] = new ExpeditionCatState
-                {
-                    UniqueId = cat.UniqueId,
-                    HP = cat.HealthPoints,
-                    Stamina = cat.Stamina,
-                    IsExhausted = cat.IsExhausted,
-                    IsParalyzed = cat.IsParalyzed,
-                    ExhaustionLevel = cat.ExhaustionLevel,
-                    ParentCardUniqueId = (cat.MyGameCard != null && cat.MyGameCard.Parent != null) ? cat.MyGameCard.Parent.CardData.UniqueId : ""
-                };
-                
-                //
-                if (cat.MyGameCard != null)
-                {
-                    var p = cat.MyGameCard.Parent;
-                    var c = cat.MyGameCard.Child;
-                    cat.MyGameCard.RemoveFromStack();
-                    if (p != null && c != null) p.SetChild(c);
-                    cat.MyGameCard.gameObject.SetActive(false);
-                }
-            }
+            // Removed hiding logic for cats per user request. Cats stay on the board.
+            ActiveCats = cats; // Keep reference if needed for text events, but don't hide them.
 
             CurrentMapSeed = seed;
             MapNodes = ExpeditionMapGenerator.GenerateMap(seed, maxLayers: 6, maxNodesPerLayer: 3);
@@ -1076,6 +1055,7 @@ namespace Mewtations.Expedition
             }
             IsExpeditionActive = false;
             State = ExpeditionState.Idle;
+            ActiveCats.Clear();
 
             //
             if (ExpeditionMapUI.Instance != null) ExpeditionMapUI.Instance.HideWindow();

@@ -136,13 +136,13 @@ Player cần:
 - quan tâm injury/fatigue
 - cảm thấy mỗi mèo khác nhau
 
-## Các yếu tố còn thiếu
+## Các yếu tố còn thiếu / Đã bắt đầu giải quyết
 
+- [x] personality/gameplay traits & lịch sử cá nhân (Đã giải quyết bằng hệ thống Hồi Ký - Memoir System. Mỗi mèo giờ đây có tiểu sử lưu lại các trận sinh tử, đột phá và sự kiện riêng).
 - role identity rõ ràng
 - long-term injury
 - fatigue impact
 - mutation individuality
-- personality/gameplay traits
 - unique combat utility
 
 ## Cảnh báo

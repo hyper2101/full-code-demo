@@ -7,7 +7,7 @@ namespace GameScripts.Systems.Threat.UI
     [RequireComponent(typeof(CardData))]
     public class DebtCardComponent : MonoBehaviour
     {
-        public ThreatInstance ThreatSource;
+        public System.Action OnDebtResolved;
         private CardData _cardData;
 
         [Header("Tribute Progress")]
@@ -19,10 +19,11 @@ namespace GameScripts.Systems.Threat.UI
             _cardData = GetComponent<CardData>();
         }
 
-        public void Initialize(ThreatInstance threatSource)
+        public void Initialize(List<string> requiredItems, System.Action onResolvedCallback)
         {
-            ThreatSource = threatSource;
-            // TODO: Populate RequiredItems from threatSource.RequiredTributeItems
+            RequiredItems.Clear();
+            RequiredItems.AddRange(requiredItems);
+            OnDebtResolved = onResolvedCallback;
         }
 
         public bool CanAcceptCard(CardData otherCard)
@@ -38,18 +39,24 @@ namespace GameScripts.Systems.Threat.UI
             return false;
         }
 
+        private bool _isConsuming = false;
+
         public void UpdateDebtLogic()
         {
+            if (_isConsuming) return;
+            
             if (_cardData.MyGameCard.HasChild)
             {
                 var childCard = _cardData.MyGameCard.Child;
                 if (childCard != null && CanAcceptCard(childCard.CardData))
                 {
+                    _isConsuming = true;
                     // Hấp thụ card
                     CurrentItems.Add(childCard.CardData.Id);
                     childCard.DestroyCard(true, true);
                     
                     CheckTributeComplete();
+                    _isConsuming = false;
                 }
             }
         }
@@ -58,11 +65,16 @@ namespace GameScripts.Systems.Threat.UI
         {
             if (CurrentItems.Count >= RequiredItems.Count)
             {
-                Debug.Log($"Debt Complete! Gửi thông điệp tới ThreatManager");
-                if (GameScripts.Systems.Threat.ThreatManager.Instance != null && ThreatSource != null)
+                Debug.Log($"[DebtCard] Debt Complete!");
+                
+                if (OnDebtResolved != null)
                 {
-                    GameScripts.Systems.Threat.ThreatManager.Instance.ResolveThreat(ThreatSource, true);
-                    // Dọn dẹp Card Cống nạp sau khi xong
+                    OnDebtResolved.Invoke();
+                }
+                
+                // Dọn dẹp Card Cống nạp sau khi xong
+                if (_cardData != null && _cardData.MyGameCard != null)
+                {
                     _cardData.MyGameCard.DestroyCard(true, true);
                 }
             }

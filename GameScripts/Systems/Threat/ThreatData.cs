@@ -25,5 +25,9 @@ namespace GameScripts.Systems.Threat
         
         [Header("Penalties")]
         public ThreatPenaltyType PenaltyType = ThreatPenaltyType.LockExpedition;
+        
+        [Header("Dog Tax YAGNI Framework")]
+        public Mewtations.Core.Severity BaseSeverity = Mewtations.Core.Severity.Normal;
+        public Mewtations.Combat.Encounters.EncounterContext ThreatType = Mewtations.Combat.Encounters.EncounterContext.DogTax;
     }
 }

@@ -11,6 +11,7 @@ public class CatReservePanel : MonoBehaviour
     public void PopulateSessionCats(PreCombatSession session)
     {
         session.AvailableCats.Clear();
+
         var allCats = WorldManager.instance.AllCards
             .Where(c => c != null && c.CardData is CatCardData && !c.Destroyed)
             .Select(c => c.CardData as CatCardData)

@@ -68,7 +68,7 @@ namespace Mewtations.Expedition
             // Start turn-based combat overlay
             List<Combatable> playerCombats = manager.ActiveCats.Cast<Combatable>().ToList();
 
-            Action<CombatResult> onCombatEnd = (result) =>
+            Action<Mewtations.Combat.Core.CombatResultData> onCombatEnd = (resultData) =>
             {
                 // Clean up legacy enemy cards (if any)
                 foreach (var enemy in enemies)
@@ -79,18 +79,35 @@ namespace Mewtations.Expedition
                     }
                 }
 
-                if (result == CombatResult.Victory)
+                if (resultData.Result == CombatResult.Victory)
                 {
-                    // Reward loot and increase Corruption (+15 per node traversed)
-                    RollLoot(manager, _isBoss);
+                    // Increase Corruption (+15 per node traversed)
                     runState.AddCorruption(15);
 
-                    // Thưởng kinh nghiệm tu vi tu tiên cho Mèo khi chiến thắng trận viễn chinh
-                    int expReward = _isBoss ? 150 : 50;
-                    foreach (var cat in manager.ActiveCats)
+                    // Thưởng kinh nghiệm tu vi tu tiên cho Mèo thực sự tham gia chiến đấu
+                    foreach (var outcome in resultData.CatOutcomes)
                     {
-                        cat.GainExperience(expReward);
+                        var cat = outcome.CatReference;
+                        if (cat == null) continue;
+
+                        // Add to Memoirs
+                        cat.AddMemoir(MemoirType.ExpeditionCombat, "Chiến thắng quái vật", $"Bảo vệ đội tại Tầng {_layer}");
+                        
+                        bool isThienLoi = manager.ActiveNode != null && manager.ActiveNode.Theme == RouteTheme.ThienLoi;
+                        if (isThienLoi)
+                        {
+                            cat.Speed += 15;
+                            cat.AddMemoir(MemoirType.Breakthrough, "Lôi Đình Tẩy Tủy", "Vượt qua Kiếp Lôi, rèn luyện thân thể tăng 15 Thần Tốc");
+                        }
+                        
+                        bool isThuTrieu = manager.ActiveNode != null && manager.ActiveNode.Theme == RouteTheme.ThuTrieu;
+                        if (isThuTrieu)
+                        {
+                            cat.AddMemoir(MemoirType.BossKill, "Dị Thú Vương", "Trảm sát Thú Vương trong biển thú cuồng trào");
+                        }
                     }
+
+
                     
                     // Add specific Route Theme and Boss memoirs
                     bool isThienLoi = manager.ActiveNode != null && manager.ActiveNode.Theme == RouteTheme.ThienLoi;
@@ -109,46 +126,81 @@ namespace Mewtations.Expedition
                         {
                             cat.AddMemoir(MemoirType.BossKill, "Dị Thú Vương", "Trảm sát Thú Vương trong biển thú cuồng trào");
                         }
-                    }
+                if (result == CombatResult.Victory)
+                {
+                    // Increase Corruption (+15 per node traversed)
+                    runState.AddCorruption(15);
 
-                    if (_isBoss)
+                    // Tỉ lệ rớt vật phẩm quý từ boss
+                    if (_isBoss && UnityEngine.Random.value < 0.3f)
                     {
-                        foreach (var cat in manager.ActiveCats)
-                        {
-                            cat.AddMemoir(MemoirType.BossKill, "Goblin Đế Vương", "Trảm sát Thống soái viễn chinh");
-                        }
+                        string rareItem = GetRareCultivationItem();
+                        manager.CurrentBackpack.AddItem(rareItem);
+                        Debug.Log($"[Expedition] Boss rơi ra vật phẩm quý: {rareItem}");
                     }
 
                     // Trigger unstable mutations if corruption is high (> 50)
                     ApplyHighCorruptionCheck(manager);
 
-                    onComplete?.Invoke();
+                    // Roll rewards and show UI
+                    List<string> rolledRewards = RollLoot(manager, _isBoss);
+                    if (ExpeditionRewardUI.Instance != null)
+                    {
+                        ExpeditionRewardUI.Instance.ShowRewards(rolledRewards);
+                    }
+                    else
+                    {
+                        onComplete?.Invoke();
+                    }
                 }
                 else
                 {
-                    // Defeat or Retreat: Return to base
                     manager.ReturnToBase(isDefeat: true);
                 }
             };
 
             if (DogEnemyGenerator.Instance != null && DogEnemyGenerator.Instance.useDogEnemySystem)
             {
-                // Destroy legacy physical cards that were spawned (if Dog System is active, we don't need them)
-                foreach (var enemy in enemies)
-                {
-                    if (enemy != null && enemy.MyGameCard != null)
-                    {
-                        enemy.MyGameCard.DestroyCard(true, true);
-                    }
-                }
-                
                 var dogEnemies = DogEnemyGenerator.Instance.GenerateEnemiesForLayer(_layer, _isBoss);
-                TurnBasedCombatManager.Instance.StartCombat(playerCombats, dogEnemies, onCombatEnd);
+                
+                EncounterData enc = new EncounterData 
+                {
+                    EncounterName = _isBoss ? "Ác Thú Hắc Ám" : "Quái Vật Cản Đường",
+                    Context = EncounterContext.Expedition,
+                    TurnLimit = 30,
+                    Enemies = new List<EnemySpawnData>()
+                };
+
+                for(int i = 0; i < dogEnemies.Count; i++)
+                {
+                    enc.Enemies.Add(new EnemySpawnData { Enemy = dogEnemies[i], SlotIndex = i + 5 });
+                }
+
+                if (EncounterManager.Instance != null)
+                {
+                    EncounterManager.Instance.RegisterEncounter(enc);
+                }
+
+                manager.CurrentCombatCallback = onCombatEnd;
+                if (Mewtations.UI.Screens.PreCombatScreen.Instance != null)
+                {
+                    Mewtations.UI.Screens.PreCombatScreen.Instance.Setup(enc);
+                }
+                else
+                {
+                    TurnBasedCombatManager.Instance.StartCombat(playerCombats, dogEnemies, onCombatEnd);
+                }
             }
             else
             {
                 TurnBasedCombatManager.Instance.StartCombat(playerCombats, enemies, onCombatEnd);
             }
+        }
+
+        private string GetRareCultivationItem()
+        {
+            string[] items = { "item_qi_stone", "item_spirit_herb" };
+            return items[UnityEngine.Random.Range(0, items.Length)];
         }
 
         private string RollEnemyId(int layer)
@@ -162,8 +214,9 @@ namespace Mewtations.Expedition
             return highTier[UnityEngine.Random.Range(0, highTier.Length)];
         }
 
-        private void RollLoot(ExpeditionManager manager, bool isBoss)
+        private List<string> RollLoot(ExpeditionManager manager, bool isBoss)
         {
+            List<string> rolledRewards = new List<string>();
             int lootCount = isBoss ? 4 : UnityEngine.Random.Range(1, 3);
             string[] possibleLoot = { "resource_gold", "resource_food", "item_healing_potion", "item_iron_ore", "item_wood", "item_stone" };
 
@@ -178,7 +231,7 @@ namespace Mewtations.Expedition
             for (int i = 0; i < lootCount; i++)
             {
                 string loot = possibleLoot[UnityEngine.Random.Range(0, possibleLoot.Length)];
-                manager.CurrentBackpack.AddItem(loot);
+                rolledRewards.Add(loot);
             }
 
             // Nếu là Boss tiến độ, thưởng thêm Cổ Vật tự động hóa ngẫu nhiên
@@ -186,9 +239,10 @@ namespace Mewtations.Expedition
             {
                 string[] relics = { "item_ancient_relic_auto_farm", "item_ancient_relic_auto_collect", "item_ancient_relic_auto_heal" };
                 string chosenRelic = relics[UnityEngine.Random.Range(0, relics.Length)];
-                manager.CurrentBackpack.AddItem(chosenRelic);
+                rolledRewards.Add(chosenRelic);
                 Debug.Log($"[Expedition] Boss chiến thắng! Nhận thêm Cổ Vật chí tôn: {chosenRelic}");
             }
+            return rolledRewards;
         }
 
         private void ApplyHighCorruptionCheck(ExpeditionManager manager)
@@ -571,40 +625,40 @@ namespace Mewtations.Expedition
 
             Debug.LogWarning($"[Expedition] Bắt đầu trận chiến CƯƠNG GIẢ (ELITE)! Quái vật được tăng 1.8x HP & sát thương.");
 
-            List<Combatable> playerCombats = manager.ActiveCats.Cast<Combatable>().ToList();
-            
-            Action<CombatResult> onCombatEnd = (result) =>
+            Action<Mewtations.Combat.Core.CombatResultData> onCombatEnd = (resultData) =>
             {
-                foreach (var enemy in enemies)
+                if (resultData.Result == CombatResult.Victory)
                 {
-                    if (enemy != null && enemy.MyGameCard != null)
-                    {
-                        enemy.MyGameCard.DestroyCard(true, true);
-                    }
-                }
-
-                if (result == CombatResult.Victory)
-                {
+                    List<string> rolledRewards = new List<string>();
                     string[] rareLoot = { "item_breakthrough_pill", "talisman_heavy_armor", "talisman_rage_core", "talisman_health_regen" };
                     string rolled = rareLoot[UnityEngine.Random.Range(0, rareLoot.Length)];
-                    manager.CurrentBackpack.AddItem(rolled);
-                    
-                    manager.CurrentBackpack.AddItem("resource_gold");
-                    manager.CurrentBackpack.AddItem("resource_gold");
+                    rolledRewards.Add(rolled);
+                    rolledRewards.Add("resource_gold");
+                    rolledRewards.Add("resource_gold");
 
                     runState.AddCorruption(20);
 
-                    foreach (var cat in manager.ActiveCats)
+                    foreach (var outcome in resultData.CatOutcomes)
                     {
-                        cat.AddMemoir(MemoirType.BossKill, "Hạ Cương Giả", "Trảm sát Cương Giả nhận bùa chú");
+                        if (outcome.CatReference != null)
+                        {
+                            outcome.CatReference.AddMemoir(MemoirType.BossKill, "Hạ Cương Giả", "Trảm sát Cương Giả nhận bùa chú");
+                        }
                     }
 
                     string title = Mewtations.Core.MewtationsLoc.Translate("exp_encounter_elite_title", "⚔️ CƯƠNG GIẢ PHÁT BẠI");
                     string text = string.Format(Mewtations.Core.MewtationsLoc.Translate("exp_encounter_elite_desc", "Chúc mừng! Toàn đội đã tiêu diệt thành công Cương Giả hộ vệ.\n\nThu về linh bảo: <b>{0}</b> và Vàng."), rolled.Replace("item_", "").Replace("talisman_", "").ToUpper());
 
-                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { Mewtations.Core.MewtationsLoc.Translate("exp_encounter_harvest_continue", "Thu hoạch và Đi tiếp") }, (idx) =>
+                    Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { Mewtations.Core.MewtationsLoc.Translate("exp_encounter_harvest_continue", "Thu hoạch phần thưởng") }, (idx) =>
                     {
-                        onComplete?.Invoke();
+                        if (ExpeditionRewardUI.Instance != null)
+                        {
+                            ExpeditionRewardUI.Instance.ShowRewards(rolledRewards);
+                        }
+                        else
+                        {
+                            onComplete?.Invoke();
+                        }
                     });
                 }
                 else
@@ -615,16 +669,35 @@ namespace Mewtations.Expedition
 
             if (DogEnemyGenerator.Instance != null && DogEnemyGenerator.Instance.useDogEnemySystem)
             {
-                foreach (var enemy in enemies)
+                var dogEnemies = DogEnemyGenerator.Instance.GenerateEliteForLayer(_layer);
+
+                EncounterData enc = new EncounterData 
                 {
-                    if (enemy != null && enemy.MyGameCard != null)
-                    {
-                        enemy.MyGameCard.DestroyCard(true, true);
-                    }
+                    EncounterName = "Cương Giả Hộ Vệ",
+                    Context = EncounterContext.Expedition,
+                    TurnLimit = 30,
+                    Enemies = new List<EnemySpawnData>()
+                };
+
+                for(int i = 0; i < dogEnemies.Count; i++)
+                {
+                    enc.Enemies.Add(new EnemySpawnData { Enemy = dogEnemies[i], SlotIndex = i + 5 });
                 }
 
-                var dogEnemies = DogEnemyGenerator.Instance.GenerateEliteForLayer(_layer);
-                TurnBasedCombatManager.Instance.StartCombat(playerCombats, dogEnemies, onCombatEnd);
+                if (EncounterManager.Instance != null)
+                {
+                    EncounterManager.Instance.RegisterEncounter(enc);
+                }
+
+                manager.CurrentCombatCallback = onCombatEnd;
+                if (Mewtations.UI.Screens.PreCombatScreen.Instance != null)
+                {
+                    Mewtations.UI.Screens.PreCombatScreen.Instance.Setup(enc);
+                }
+                else
+                {
+                    TurnBasedCombatManager.Instance.StartCombat(playerCombats, dogEnemies, onCombatEnd);
+                }
             }
             else
             {
