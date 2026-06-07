@@ -49,7 +49,7 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
         {
             // Sync unlocked status
             EquipmentSlots[Mewtations.Expedition.CatSlotType.Pill].IsUnlocked = this.HasPillSlot && !this.IsPillSlotLocked;
-            EquipmentSlots[Mewtations.Expedition.CatSlotType.Skill].IsUnlocked = this.HasFoodSlot && !this.IsFoodSlotLocked && !this.IsUltimateLocked;
+            EquipmentSlots[Mewtations.Expedition.CatSlotType.Skill].IsUnlocked = this.HasSkillSlot && !this.IsSkillSlotLocked && !this.IsUltimateLocked;
             EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive1].IsUnlocked = this.HasPassive1Slot && !this.IsPassiveSlotsLocked;
             EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive2].IsUnlocked = this.HasPassive2Slot && !this.IsPassiveSlotsLocked;
             EquipmentSlots[Mewtations.Expedition.CatSlotType.Weapon].IsUnlocked = !this.IsEquipmentSlotsLocked;
@@ -64,7 +64,7 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
         EquipmentSlots[Mewtations.Expedition.CatSlotType.Head] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Head, "GIÁP NÓN", !this.IsEquipmentSlotsLocked);
         
         EquipmentSlots[Mewtations.Expedition.CatSlotType.Pill] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Pill, "LINH ĐAN", this.HasPillSlot && !this.IsPillSlotLocked);
-        EquipmentSlots[Mewtations.Expedition.CatSlotType.Skill] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Skill, "KỸ NĂNG", this.HasFoodSlot && !this.IsFoodSlotLocked && !this.IsUltimateLocked);
+        EquipmentSlots[Mewtations.Expedition.CatSlotType.Skill] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Skill, "KỸ NĂNG", this.HasSkillSlot && !this.IsSkillSlotLocked && !this.IsUltimateLocked);
         
         EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive1] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Passive1, "THIÊN PHÚ 1", this.HasPassive1Slot && !this.IsPassiveSlotsLocked);
         EquipmentSlots[Mewtations.Expedition.CatSlotType.Passive2] = new Mewtations.Expedition.EquipmentSlotData(Mewtations.Expedition.CatSlotType.Passive2, "THIÊN PHÚ 2", this.HasPassive2Slot && !this.IsPassiveSlotsLocked);
@@ -142,6 +142,22 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
                 else
                 {
                     DropItemNearCat(item);
+                }
+            }
+        }
+    }
+
+    public override void OnDestroyCard()
+    {
+        base.OnDestroyCard();
+        if (EquipmentSlots != null)
+        {
+            var keys = new System.Collections.Generic.List<Mewtations.Expedition.CatSlotType>(EquipmentSlots.Keys);
+            foreach (var key in keys)
+            {
+                if (EquipmentSlots.ContainsKey(key) && EquipmentSlots[key].EquippedItem != null)
+                {
+                    UnequipFromSlot(key, true);
                 }
             }
         }
@@ -431,8 +447,8 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
     [ExtraData("has_pill_slot")]
     public bool HasPillSlot = false;
     
-    [ExtraData("has_food_slot")]
-    public bool HasFoodSlot = false;
+    [ExtraData("has_skill_slot")]
+    public bool HasSkillSlot = false;
 
     [ExtraData("has_passive1_slot")]
     public bool HasPassive1Slot = false;
@@ -643,8 +659,8 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
     public int LineageGeneration = 1;
 
     [Header("GDD Punishment States")]
-    [ExtraData("is_food_slot_locked")]
-    public bool IsFoodSlotLocked = false;
+    [ExtraData("is_skill_slot_locked")]
+    public bool IsSkillSlotLocked = false;
 
     [ExtraData("is_pill_slot_locked")]
     public bool IsPillSlotLocked = false;
@@ -841,6 +857,15 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
     public override void UpdateCard()
     {
         base.UpdateCard();
+        
+        if (IsConsuming() && (this.MyGameCard.Child == null || this.MyGameCard.Child.CardData != CurrentConsumingItem))
+        {
+            CancelConsume();
+        }
+        else if (!IsConsuming() && this.MyGameCard.Child != null && this.MyGameCard.Child.CardData is Consumable consumable)
+        {
+            StartConsume(consumable);
+        }
         
         // --- Domain Drift Assert ---
         // If simulation is running and we are attached to a settlement board, but our domain is not settlement
@@ -1416,7 +1441,7 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
         switch (BreakthroughLevel)
         {
             case 1: HasPillSlot = true; break;
-            case 2: HasFoodSlot = true; break;
+            case 2: HasSkillSlot = true; break;
             case 3: HasPassive1Slot = true; break;
             case 4: HasPassive2Slot = true; break;
         }
@@ -1512,6 +1537,23 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
             return false;
         }
 
+        bool isEquipmentItem = otherCard.MyCardType == CardType.Equipment || otherCard.IsCultivationPill || otherCard.IsPassiveTalisman;
+        
+        if (isEquipmentItem && !otherCard.IsBreakthroughPill)
+        {
+            // Equipment Slot Safety Framework: Reject stack dragging completely!
+            if (otherCard.MyGameCard != null && (otherCard.MyGameCard.HasChild || otherCard.MyGameCard.HasParent || otherCard.MyGameCard.GetStackCount() > 1))
+            {
+                return false;
+            }
+            
+            // Equipment Duplicate Restriction Rule
+            if (GetAllEquipables().Any(e => e != null && e.Id == otherCard.Id))
+            {
+                return false;
+            }
+        }
+
         // Tê Liệt không thể ra trận
         if (IsParalyzed && (otherCard.MyCardType == CardType.Mobs || otherCard is Combatable))
         {
@@ -1528,19 +1570,21 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
             return true;
         }
 
-        // 2. Validate food slot (BT level 2)
-        if (otherCard.MyCardType == CardType.Food || (otherCard is Equipable eqFood && eqFood.EquipableType == EquipableType.Food)) 
+        // Validate Consumable System
+        if (otherCard is Consumable consumable)
         {
-            if (IsFoodSlotLocked) return false;
-            if (!HasFoodSlot) return false;
+            return CanConsume(consumable);
+        }
+
+
+        // 2. Validate skill slot (BT level 2)
+        if (otherCard is Equipable eqSkill && eqSkill.EquipableType == EquipableType.Skill) 
+        {
+            if (IsSkillSlotLocked) return false;
+            if (!HasSkillSlot) return false;
             
-            int maxFoods = 1;
-            if (HasTrait(Mewtations.Expedition.HeavenlyTalent.FoodGlutton))
-            {
-                maxFoods = 2;
-            }
-            int currentFoods = GetAllEquipables().Count(eq => eq.EquipableType == EquipableType.Food);
-            return currentFoods < maxFoods;
+            int currentSkills = GetAllEquipables().Count(eq => eq.EquipableType == EquipableType.Skill);
+            return currentSkills < 1;
         }
 
         // 3. Validate Pill slot (BT level 1)
@@ -1552,7 +1596,11 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
                 return true;
             }
             if (IsPillSlotLocked) return false;
-            return HasPillSlot;
+            if (!HasPillSlot) return false;
+
+            int maxPills = HasMutation(Mewtations.Expedition.UnstableMutation.DualPill) ? 2 : 1;
+            int currentPills = GetAllEquipables().Count(eq => eq.IsCultivationPill && !eq.IsBreakthroughPill);
+            return currentPills < maxPills;
         }
 
         // 4. Validate Passive Slots (BT level 3 & 4: Max 1 for level 3, Max 2 for level 4)
@@ -1673,12 +1721,12 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
             desc += "\n";
         }
 
-        bool hasPunishment = IsFoodSlotLocked || IsPillSlotLocked || IsPassiveSlotsLocked || IsEquipmentSlotsLocked || IsUltimateLocked;
+        bool hasPunishment = IsSkillSlotLocked || IsPillSlotLocked || IsPassiveSlotsLocked || IsEquipmentSlotsLocked || IsUltimateLocked;
         if (hasPunishment)
         {
             desc += "<b>☠️ HÌNH PHẠT NGÔN NGỮ / KHÓA:</b>\n";
             if (IsUltimateLocked) desc += "• <color=red>[KHÓA KỸ NĂNG NỘ]</color>: Không thể thi triển Ultimate Skill.\n";
-            if (IsFoodSlotLocked) desc += "• <color=red>[KHÓA Ô THỨC ĂN]</color>: Slot Ultimate Skill bị phong ấn.\n";
+            if (IsSkillSlotLocked) desc += "• <color=red>[KHÓA KỸ NĂNG]</color>: Slot Ultimate Skill bị phong ấn.\n";
             if (IsPillSlotLocked) desc += "• <color=red>[KHÓA Ô LINH ĐAN]</color>: Slot Linh Đan bị phong ấn.\n";
             if (IsPassiveSlotsLocked) desc += "• <color=red>[KHÓA Ô THIÊN PHÚ]</color>: Slot Thiên Phú bị phong ấn.\n";
             if (IsEquipmentSlotsLocked) desc += "• <color=red>[KHÓA Ô TRANG BỊ]</color>: Không thể trang bị vũ khí/bùa.\n";
@@ -1691,6 +1739,106 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
     }
 
     // TriggerDemonicAscension removed per user request
+
+    [Header("Consumables")]
+    public Consumable CurrentConsumingItem;
+    public List<ActiveConsumableEffect> ActiveConsumableEffects = new List<ActiveConsumableEffect>();
+
+    public bool IsConsuming()
+    {
+        return CurrentConsumingItem != null;
+    }
+
+    public bool CanConsume(Consumable consumable)
+    {
+        if (HealthPoints <= 0) return false;
+        if (IsConsuming()) return false;
+        return true;
+    }
+
+    public void StartConsume(Consumable consumable)
+    {
+        if (!CanConsume(consumable)) return;
+        
+        CurrentConsumingItem = consumable;
+        this.MyGameCard.StartTimer(consumable.ConsumeDuration, new TimerAction(() => FinishConsume(consumable)), "Đang hấp thụ...", this.GetActionId("Consume"));
+    }
+
+    private void FinishConsume(Consumable consumable)
+    {
+        if (CurrentConsumingItem != consumable) return;
+
+        this.HealthPoints = Mathf.Min(this.HealthPoints + consumable.HpRecovery, this.ProcessedCombatStats.MaxHealth);
+        this.Stamina = Mathf.Min(this.MaxStamina, this.Stamina + consumable.StaminaRecovery);
+        RefreshConditionState();
+
+        foreach (var effect in consumable.Effects)
+        {
+            var existing = ActiveConsumableEffects.FirstOrDefault(e => e.EffectType == effect.EffectType);
+            if (existing != null)
+            {
+                existing.RemainingMonths = effect.DurationMonths; // refresh
+            }
+            else
+            {
+                ActiveConsumableEffects.Add(new ActiveConsumableEffect { EffectType = effect.EffectType, Value = effect.Value, RemainingMonths = effect.DurationMonths });
+            }
+        }
+
+        if (consumable.MyGameCard != null)
+        {
+            consumable.MyGameCard.DestroyCard();
+        }
+        CurrentConsumingItem = null;
+        
+        _statsDirty = true;
+        EventBus.Publish(new OnStatsChangedEvent(this));
+    }
+
+    public void ProcessConsumableMonthTick()
+    {
+        bool changed = false;
+        for (int i = ActiveConsumableEffects.Count - 1; i >= 0; i--)
+        {
+            ActiveConsumableEffects[i].RemainingMonths--;
+            if (ActiveConsumableEffects[i].RemainingMonths <= 0)
+            {
+                ActiveConsumableEffects.RemoveAt(i);
+                changed = true;
+            }
+        }
+        if (changed)
+        {
+            _statsDirty = true;
+            EventBus.Publish(new OnStatsChangedEvent(this));
+        }
+    }
+
+    public int GetAttackBonusFromConsumables()
+    {
+        var eff = ActiveConsumableEffects.FirstOrDefault(e => e.EffectType == ConsumableEffectType.BonusAttack);
+        return eff != null ? Mathf.RoundToInt(eff.Value) : 0;
+    }
+
+    public float GetConsumableSpeedMultiplier()
+    {
+        var eff = ActiveConsumableEffects.FirstOrDefault(e => e.EffectType == ConsumableEffectType.WorkSpeedMultiplier);
+        return eff != null ? eff.Value : 1f;
+    }
+
+    public void CancelConsume()
+    {
+        if (CurrentConsumingItem != null)
+        {
+            this.MyGameCard.CancelTimer(this.GetActionId("Consume"));
+            if (CurrentConsumingItem.MyGameCard != null)
+            {
+                CurrentConsumingItem.MyGameCard.RemoveFromStack();
+                CurrentConsumingItem.MyGameCard.SendIt();
+            }
+            CurrentConsumingItem = null;
+        }
+    }
 
     public override void CheckDeath()
     {

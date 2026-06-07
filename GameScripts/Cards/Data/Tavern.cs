@@ -53,8 +53,8 @@ public class Tavern : CardData
 	public override void UpdateCard()
 	{
 		base.UpdateCard();
-		Food food;
-		if (base.HasCardOnTop<Food>(out food))
+		Consumable food;
+		if (base.HasCardOnTop<Consumable>(out food))
 		{
 			this.MyGameCard.StartTimer(30f, new TimerAction(this.ResearchedFood), MewtationsLoc.Translate("card_tavern_status_0"), base.GetActionId("ResearchedFood"), true, false, false);
 			return;
@@ -65,8 +65,8 @@ public class Tavern : CardData
 	[TimedAction("research_food")]
 	public void ResearchedFood()
 	{
-		Food food;
-		if (base.HasCardOnTop<Food>(out food))
+		Consumable food;
+		if (base.HasCardOnTop<Consumable>(out food))
 		{
 			base.RemoveFirstChildFromStack();
 			food.MyGameCard.DestroyCard(false, true);
@@ -77,7 +77,7 @@ public class Tavern : CardData
 
 	protected override bool CanHaveCard(CardData otherCard)
 	{
-		Food food = otherCard as Food;
+		Consumable food = otherCard as Consumable;
 		return food != null && food.FoodValue > 0;
 	}
 

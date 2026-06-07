@@ -516,13 +516,13 @@ using UnityEngine;
 
 	public IEnumerator ConsumeFood(int amount, Vector3 targetPos)
 	{
-		List<Food> foodToUse = this.GetFoodToUse(amount);
+		List<Consumable> foodToUse = this.GetFoodToUse(amount);
 		int num = amount;
-		using (List<Food>.Enumerator enumerator = foodToUse.GetEnumerator())
+		using (List<Consumable>.Enumerator enumerator = foodToUse.GetEnumerator())
 		{
 			while (enumerator.MoveNext())
 			{
-				Food food = enumerator.Current;
+				Consumable food = enumerator.Current;
 				if (num <= 0)
 				{
 					break;
@@ -566,22 +566,22 @@ using UnityEngine;
 		return null;
 	}
 
-	public List<Food> GetFoodToUse(int amount)
+	public List<Consumable> GetFoodToUse(int amount)
 	{
-		List<Food> list = (from x in WorldManager.instance.CardQuery.GetCards<Food>()
+		List<Consumable> list = (from x in WorldManager.instance.CardQuery.GetCards<Consumable>()
 			where !x.IsReserved
-			select x).ToList<Food>();
-		if (list.Sum<Food>((Food x) => x.FoodValue) < amount)
+			select x).ToList<Consumable>();
+		if (list.Sum<Consumable>((Consumable x) => x.FoodValue) < amount)
 		{
-			return new List<Food>();
+			return new List<Consumable>();
 		}
-		return list.Where<Food>((Food x) => x.FoodValue > 0).OrderByDescending<Food, int>(delegate(Food x)
+		return list.Where<Consumable>((Consumable x) => x.FoodValue > 0).OrderByDescending<Consumable, int>(delegate(Consumable x)
 		{
 			bool flag = x.MyGameCard.GetCardWithStatusInStack() != null;
 			FoodWarehouse foodWarehouse = x as FoodWarehouse;
 			if (foodWarehouse != null)
 			{
-				Food food = WorldManager.instance.GameDataLoader.GetCardFromId(foodWarehouse.HeldCardId, true) as Food;
+				Consumable food = WorldManager.instance.GameDataLoader.GetCardFromId(foodWarehouse.HeldCardId, true) as Consumable;
 				if (food != null)
 				{
 					return food.FoodValue;
@@ -596,9 +596,9 @@ using UnityEngine;
 				return -2;
 			}
 			return 0;
-		}).ThenBy<Food, int>((Food x) => x.FoodValue)
-			.ThenBy<Food, int>((Food x) => -x.MyGameCard.GetCardIndex())
-			.ToList<Food>();
+		}).ThenBy<Consumable, int>((Consumable x) => x.FoodValue)
+			.ThenBy<Consumable, int>((Consumable x) => -x.MyGameCard.GetCardIndex())
+			.ToList<Consumable>();
 	}
 
 	public static string GetAmountPrefix(int amount)

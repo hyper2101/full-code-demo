@@ -37,11 +37,19 @@ namespace GameScripts.Combat.Core
             var weaponCard = cat.GetEquipableOfEquipableType(EquipableType.Weapon) as Equipable;
             unit.AttackPattern = MapLegacyWeaponToCombatPattern(weaponCard);
 
-            // Combat Skill from SpecialCombatItem
-            var specialCard = cat.GetEquipableOfEquipableType(EquipableType.SpecialCombat) as Equipable;
-            if (specialCard != null)
+            // Combat Skills
+            if (!cat.HasMutation(Mewtations.Expedition.UnstableMutation.DualWeapon))
             {
-                // In future, map specialCard to CombatSkillDefinition. Currently locked.
+                int maxSkills = cat.HasMutation(Mewtations.Expedition.UnstableMutation.DualSkill) ? 2 : 1;
+                var allEquipables = cat.GetAllEquipables();
+                foreach (var eq in allEquipables)
+                {
+                    if (eq != null && eq.EquipableType == EquipableType.Skill && eq.ProvidedCombatSkill != null)
+                    {
+                        unit.CombatSkills.Add(eq.ProvidedCombatSkill);
+                        if (unit.CombatSkills.Count >= maxSkills) break;
+                    }
+                }
             }
 
             // Traits, Mutations, Scars (Legacy registration via MewtationsEventPipeline)
@@ -100,7 +108,10 @@ namespace GameScripts.Combat.Core
             unit.Role = CatRole.DPS; // Dogs default to DPS role for now
 
             unit.AttackPattern = dog.Definition.AttackPattern;
-            unit.ActiveCombatSkill = dog.Definition.ActiveCombatSkill;
+            if (dog.Definition.ActiveCombatSkill != null)
+            {
+                unit.CombatSkills.Add(dog.Definition.ActiveCombatSkill);
+            }
 
             MewtationsEventPipeline.RegisterUnitComponents(unit, new List<IMewtationsComponent>());
 

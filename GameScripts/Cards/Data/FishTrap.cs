@@ -19,13 +19,13 @@ public class FishTrap : CardData
 
 	protected override bool CanHaveCard(CardData otherCard)
 	{
-		return otherCard is Food;
+		return otherCard is Consumable;
 	}
 
 	public override void UpdateCard()
 	{
-		Food food;
-		if (base.HasCardOnTop<Food>(out food))
+		Consumable food;
+		if (base.HasCardOnTop<Consumable>(out food))
 		{
 			this.MyGameCard.StartTimer(this.FishTime, new TimerAction(this.CompleteFishing), MewtationsLoc.Translate("card_fish_trap_status"), "complete_fishing", true, false, false);
 		}
@@ -39,8 +39,8 @@ public class FishTrap : CardData
 	[TimedAction("complete_fishing")]
 	public void CompleteFishing()
 	{
-		Food food;
-		base.HasCardOnTop<Food>(out food);
+		Consumable food;
+		base.HasCardOnTop<Consumable>(out food);
 		BaitBag baitBag = this.BaitBags.FirstOrDefault<BaitBag>((BaitBag x) => x.BaitId == food.Id);
 		if (baitBag == null)
 		{

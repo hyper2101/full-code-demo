@@ -43,15 +43,15 @@ public static class EndOfMonthCutscenes
 		return Mathf.Max(0.01f, 0.12f - f * 0.04f);
 	}
 
-	private static Food GetFoodToUseUp()
+	private static Consumable GetFoodToUseUp()
 	{
-		List<Food> cards = WorldManager.instance.CardQuery.GetCards<Food>();
+		List<Consumable> cards = WorldManager.instance.CardQuery.GetCards<Consumable>();
 		if (cards.Count == 0)
 		{
 			return null;
 		}
 		Demand currentDemand = ((WorldManager.instance.CurrentRunVariables.ActiveDemand != null) ? DemandManager.instance.GetDemandById(WorldManager.instance.CurrentRunVariables.ActiveDemand.DemandId) : null);
-		return cards.OrderBy<Food, int>(delegate(Food c)
+		return cards.OrderBy<Consumable, int>(delegate(Consumable c)
 		{
 			bool flag = c.MyGameCard.GetCardWithStatusInStack() != null;
 			if (c.MyGameCard.HasCardInStack((CardData x) => x is MessHall))
@@ -90,8 +90,8 @@ public static class EndOfMonthCutscenes
 				return 2;
 			}
 			return 0;
-		}).ThenBy<Food, int>((Food x) => x.FoodValue).ThenBy<Food, int>((Food x) => x.GetValue())
-			.FirstOrDefault<Food>((Food x) => x.FoodValue > 0);
+		}).ThenBy<Consumable, int>((Consumable x) => x.FoodValue).ThenBy<Consumable, int>((Consumable x) => x.GetValue())
+			.FirstOrDefault<Consumable>((Consumable x) => x.FoodValue > 0);
 	}
 
 	public static List<BaseVillager> GetVillagersToAge()
@@ -351,7 +351,7 @@ public static class EndOfMonthCutscenes
 			int foodForVillager = WorldManager.instance.GetCardRequiredFoodCount(cardToFeed.MyGameCard);
 			for (int j = 0; j < foodForVillager; j = num + 1)
 			{
-				Food food = EndOfMonthCutscenes.GetFoodToUseUp();
+				Consumable food = EndOfMonthCutscenes.GetFoodToUseUp();
 				if (food == null)
 				{
 					break;

@@ -144,6 +144,9 @@ namespace Mewtations.Expedition
         public const string UnstableClaws = "UnstableClaws";     // Damage +30% but self HP drain on attack
         public const string LethargicNap = "LethargicNap";       // Speed -15 but HP health recovery on round end
         public const string CursedFur = "CursedFur";             // Armor -5, locks ability to gain shield
+        public const string DualWeapon = "DualWeapon";           // Đột biến 2 vũ khí
+        public const string DualSkill = "DualSkill";             // Đột biến 2 kỹ năng
+        public const string DualPill = "DualPill";               // Đột biến 2 đan dược
 
         public static string GetDisplayName(string id)
         {

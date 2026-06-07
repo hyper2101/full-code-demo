@@ -53,8 +53,8 @@ public class Museum : CardData
 	public override void UpdateCard()
 	{
 		base.UpdateCard();
-		Food food;
-		if (base.HasCardOnTop<Food>(out food))
+		Consumable food;
+		if (base.HasCardOnTop<Consumable>(out food))
 		{
 			this.MyGameCard.StartTimer(5f, new TimerAction(this.ResearchedItem), MewtationsLoc.Translate("card_tavern_status_0"), base.GetActionId("ResearchedItem"), true, false, false);
 			return;

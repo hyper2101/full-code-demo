@@ -863,10 +863,11 @@ namespace Mewtations.Combat.UI
                 {
                     // Fallback for enemies without Source (e.g. Dogs)
                     attackPatternVi = GetWeaponPatternVi(unit.AttackPattern);
-                    if (unit.ActiveCombatSkill != null)
+                    if (unit.CombatSkills != null && unit.CombatSkills.Count > 0)
                     {
-                        ultName = Mewtations.Core.MewtationsLoc.Translate(unit.ActiveCombatSkill.NameKey);
-                        ultDesc = Mewtations.Core.MewtationsLoc.Translate(unit.ActiveCombatSkill.DescKey);
+                        var firstSkill = unit.CombatSkills[0];
+                        ultName = Mewtations.Core.MewtationsLoc.Translate(firstSkill.NameKey);
+                        ultDesc = Mewtations.Core.MewtationsLoc.Translate(firstSkill.DescKey);
                     }
                 }
             }

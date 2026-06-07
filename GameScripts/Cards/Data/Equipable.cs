@@ -201,5 +201,8 @@ public class Equipable : CardData
 	public int RageOnHit = 0;
 	public int MaxRowReach = 1;
 
+	[Header("Skill Equipment")]
+	public Mewtations.Combat.CombatSkillDefinition ProvidedCombatSkill;
+
 	private string _equipableInfo;
 }

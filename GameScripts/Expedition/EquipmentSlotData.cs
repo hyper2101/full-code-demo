@@ -45,6 +45,9 @@ namespace Mewtations.Expedition
                 if (!IsUnlocked) return false;
                 if (item == null) return false;
                 
+                // Equipment Slot Safety Framework: Reject stack merge and drag
+                if (item.MyGameCard != null && (item.MyGameCard.HasChild || item.MyGameCard.HasParent || item.MyGameCard.GetStackCount() > 1)) return false;
+
                 switch (SlotType)
                 {
                     case CatSlotType.Weapon:
@@ -56,7 +59,7 @@ namespace Mewtations.Expedition
                     case CatSlotType.Pill:
                         return item.IsCultivationPill;
                     case CatSlotType.Skill:
-                        return item.MyCardType == CardType.Food || (item is Equipable eqF && eqF.EquipableType == EquipableType.Food);
+                        return item is Equipable eqS && eqS.EquipableType == EquipableType.Skill;
                     case CatSlotType.Passive1:
                     case CatSlotType.Passive2:
                         return item.IsPassiveTalisman;

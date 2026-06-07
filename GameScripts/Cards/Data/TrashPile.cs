@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class Trash : Harvestable
+public class TrashPile : Harvestable
 {
 	public override ICardId GetCardToGive()
 	{

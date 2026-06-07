@@ -142,7 +142,7 @@ namespace Mewtations.Combat
         public int MaxRage;
         public GameScripts.Combat.Core.CombatAttackPattern AttackPattern;
         public CatElement Element;
-        public GameScripts.Combat.Core.CombatSkillDefinition ActiveCombatSkill;
+        public List<GameScripts.Combat.Core.CombatSkillDefinition> CombatSkills = new List<GameScripts.Combat.Core.CombatSkillDefinition>();
 
         public int Stamina = 100;
         public int MaxStamina = 100;
@@ -170,6 +170,12 @@ namespace Mewtations.Combat
         public int GetAttackDamage()
         {
             return GameScripts.Combat.Core.CombatCalculationService.CalculateRawAttackDamage(this);
+        }
+
+        public float GetMissingHpPercent()
+        {
+            if (MaxHP <= 0) return 0f;
+            return 1.0f - ((float)CurrentHP / MaxHP);
         }
 
         public bool IsPlayer;
@@ -447,6 +453,17 @@ namespace Mewtations.Combat
             attacker.AddRage(15);
             target.AddRage(10);
             
+            // Apply Pill Effects
+            if (attacker.Source is CatCardData catSource)
+            {
+                var pills = catSource.GetAllEquipables().Where(eq => eq.IsCultivationPill && !eq.IsBreakthroughPill).ToList();
+                foreach (var pill in pills)
+                {
+                    // Placeholder for Pill Effects (Dual Pill mutation will have 2 pills in this list)
+                    // e.g., MewtationsPillRegistry.ApplyPillEffect(pill, attacker, target, logCallback);
+                }
+            }
+            
             // Post hooks
             MewtationsEventPipeline.TriggerAfterAttack(attacker, target, finalDamage, logCallback);
             MewtationsEventPipeline.TriggerAfterDamage(target, attacker, finalDamage, logCallback);
@@ -458,6 +475,7 @@ namespace Mewtations.Combat
             }
         }
     }
+    [System.Obsolete("Legacy Ultimate System. Use CombatSkillExecutor instead.")]
     public static class MewtationsUltimateRegistry
     {
         public static UltimateType GetUltimateType(CatCardData cat)

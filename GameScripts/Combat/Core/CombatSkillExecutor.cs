@@ -7,23 +7,23 @@ namespace GameScripts.Combat.Core
 {
     public static class CombatSkillExecutor
     {
-        public static void ExecuteSkill(CombatUnit attacker, CombatSkillDefinition skill, List<CombatUnit> allies, List<CombatUnit> enemies, Action<string> logCallback)
+        public static void ExecuteSkill(CombatUnit attacker, CombatSkillDefinition skill, int rageAllocated, List<CombatUnit> allies, List<CombatUnit> enemies, Action<string> logCallback)
         {
             if (attacker == null || !attacker.IsAlive || skill == null) return;
             
-            attacker.SetRage(0); // Consume rage
+            float skillScale = rageAllocated / 100f;
 
             if (skill.Id == "full_battlefield_strike")
             {
-                ExecuteFullBattlefieldStrike(attacker, skill, enemies, logCallback);
+                ExecuteFullBattlefieldStrike(attacker, skill, skillScale, enemies, logCallback);
             }
             else if (skill.Id == "execution_barrage")
             {
-                ExecuteExecutionBarrage(attacker, skill, enemies, logCallback);
+                ExecuteExecutionBarrage(attacker, skill, skillScale, enemies, logCallback);
             }
             else if (skill.Id == "crushing_formation")
             {
-                ExecuteCrushingFormation(attacker, skill, enemies, logCallback);
+                ExecuteCrushingFormation(attacker, skill, skillScale, enemies, logCallback);
             }
             else
             {
@@ -32,14 +32,19 @@ namespace GameScripts.Combat.Core
                 if (target != null)
                 {
                     int rawDamage = CombatCalculationService.CalculateRawSkillDamage(attacker, 1.0f, 0f, target);
-                    int finalDamage = CombatCalculationService.CalculateFinalDamage(rawDamage, attacker, target, skill.FinalDamageMultiplier);
+                    
+                    // Implementation of Multiplicative Execute Ratio (Cap 0.25)
+                    float executeRatio = Mathf.Min(target.GetMissingHpPercent() * skill.ExecuteRatio, 0.25f);
+                    float finalScale = (skill.FinalDamageMultiplier * skillScale) * (1f + executeRatio);
+                    
+                    int finalDamage = CombatCalculationService.CalculateFinalDamage(rawDamage, attacker, target, finalScale);
                     target.TakeDamage(finalDamage);
                     logCallback?.Invoke($"⚔️ {attacker.Name} tung kỹ năng {Mewtations.Core.MewtationsLoc.Translate(skill.SkillNameKey)} gây {finalDamage} sát thương lên {target.Name}!");
                 }
             }
         }
 
-        private static void ExecuteFullBattlefieldStrike(CombatUnit attacker, CombatSkillDefinition skill, List<CombatUnit> enemies, Action<string> logCallback)
+        private static void ExecuteFullBattlefieldStrike(CombatUnit attacker, CombatSkillDefinition skill, float skillScale, List<CombatUnit> enemies, Action<string> logCallback)
         {
             logCallback?.Invoke($"💥 {attacker.Name} thi triển {Mewtations.Core.MewtationsLoc.Translate(skill.SkillNameKey)} quét qua toàn bộ đội hình địch!");
             int rawDamage = CombatCalculationService.CalculateRawAttackDamage(attacker);
@@ -47,14 +52,16 @@ namespace GameScripts.Combat.Core
             {
                 if (enemy.IsAlive)
                 {
-                    int finalDamage = CombatCalculationService.CalculateFinalDamage(rawDamage, attacker, enemy, skill.FinalDamageMultiplier);
+                    float executeRatio = Mathf.Min(enemy.GetMissingHpPercent() * skill.ExecuteRatio, 0.25f);
+                    float finalScale = (skill.FinalDamageMultiplier * skillScale) * (1f + executeRatio);
+                    int finalDamage = CombatCalculationService.CalculateFinalDamage(rawDamage, attacker, enemy, finalScale);
                     enemy.TakeDamage(finalDamage);
                     logCallback?.Invoke($" -> {enemy.Name} nhận {finalDamage} sát thương.");
                 }
             }
         }
 
-        private static void ExecuteExecutionBarrage(CombatUnit attacker, CombatSkillDefinition skill, List<CombatUnit> enemies, Action<string> logCallback)
+        private static void ExecuteExecutionBarrage(CombatUnit attacker, CombatSkillDefinition skill, float skillScale, List<CombatUnit> enemies, Action<string> logCallback)
         {
             logCallback?.Invoke($"🔪 {attacker.Name} thi triển {Mewtations.Core.MewtationsLoc.Translate(skill.SkillNameKey)} với {skill.HitCount} chém liên hoàn!");
             CombatUnit currentTarget = CombatTargetResolver.GetPrimaryTarget(enemies, attacker);
@@ -76,14 +83,17 @@ namespace GameScripts.Combat.Core
                     }
                 }
 
+                float executeRatio = Mathf.Min(currentTarget.GetMissingHpPercent() * skill.ExecuteRatio, 0.25f);
+                float finalScale = (skill.FinalDamageMultiplier * skillScale) * (1f + executeRatio);
+                
                 int rawDamage = CombatCalculationService.CalculateRawSkillDamage(attacker, skill.RawAtkMultiplier, skill.RawMissingHpMultiplier, currentTarget);
-                int finalDamage = CombatCalculationService.CalculateFinalDamage(rawDamage, attacker, currentTarget, skill.FinalDamageMultiplier);
+                int finalDamage = CombatCalculationService.CalculateFinalDamage(rawDamage, attacker, currentTarget, finalScale);
                 currentTarget.TakeDamage(finalDamage);
                 logCallback?.Invoke($" -> Chém trúng {currentTarget.Name} gây {finalDamage} sát thương.");
             }
         }
 
-        private static void ExecuteCrushingFormation(CombatUnit attacker, CombatSkillDefinition skill, List<CombatUnit> enemies, Action<string> logCallback)
+        private static void ExecuteCrushingFormation(CombatUnit attacker, CombatSkillDefinition skill, float skillScale, List<CombatUnit> enemies, Action<string> logCallback)
         {
             logCallback?.Invoke($"☄️ {attacker.Name} thi triển {Mewtations.Core.MewtationsLoc.Translate(skill.SkillNameKey)} nghiền nát hàng ngang!");
             
@@ -104,8 +114,11 @@ namespace GameScripts.Combat.Core
 
             foreach (var target in targets)
             {
+                float executeRatio = Mathf.Min(target.GetMissingHpPercent() * skill.ExecuteRatio, 0.25f);
+                float finalScale = (skill.FinalDamageMultiplier * skillScale) * (1f + executeRatio);
+                
                 int rawDamage = CombatCalculationService.CalculateRawAttackDamage(attacker);
-                int finalDamage = CombatCalculationService.CalculateFinalDamage(rawDamage, attacker, target, skill.FinalDamageMultiplier);
+                int finalDamage = CombatCalculationService.CalculateFinalDamage(rawDamage, attacker, target, finalScale);
                 target.TakeDamage(finalDamage);
                 logCallback?.Invoke($" -> {target.Name} nhận {finalDamage} sát thương.");
 

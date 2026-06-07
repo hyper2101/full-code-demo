@@ -347,33 +347,59 @@ namespace Mewtations.Combat.Core
                     List<CombatUnit> allies = unit.IsPlayer ? Formation.PlayerUnits : Formation.EnemyUnits;
                     List<CombatUnit> opponents = unit.IsPlayer ? Formation.EnemyUnits : Formation.PlayerUnits;
 
-                    bool hasActiveSkill = unit.ActiveCombatSkill != null;
-                    int requiredRage = hasActiveSkill ? unit.ActiveCombatSkill.RequiredRage : 100;
+                    bool castedSkill = false;
+                    bool hasActiveSkill = unit.CombatSkills != null && unit.CombatSkills.Count > 0;
 
-                    if (unit.CurrentRage >= requiredRage)
+                    if (unit.CurrentRage >= 100)
                     {
                         if (hasActiveSkill)
                         {
-                            CombatSkillExecutor.ExecuteSkill(unit, unit.ActiveCombatSkill, allies, opponents, msg => AddLog(msg));
+                            castedSkill = true;
+                            int skillsToCast = unit.CombatSkills.Count;
+                            int capturedRage = unit.CurrentRage; // Snapshot rage 1 lần
+                            int ragePerSkill = capturedRage / skillsToCast; // Chia đều rage cho các skill
+                            
+                            foreach (var skill in unit.CombatSkills)
+                            {
+                                if (!unit.IsAlive) break; // Dừng nếu chủ thể chết giữa chừng
+                                
+                                unit.RemoveRage(ragePerSkill); // Mỗi skill chỉ tiêu hao phần rage của nó
+                                CombatSkillExecutor.ExecuteSkill(unit, skill, ragePerSkill, allies, opponents, msg => AddLog(msg));
+                                yield return new WaitForSeconds(0.5f);
+                            }
                         }
                         else
                         {
-                            // Fallback to legacy Ultimate
-                            MewtationsUltimateRegistry.ExecuteUltimate(unit, allies, opponents, msg => AddLog(msg));
+                            bool canRageBurst = false;
+                            if (unit.IsPlayer && unit.Source is CatCardData catSource)
+                            {
+                                if (catSource.BreakthroughLevel >= 2) canRageBurst = true;
+                            }
+
+                            if (canRageBurst)
+                            {
+                                castedSkill = true;
+                                var defaultBurst = GetDefaultRageBurst();
+                                int capturedRage = unit.CurrentRage;
+                                unit.RemoveRage(capturedRage);
+                                CombatSkillExecutor.ExecuteSkill(unit, defaultBurst, capturedRage, allies, opponents, msg => AddLog(msg));
+                            }
+                            else
+                            {
+                                ExecuteBasicAttacks(unit, allies, opponents);
+                            }
                         }
                     }
                     else
                     {
-                        // Cast Basic Attack
-                        var target = CombatTargetResolver.GetPrimaryTarget(opponents, unit);
-                        if (target != null)
-                        {
-                            MewtationsWeaponRegistry.ExecuteBasicAttack(unit, target, allies, opponents, msg => AddLog(msg));
-                        }
+                        ExecuteBasicAttacks(unit, allies, opponents);
                     }
 
                     // 4. Rage Accumulation
-                    unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 20); // +20 Rage per action
+                    if (!castedSkill)
+                    {
+                        unit.CurrentRage = Mathf.Min(145, unit.CurrentRage + 20); // +20 Rage per action
+                    }
 
 
                     // Trigger Turn End Event Hooks!
@@ -610,6 +636,42 @@ namespace Mewtations.Combat.Core
                 CombatLog.RemoveAt(0);
             }
             Debug.Log($"[CombatLog] {message}");
+        }
+
+        private void ExecuteBasicAttacks(CombatUnit unit, List<CombatUnit> allies, List<CombatUnit> opponents)
+        {
+            var target = CombatTargetResolver.GetPrimaryTarget(opponents, unit);
+            if (target != null)
+            {
+                MewtationsWeaponRegistry.ExecuteBasicAttack(unit, target, allies, opponents, msg => AddLog(msg));
+                if (unit.Source is CatCardData cat && cat.HasMutation(Mewtations.Expedition.UnstableMutation.DualWeapon))
+                {
+                    var target2 = CombatTargetResolver.GetPrimaryTarget(opponents, unit);
+                    if (target2 != null)
+                    {
+                        AddLog($"⚔️ [SONG KIẾM HỢP BÍCH] {unit.Name} tung thêm nhát chém thứ hai bằng vũ khí phụ!");
+                        MewtationsWeaponRegistry.ExecuteBasicAttack(unit, target2, allies, opponents, msg => AddLog(msg));
+                    }
+                }
+            }
+        }
+
+        private static CombatSkillDefinition _defaultRageBurst;
+        public static CombatSkillDefinition GetDefaultRageBurst()
+        {
+            if (_defaultRageBurst == null)
+            {
+                _defaultRageBurst = ScriptableObject.CreateInstance<CombatSkillDefinition>();
+                _defaultRageBurst.Id = "combat_default_rage_burst";
+                _defaultRageBurst.SkillNameKey = "combat_rage_burst";
+                _defaultRageBurst.DescKey = "combat_rage_burst_desc";
+                _defaultRageBurst.RequiredRage = 100;
+                _defaultRageBurst.TargetType = SkillTargetType.SingleEnemy;
+                _defaultRageBurst.FinalDamageMultiplier = 1.5f;
+                _defaultRageBurst.HitCount = 1;
+                _defaultRageBurst.RawAtkMultiplier = 1.0f;
+            }
+            return _defaultRageBurst;
         }
     }
 }

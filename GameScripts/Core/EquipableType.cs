@@ -5,7 +5,7 @@ public enum EquipableType
 	Head,
 	Torso,
 	Weapon,
-	Food,
+	Skill,
 	Talisman,
 	SpecialCombat
 }

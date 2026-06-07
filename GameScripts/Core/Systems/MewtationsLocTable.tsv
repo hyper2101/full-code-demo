@@ -1,4 +1,4 @@
-﻿card_demon_lord_description	The high-ranking leader of the Dogma's cleansing operations.	Thủ lĩnh tối cao dẫn đầu các chiến dịch thanh trừng của Giáo Điều.	负责教条清洗行动的高级领袖。	教条の清浄化作戦を率いる高位の指導者。	교조의 숙청 작전을 이끄는 고위 지도자.
+card_demon_lord_description	The high-ranking leader of the Dogma's cleansing operations.	Thủ lĩnh tối cao dẫn đầu các chiến dịch thanh trừng của Giáo Điều.	负责教条清洗行动的高级领袖。	教条の清浄化作戦を率いる高位の指導者。	교조의 숙청 작전을 이끄는 고위 지도자.
 exp_evt3_m1	Dâng hiến thức ăn ma huyệt nhận thiên phú	Dâng hiến thức ăn ma huyệt nhận thiên phú
 exp_ruins_title	Phế Tích Hoang Phế	Phế Tích Hoang Phế
 food_berry	Berry	Quả Mọng	浆果	ベリー	베리
@@ -404,3 +404,18 @@ card_dogtax_threat_description	The Dogma Enforcers have arrived. Prepare for com
 
 card_blackaltar_threat_name	Black Altar Boss	Trùm Hắc Đàn
 card_blackaltar_threat_description	A powerful demon summoned from the Black Altar. Defeat it to earn legendary elixirs!	Ác quỷ cường đại được triệu hồi từ Hắc Đàn. Hãy tiêu diệt nó để đoạt lấy linh đan!
+card_skill_vi_gift	Vi's Gift	Quà Của Vi	Vi's Gift	Vi's Gift	Vi's Gift
+card_skill_vi_gift_description	A mysterious gift that unleashes an AOE strike.	Một món quà kỳ bí giải phóng kỹ năng quét sạch kẻ thù trên diện rộng.	A mysterious gift that unleashes an AOE strike.	A mysterious gift that unleashes an AOE strike.	A mysterious gift that unleashes an AOE strike.
+card_skill_crazy_cordi	Crazy Cordi	Cordi Điên Loạn	Crazy Cordi	Crazy Cordi	Crazy Cordi
+card_skill_crazy_cordi_description	A chaotic weapon that strikes 5 times.	Một món vũ khí hỗn loạn chém liên tiếp 5 nhát vào kẻ thù.	A chaotic weapon that strikes 5 times.	A chaotic weapon that strikes 5 times.	A chaotic weapon that strikes 5 times.
+card_skill_tired_yet	Tired Yet?	Mệt Chưa Mày	Tired Yet?	Tired Yet?	Tired Yet?
+card_skill_tired_yet_description	A heavy strike that crushes the enemy's spirit, reducing their rage.	Đòn đánh nặng nề dập tắt nhuệ khí của kẻ thù, làm giảm Nộ của chúng.	A heavy strike that crushes the enemy's spirit, reducing their rage.	A heavy strike that crushes the enemy's spirit, reducing their rage.	A heavy strike that crushes the enemy's spirit, reducing their rage.
+combat_rage_burst	RAGE BURST!	NỘ KHÍ BẠO PHÁT!	RAGE BURST!	RAGE BURST!	RAGE BURST!
+combat_default_rage_skill	Default Rage Strike	Tất Sát Cơ Bản	Default Rage Strike	Default Rage Strike	Default Rage Strike
+combat_dual_skill	Sequential Dual Skill	Kỹ Năng Kép (Tuần Tự)	Sequential Dual Skill	Sequential Dual Skill	Sequential Dual Skill
+combat_dual_weapon	Dual Weapon Strike	Song Kiếm Hợp Bích	Dual Weapon Strike	Dual Weapon Strike	Dual Weapon Strike
+combat_dual_pill	Dual Pill Effect	Lưỡng Dược Bổ Trợ	Dual Pill Effect	Dual Pill Effect	Dual Pill Effect
+combat_log_over_rage	Unleashed {0} Rage! Dealt {1}% Damage!	Thi triển bằng {0} Nộ! Đạt {1}% Sát thương bạo phát!	Unleashed {0} Rage! Dealt {1}% Damage!	Unleashed {0} Rage! Dealt {1}% Damage!	Unleashed {0} Rage! Dealt {1}% Damage!
+ui_skill_slot	SKILL SLOT	KỸ NĂNG	SKILL SLOT	SKILL SLOT	SKILL SLOT
+ui_pill_slot	PILL SLOT	LINH ĐAN	PILL SLOT	PILL SLOT	PILL SLOT
+ui_weapon_slot	WEAPON SLOT	VŨ KHÍ	WEAPON SLOT	WEAPON SLOT	WEAPON SLOT

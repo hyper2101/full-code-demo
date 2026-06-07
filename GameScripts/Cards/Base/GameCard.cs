@@ -696,7 +696,7 @@ public class GameCard : Draggable, IGameCardOrCardData
 			{
 				return false;
 			}
-			if (gameCard.CardData is Food && WorldManager.instance.InEatingAnimation)
+			if (gameCard.CardData is Consumable && WorldManager.instance.InEatingAnimation)
 			{
 				return false;
 			}

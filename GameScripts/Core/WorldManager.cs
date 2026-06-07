@@ -3212,7 +3212,7 @@ public class WorldManager : MonoBehaviour
 		}
 		if (this.IsCitiesDlcActive() && this.CurrentBoard.Id == "main")
 		{
-			if (this.GetCards<Food>().Sum<Food>((Food x) => x.FoodValue) >= 25 && this.GetCard("event_industrial_revolution") == null)
+			if (this.GetCards<Consumable>().Sum<Consumable>((Consumable x) => x.FoodValue) >= 25 && this.GetCard("event_industrial_revolution") == null)
 			{
 				yield return EndOfMonthCutscenes.IndustrialRevolutionEvent();
 			}
