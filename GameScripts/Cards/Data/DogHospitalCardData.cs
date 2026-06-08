@@ -48,7 +48,12 @@ public class DogHospitalCardData : CardData
         {
             cat.IsParalyzed = false;
             cat.Stamina = 0; 
-            cat.AddMemoir("Bệnh viện Chó: Phục hồi từ Tê liệt, nhưng cơ thể vẫn Kiệt sức.");
+            cat.AddMemoir(Mewtations.Core.MewtationsLoc.Translate("dog_hospital_memoir", "Bệnh viện Chó: Phục hồi từ Tê liệt, nhưng cơ thể vẫn Kiệt sức."));
+            
+            if (GameScripts.Systems.DogTax.DogTaxEventManager.Instance != null)
+            {
+                GameScripts.Systems.DogTax.DogTaxEventManager.Instance.AddDebtAmount(2);
+            }
             
             // Remove from hospital
             if (cat.MyGameCard != null)

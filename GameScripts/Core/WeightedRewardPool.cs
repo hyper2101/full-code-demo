@@ -59,7 +59,6 @@ public static class WeightedRewardPool
         _pool.Add(new WeightedRewardEntry("cat_basic", "cat_basic_blessed", "Một Thần Miêu Mới (Được gia trì Thiên Kiêu)", 90, 700)); // Cat has higher weight (approx 90%)
         
         // High greed/corruption specific entries (example of scalable conditions)
-        _pool.Add(new WeightedRewardEntry("mob_void_spirit", "mob_void_spirit", "Tà Linh Hư Không", 50, 0, int.MaxValue, minG: 80)); // Spawn Void Spirit if Greed is extremely high
     }
 
     public static void AddReward(WeightedRewardEntry entry)

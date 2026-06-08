@@ -97,9 +97,9 @@ namespace Mewtations.UI.Screens
                 {
                     foreach (var item in catSnap.Equipment.Slots.Values)
                     {
-                        if (item == null || item.MyGameCard == null || item.MyGameCard.Destroyed)
+                        if (item == null || string.IsNullOrEmpty(item.EquipmentId))
                         {
-                            Debug.LogWarning($"[PreCombat] Trang bị {item?.CardName} của {catData.CardName} không còn tồn tại!");
+                            Debug.LogWarning($"[PreCombat] Trang bị của {catData.CardName} bị lỗi dữ liệu hoặc không còn tồn tại!");
                             return false;
                         }
                     }

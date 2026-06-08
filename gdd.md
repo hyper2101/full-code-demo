@@ -518,6 +518,22 @@ Ngoài chỉ số:
 
 ---
 
+## 7.4. Data Ownership & Kiến trúc Kéo thả (EquipmentInstance)
+
+Triết lý cốt lõi của hệ thống trang bị là: **"Mèo giữ Data, Bàn cờ giữ Object"**.
+* Khi kéo thả một thẻ trang bị vật lý vào ô đồ của Mèo thông qua giao diện `CharacterPanelUI`, thẻ vật lý trên bàn cờ sẽ **bị hủy bỏ hoàn toàn (Destroy)**.
+* Dữ liệu (ID, UpgradeLevel) và toàn bộ chỉ số gốc (CombatStats) của trang bị được Deep Copy thành một object `EquipmentInstance` lưu ngầm bên trong thẻ Mèo.
+* Thao tác này giúp dọn dẹp không gian Board, tối ưu hóa hiệu năng và ngăn chặn triệt để các rủi ro phát sinh từ Reference Leak (ví dụ: các buff/debuff làm biến đổi chỉ số thẻ gốc).
+* Khi người chơi tháo đồ (Unequip), hệ thống sẽ đọc lại `EquipmentInstance`, khôi phục dữ liệu và **tự động spawn (nặn) ra một thẻ vật lý mới** văng ra ngoài bàn chơi.
+
+---
+
+## 7.5. Tính toán chỉ số & Compatibility Logic
+* Việc tính toán chỉ số (Combat Stats) được tách bạch khỏi thẻ vật lý, xử lý qua một hàm độc lập `GetEquipmentStats()` để dễ dàng tái sử dụng cho UI Tooltip, Preview hay AI.
+* Để duy trì khả năng tương thích (Compatibility) cho các cơ chế cũ (Quests, Talismans, Combat Factory) vốn yêu cầu quét thẻ vật lý, Mèo sẽ tự động sinh ra một danh sách thẻ gốc (Base Prefab ảo) chỉ để đọc. Tuy nhiên, hệ thống tính điểm cốt lõi sẽ bỏ qua danh sách này nhằm chặn đứng lỗi cộng dồn điểm (Double Stat).
+
+---
+
 # 8. Expedition
 
 ## 8.1. Tổng Quan

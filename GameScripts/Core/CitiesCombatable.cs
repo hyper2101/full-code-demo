@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public class CitiesCombatable : Combatable, HousingConsumer
@@ -75,15 +75,6 @@ public class CitiesCombatable : Combatable, HousingConsumer
 	public int GetHousingSpaceRequired()
 	{
 		return this.HousingSpaceRequired;
-	}
-
-	public WorkerType GetWorkerType()
-	{
-		if (this.Id == "robot_soldier")
-		{
-			return WorkerType.Robot;
-		}
-		return WorkerType.Normal;
 	}
 
 	public override void OnSellCard()

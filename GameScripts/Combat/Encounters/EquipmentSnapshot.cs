@@ -6,10 +6,10 @@ namespace Mewtations.Combat.Encounters
     [Serializable]
     public class EquipmentSnapshot
     {
-        // Maps the CatSlotType to the actual CardData equipped in that slot for the encounter
-        public Dictionary<Mewtations.Expedition.CatSlotType, CardData> Slots = new Dictionary<Mewtations.Expedition.CatSlotType, CardData>();
+        // Maps the CatSlotType to the actual EquipmentInstance equipped in that slot for the encounter
+        public Dictionary<Mewtations.Expedition.CatSlotType, Mewtations.Expedition.EquipmentInstance> Slots = new Dictionary<Mewtations.Expedition.CatSlotType, Mewtations.Expedition.EquipmentInstance>();
 
-        public void AssignItem(Mewtations.Expedition.CatSlotType type, CardData item)
+        public void AssignItem(Mewtations.Expedition.CatSlotType type, Mewtations.Expedition.EquipmentInstance item)
         {
             Slots[type] = item;
         }

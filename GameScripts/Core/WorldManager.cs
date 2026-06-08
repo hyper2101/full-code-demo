@@ -2258,10 +2258,13 @@ public class WorldManager : MonoBehaviour
 	public CardData CreateCard(Vector3 position, string cardId, bool faceUp = true, bool checkAddToStack = true, bool playSound = true)
 	{
 		CardData cardPrefab = this.GetCardPrefab(cardId, true);
-		if (cardPrefab != null && (cardPrefab is Mewtations.Legacy.Stacklands.BaseVillager || cardPrefab is Mewtations.Legacy.Stacklands.Enemy))
+		
+		if (Mewtations.Legacy.LegacyRuntimeGuard.IsLegacyBoardEntity(cardPrefab))
 		{
-			Debug.LogWarning($"[Legacy Isolation Warning] Spawning legacy entity '{cardId}' unexpectedly at {position}!");
+			Debug.LogWarning($"[Legacy Guard] Bị chặn: Spawn thẻ {cardId}. Thuộc về Stacklands Fantasy bị loại bỏ.");
+			return null;
 		}
+
 		Vector2 vector = Random.insideUnitCircle * 0.001f;
 		position += new Vector3(vector.x, 0f, vector.y);
 		return this.CreateCard(position, cardPrefab, faceUp, checkAddToStack, playSound, true);
@@ -2385,6 +2388,9 @@ public class WorldManager : MonoBehaviour
 		cardData.MyGameCard = gameCard;
 		gameCard.gameObject.name = cardDataPrefab.gameObject.name;
 		gameCard.SetFaceUp(faceUp);
+		
+		gameCard.SpawnProtectionTimeLeft = this.IsLoadingSaveRound ? 0f : 0.4f;
+
 		if (checkAddToStack)
 		{
 			this.CheckIfCanAddOnStack(gameCard);
@@ -3968,6 +3974,22 @@ public class WorldManager : MonoBehaviour
 		}
 		foreach (SavedCard savedCard in saveRound.SavedCards)
 		{
+			// --- CAT CIVILIZATION REPLACEMENT MIGRATION ---
+			if (savedCard.CardPrefabId == "villager" || savedCard.CardPrefabId == "worker" || 
+			    savedCard.CardPrefabId == "kid" || savedCard.CardPrefabId == "old_villager" || 
+			    savedCard.CardPrefabId == "corpse")
+			{
+				savedCard.CardPrefabId = "cat_commoner";
+			}
+			else if (savedCard.CardPrefabId == "chicken" || savedCard.CardPrefabId == "cow" || 
+			         savedCard.CardPrefabId == "dragon_egg" || savedCard.CardPrefabId == "poop" || 
+			         savedCard.CardPrefabId == "animal_pen" || savedCard.CardPrefabId == "breeding_pen" || 
+			         savedCard.CardPrefabId == "slaughterhouse" || savedCard.CardPrefabId == "petting_zoo")
+			{
+				continue; // Destroy silently - No fake migration economy
+			}
+			// ---------------------------------------------
+
 			CardData cardData = this.CreateCard(savedCard.CardPosition, savedCard.CardPrefabId, savedCard.FaceUp, false, false);
 			if (!(cardData == null))
 			{

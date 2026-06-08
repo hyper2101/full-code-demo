@@ -23,4 +23,14 @@ public class SpecialHit
 	public SpecialHitType HitType;
 
 	public SpecialHitTarget Target;
+
+	public SpecialHit Clone()
+	{
+		return new SpecialHit
+		{
+			Chance = this.Chance,
+			HitType = this.HitType,
+			Target = this.Target
+		};
+	}
 }

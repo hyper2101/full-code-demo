@@ -121,6 +121,29 @@ namespace GameScripts.Systems.DogTax
             }
         }
 
+        public void AddDebtAmount(int resourceCount)
+        {
+            if (_isResolving) return;
+
+            if (CurrentState == DogTaxCycleState.Debt && _activeDebt != null && _spawnedDebtCard != null && !_spawnedDebtCard.Destroyed)
+            {
+                for (int i = 0; i < resourceCount; i++)
+                {
+                    _activeDebt.RequiredResources.Add(Random.value > 0.5f ? "resource_crystal" : "resource_ore");
+                }
+                var debtComp = _spawnedDebtCard.GetComponent<GameScripts.Systems.Threat.UI.DebtCardComponent>();
+                if (debtComp != null)
+                {
+                    debtComp.Initialize(_activeDebt.RequiredResources, OnDebtPaid);
+                }
+                Debug.Log($"[DogTax] Debt Increased: Now {_activeDebt.RequiredResources.Count} resources needed.");
+            }
+            else if (CurrentState != DogTaxCycleState.Threat && CurrentState != DogTaxCycleState.Debt)
+            {
+                SpawnDebt(Severity.Normal);
+            }
+        }
+
         private IEnumerator FocusCameraOnCardRoutine(GameCard targetCard, float duration)
         {
             if (GameCamera.instance != null && targetCard != null)

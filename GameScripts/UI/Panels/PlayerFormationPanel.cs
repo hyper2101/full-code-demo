@@ -67,14 +67,15 @@ public class PlayerFormationPanel : MonoBehaviour
         if (item is Equipable equipable)
         {
             catData.InitializeEquipmentSlots();
-            if (catData.EquipmentSlots.ContainsKey(equipable.EquipableTypeToCatSlotType()))
+            var slotType = equipable.EquipableTypeToCatSlotType();
+            
+            if (catData.EquipmentSlots.ContainsKey(slotType))
             {
-                var slotType = equipable.EquipableTypeToCatSlotType();
-                var slotDef = catData.EquipmentSlots[slotType];
-                
-                if (slotDef.CanEquip(item))
+                // Utilize the centralized EquipToSlot method which now creates EquipmentInstance and handles destruction safely
+                if (catData.EquipToSlot(item, slotType))
                 {
-                    catSnap.Equipment.AssignItem(slotType, item);
+                    // Update snapshot with the newly created EquipmentInstance
+                    catSnap.Equipment.AssignItem(slotType, catData.EquipmentSlots[slotType].EquipmentInstance);
                     // Refresh Ordering UI to remove this item
                     Mewtations.UI.Screens.PreCombatScreen.Instance.OrderingInventory.Initialize(_session);
                     return true;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -48,7 +48,7 @@ $attrpublic class Apartment : EnergyConsumer
 				{
 					goto IL_0127;
 				}
-				if (!housingConsumer.GetGameCard().Destroyed && (housingConsumer.GetWorkerType() != WorkerType.Robot || this.CanHouseRobotWorkers) && (!this.CanHouseRobotWorkers || housingConsumer.GetWorkerType() == WorkerType.Robot))
+				if (!housingConsumer.GetGameCard().Destroyed)
 				{
 					if (housingConsumer.GetHousingSpaceRequired() <= this.FreeSpace)
 					{

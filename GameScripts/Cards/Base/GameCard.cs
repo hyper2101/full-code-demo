@@ -17,6 +17,11 @@ public class GameCard : Draggable, IGameCardOrCardData
 		this.InventoryContainer = container;
 	}
 
+    [HideInInspector]
+    public float SpawnProtectionTimeLeft = 0f;
+
+    public bool IsInSpawnProtection => SpawnProtectionTimeLeft > 0f;
+
 	protected override bool HasPhysics
 	{
 		get
@@ -91,6 +96,7 @@ public class GameCard : Draggable, IGameCardOrCardData
 	{
 		get
 		{
+			if (IsInSpawnProtection) return false;
 			return (!(WorldManager.instance.DraggingCard != null) || !(this.Child != null)) && (!this.IsEquipped || (!(WorldManager.instance.DraggingCard == this.EquipmentHolder) && this.EquipmentHolder.ShowInventory)) && (!this.IsWorking || (!(WorldManager.instance.DraggingCard == this.WorkerHolder) && this.WorkerHolder.ShowInventory)) && !this.BeingDragged;
 		}
 	}
@@ -872,6 +878,11 @@ public class GameCard : Draggable, IGameCardOrCardData
 
 	protected override void Update()
 	{
+		if (SpawnProtectionTimeLeft > 0f)
+		{
+			SpawnProtectionTimeLeft -= Time.deltaTime;
+		}
+
 		if (!this.IsDemoCard && !this.MyBoard.IsCurrent)
 		{
 			return;
@@ -1736,7 +1747,7 @@ public class GameCard : Draggable, IGameCardOrCardData
 		for (int i = 0; i < num; i++)
 		{
 			GameCard component = this.hits[i].gameObject.GetComponent<GameCard>();
-			if (component != null && component != this)
+			if (component != null && component != this && !component.IsInSpawnProtection && !this.IsInSpawnProtection)
 			{
 				list.Add(component);
 			}
@@ -1751,7 +1762,7 @@ public class GameCard : Draggable, IGameCardOrCardData
 		for (int i = 0; i < num; i++)
 		{
 			GameCard component = this.hits[i].gameObject.GetComponent<GameCard>();
-			if (component != null && component != this)
+			if (component != null && component != this && !component.IsInSpawnProtection && !this.IsInSpawnProtection)
 			{
 				list.Add(component);
 			}

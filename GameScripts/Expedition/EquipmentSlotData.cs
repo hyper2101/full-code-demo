@@ -29,8 +29,13 @@ namespace Mewtations.Expedition
         {
             public CatSlotType SlotType;
             public bool IsUnlocked;
-            public CardData EquippedItem;
             public string Title;
+            
+            // Legacy reference for backward compatibility
+            public CardData EquippedItem;
+            
+            // Data Ownership structure
+            public EquipmentInstance EquipmentInstance;
             
             public EquipmentSlotData(CatSlotType type, string title, bool unlocked)
             {
@@ -38,15 +43,16 @@ namespace Mewtations.Expedition
                 Title = title;
                 IsUnlocked = unlocked;
                 EquippedItem = null;
+                EquipmentInstance = null;
             }
 
-            public bool CanEquip(CardData item)
+            public bool CanEquip(CardData item, bool isPlayerDrag = true)
             {
                 if (!IsUnlocked) return false;
                 if (item == null) return false;
                 
-                // Equipment Slot Safety Framework: Reject stack merge and drag
-                if (item.MyGameCard != null && (item.MyGameCard.HasChild || item.MyGameCard.HasParent || item.MyGameCard.GetStackCount() > 1)) return false;
+                // Equipment Slot Safety Framework: Reject stack merge and drag ONLY if it's a player drag
+                if (isPlayerDrag && item.MyGameCard != null && (item.MyGameCard.HasChild || item.MyGameCard.HasParent || item.MyGameCard.GetStackCount() > 1)) return false;
 
                 switch (SlotType)
                 {
@@ -68,5 +74,5 @@ namespace Mewtations.Expedition
                 }
                 return false;
             }
-    }
+        }
 }

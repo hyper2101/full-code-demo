@@ -132,16 +132,6 @@ namespace Mewtations.Expedition
             }
 
             Debug.Log("[Expedition] Started");
-                if (GameScripts.Systems.Threat.ThreatManager.Instance != null && GameScripts.Systems.Threat.ThreatManager.Instance.CatGodWrathTemplate != null)
-                {
-                    //
-                    GameScripts.Systems.Threat.ThreatManager.Instance.CreateThreat(
-                        GameScripts.Systems.Threat.ThreatManager.Instance.CatGodWrathTemplate, 
-                        GameScripts.Systems.Threat.ThreatSourceType.Expedition, 
-                        RunState.CurrentDifficultyLevel, 
-                        0 //
-                    );
-                }
             }
             */
         }
@@ -873,7 +863,7 @@ namespace Mewtations.Expedition
                     CompleteNodeResolution();
                 };
             }
-            else // Ruins
+            else if (type == NodeType.Ruins)
             {
                 title = Mewtations.Core.MewtationsLoc.Translate("exp_ruins_title", "Phế Tích Hoang Phế");
                 text = Mewtations.Core.MewtationsLoc.Translate("exp_ruins_desc", "Đội hình mèo tiến vào một phế tích cung điện đổ nát. Ở giữa có một lò đan dược cũ kỹ vẫn đang cháy âm ỉ.\nBạn có muốn lục lọi không?");
@@ -897,6 +887,18 @@ namespace Mewtations.Expedition
                         CompleteNodeResolution();
                     }
                 };
+            }
+            else if (type == NodeType.SpecialMap)
+            {
+                Debug.LogWarning("[Expedition] SpecialMap node encountered but not fully implemented. Returning to base.");
+                ReturnToBase(isDefeat: false);
+                return;
+            }
+            else
+            {
+                Debug.LogWarning($"[Expedition] Unhandled node type: {type}. Returning to base.");
+                ReturnToBase(isDefeat: false);
+                return;
             }
 
             Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, choices, onChoice);
@@ -1071,9 +1073,9 @@ namespace Mewtations.Expedition
                 Vector3 spawnPos = (gatewayCard != null ? gatewayCard.transform.position : Context.Ordering.MyGameCard.transform.position) + Vector3.back * 1.5f;
 
                 //
-                Context.Ordering.MyGameCard.RemoveFromStack();
-                Context.Ordering.MyGameCard.transform.position = spawnPos + Vector3.right * 1.5f;
-                WorldManager.instance.SendToBoard(Context.Ordering.MyGameCard, WorldManager.instance.CurrentBoard, Context.Ordering.MyGameCard.transform.position);
+                // Context.Ordering.MyGameCard.RemoveFromStack();
+                // Context.Ordering.MyGameCard.transform.position = spawnPos + Vector3.right * 1.5f;
+                // WorldManager.instance.SendToBoard(Context.Ordering.MyGameCard, WorldManager.instance.CurrentBoard, Context.Ordering.MyGameCard.transform.position);
 
                 //
                 foreach (var cat in ActiveCats)
@@ -1101,40 +1103,22 @@ namespace Mewtations.Expedition
                         
                         //
                         if (cat.Stamina == 0) {
-                            cat.AddMemoir("Returned in an exhausted state! (Exhausted Return)");
+                            cat.AddMemoir(Mewtations.Core.MewtationsLoc.Translate("exp_mem_exhausted", "Trở về trong tình trạng kiệt sức! (Exhausted Return)"));
                         }
                         if (RunState != null && RunState.CorruptionLevel > 50) {
-                            cat.AddMemoir("Returned with dark aura (Corrupted Return)");
+                            cat.AddMemoir(Mewtations.Core.MewtationsLoc.Translate("exp_mem_corrupted", "Trở về với đầy tà khí (Corrupted Return)"));
                         }
                           int insuredSlots = 0;
                           if (BackpackCardSource is Mewtations.Legacy.Stacklands.OrderingCardData ringData) insuredSlots = ringData.InsuredSlots;
                         if (isManualRetreat) {
-                            cat.AddMemoir("Fled from the expedition (Retreat)");
+                            cat.AddMemoir(Mewtations.Core.MewtationsLoc.Translate("exp_mem_fled", "Đã chạy trốn khỏi cuộc viễn chinh (Retreat)"));
                         }
 
-                        if (cat.MyGameCard != null)
+                        // No longer repositioning or modifying the stack of ActiveCats
+                        // Cats remain exactly where they were before the expedition started
+                        if (cat.MyGameCard != null && !cat.MyGameCard.gameObject.activeInHierarchy)
                         {
                             cat.MyGameCard.gameObject.SetActive(true);
-                            if (RuntimeCatStates.TryGetValue(cat.UniqueId, out var state) && !cat.IsParalyzed && !cat.IsExhausted && !string.IsNullOrEmpty(state.ParentCardUniqueId))
-                            {
-                                GameCard parentCard = WorldManager.instance.GetCardWithUniqueId(state.ParentCardUniqueId);
-                                if (parentCard != null && parentCard.gameObject.activeInHierarchy && !parentCard.CardData.IsPendingDestruction)
-                                {
-                                    cat.MyGameCard.SetParent(parentCard);
-                                }
-                                else
-                                {
-                                    cat.MyGameCard.RemoveFromStack();
-                                    cat.MyGameCard.transform.position = spawnPos;
-                                    WorldManager.instance.SendToBoard(cat.MyGameCard, WorldManager.instance.CurrentBoard, spawnPos);
-                                }
-                            }
-                            else
-                            {
-                                cat.MyGameCard.RemoveFromStack();
-                                cat.MyGameCard.transform.position = spawnPos;
-                                WorldManager.instance.SendToBoard(cat.MyGameCard, WorldManager.instance.CurrentBoard, spawnPos);
-                            }
                         }
                     }
                 }

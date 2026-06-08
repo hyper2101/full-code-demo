@@ -9,8 +9,6 @@ namespace GameScripts.Systems.Threat
     {
         public static ThreatManager Instance { get; private set; }
 
-        public int CatGodAnger = 0;
-        public ThreatData CatGodWrathTemplate;
 
         public List<ThreatData> AllThreatDatas = new List<ThreatData>();
         public List<ThreatInstance> ActiveThreats = new List<ThreatInstance>();
@@ -249,57 +247,6 @@ namespace GameScripts.Systems.Threat
             }
         }
 
-        // --- Phase 6: Cat God Integration ---
-        public void IncreaseCatGodAnger(int amount)
-        {
-            CatGodAnger += amount;
-            Debug.Log($"Cat God Anger increased! Current: {CatGodAnger}");
 
-            if (CatGodAnger >= 10 && CatGodWrathTemplate != null)
-            {
-                CatGodAnger = 0; // Reset after triggering
-                
-                // Tính toán level trung bình và level cao nhất của Top 5 mèo
-                int averageLevel = 1;
-                int maxCatLevel = 1;
-
-                if (WorldManager.instance != null)
-                {
-                    var catLevels = System.Linq.Enumerable.ToList(
-                        System.Linq.Enumerable.Select(
-                            System.Linq.Enumerable.Where(
-                                WorldManager.instance.AllCards, 
-                                c => c != null && c.CardData is CatCardData && !c.Destroyed
-                            ),
-                            c => (c.CardData as CatCardData)?.Level ?? 1
-                        )
-                    );
-
-                    if (catLevels.Count > 0)
-                    {
-                        var topCats = System.Linq.Enumerable.ToList(
-                            System.Linq.Enumerable.Take(
-                                System.Linq.Enumerable.OrderByDescending(catLevels, l => l), 
-                                5
-                            )
-                        );
-                        averageLevel = (int)System.Linq.Enumerable.Average(topCats);
-                        maxCatLevel = catLevels.Max();
-                    }
-                }
-                
-                // Thay vì nhân 1.5 (gây lạm phát ở late game), ta cộng một hằng số khó khăn (ví dụ +5 level)
-                int wrathLevel = averageLevel + 5;
-                
-                // Vẫn áp dụng Cap để không bao giờ quái vượt qua Tier cao nhất mà người chơi đang sở hữu
-                wrathLevel = Mathf.Min(wrathLevel, (maxCatLevel / 10) * 10 + 9);
-                
-                // Thêm chặn an toàn thứ 2: Không được vượt qua level cao nhất của Mèo + 2
-                wrathLevel = Mathf.Min(wrathLevel, maxCatLevel + 2);
-                
-                // Spawn the wrath threat.
-                CreateThreat(CatGodWrathTemplate, ThreatSourceType.WorldEvent, wrathLevel, 5);
-            }
-        }
     }
 }

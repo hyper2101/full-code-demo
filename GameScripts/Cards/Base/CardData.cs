@@ -736,24 +736,6 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 		if (this.WorkerAmount > 0)
 		{
 			bool flag = this.WorkerAmountMet();
-			if (this.EducatedWorkers)
-			{
-				if (this.MyGameCard.WorkerChildren.Any<GameCard>(delegate(GameCard c)
-				{
-					Worker worker = c.CardData as Worker;
-					return worker != null && worker.GetWorkerType() != WorkerType.Educated && worker.GetWorkerType() != WorkerType.Robot;
-				}) || !flag)
-				{
-					if (!this.HasStatusEffectOfType<StatusEffect_NoEducatedWorkers>())
-					{
-						this.AddStatusEffect(new StatusEffect_NoEducatedWorkers());
-					}
-				}
-				else
-				{
-					this.RemoveStatusEffect<StatusEffect_NoEducatedWorkers>();
-				}
-			}
 			else if (!flag)
 			{
 				if (!this.HasStatusEffectOfType<StatusEffect_NoWorkers>())
@@ -2078,8 +2060,6 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 
 	public int WorkerAmount;
 
-	public bool EducatedWorkers;
-
 	[HideInInspector]
 	[ExtraData("output_direction")]
 	public Vector3 OutputDir = Vector3.right;
@@ -2120,6 +2100,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 
 	private static List<string> reqList = new List<string>();
 }
+
 
 
 

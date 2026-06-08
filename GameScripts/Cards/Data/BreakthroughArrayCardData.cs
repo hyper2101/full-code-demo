@@ -62,18 +62,34 @@ public class BreakthroughArrayCardData : CardData
         }
 	}
 
+	private int _lastChildCount = -1;
+
 	public override void UpdateCard()
 	{
 		base.UpdateCard();
 
 		if (this.MyGameCard != null)
 		{
+			int childCount = 0;
+			GameCard currCount = this.MyGameCard.Child;
+			while (currCount != null)
+			{
+				childCount++;
+				currCount = currCount.Child;
+			}
+
 			// Kiểm tra xem Mèo đột phá còn nằm trong stack không
-			if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "breakthrough_array")
+			if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == base.GetActionId("breakthrough_array"))
 			{
 				if (!HasCatInStack())
 				{
-					this.MyGameCard.CancelTimer("breakthrough_array");
+					this.MyGameCard.CancelTimer(base.GetActionId("breakthrough_array"));
+					_lastChildCount = -1;
+				}
+				else if (childCount != _lastChildCount)
+				{
+					this.MyGameCard.CancelTimer(base.GetActionId("breakthrough_array"));
+					_lastChildCount = childCount;
 				}
 			}
 			else if (!this.MyGameCard.TimerRunning && HasCatInStack())
@@ -81,9 +97,10 @@ public class BreakthroughArrayCardData : CardData
 				CatCardData cat = GetCatInStack();
 				if (cat != null)
 				{
+					_lastChildCount = childCount;
 					// Tốc độ chạy trận pháp phụ thuộc vào cấp độ và tốc độ của Mèo
 					float duration = Mathf.Max(5f, (10f + cat.BreakthroughLevel * 3f) - (cat.Speed * 0.03f));
-					this.MyGameCard.StartTimer(duration, new TimerAction(this.CompleteBreakthroughProcess), "Trận pháp tụ linh đột phá...", "breakthrough_array", true, false, false);
+					this.MyGameCard.StartTimer(duration, new TimerAction(this.CompleteBreakthroughProcess), "Trận pháp tụ linh đột phá...", base.GetActionId("breakthrough_array"), true, false, false);
 				}
 			}
 		}

@@ -33,8 +33,8 @@ public class Subprint
 
 	public static void UpdateAnyWorkerCardIds()
 	{
-		Subprint.specialCardIds["any_worker"] = string.Join("|", Subprint.GetWorkerCardIds(null));
-		Subprint.specialCardIds["any_educated_worker"] = string.Join("|", Subprint.GetWorkerCardIds((Worker x) => x.WorkerType == WorkerType.Educated || x.WorkerType == WorkerType.Robot));
+		Subprint.specialCardIds["any_worker"] = string.Join("|", Subprint.GetLaborCardIds(null));
+		Subprint.specialCardIds["any_educated_worker"] = string.Join("|", Subprint.GetLaborCardIds(null));
 	}
 
 	private static List<string> GetVillagerCardIds(Predicate<BaseVillager> pred = null)
@@ -57,7 +57,7 @@ public class Subprint
 		return list;
 	}
 
-	private static List<string> GetWorkerCardIds(Predicate<Worker> pred = null)
+	private static List<string> GetLaborCardIds(Predicate<Mewtations.Systems.Labor.ILaborCapable> pred = null)
 	{
 		List<string> list = new List<string>();
 		WorldManager instance = WorldManager.instance;
@@ -68,8 +68,8 @@ public class Subprint
 		}
 		foreach (CardData cardData in gameDataLoader.CardDataPrefabs)
 		{
-			Worker worker = cardData as Worker;
-			if (worker != null && (pred == null || pred(worker)))
+			Mewtations.Systems.Labor.ILaborCapable labor = cardData as Mewtations.Systems.Labor.ILaborCapable;
+			if (labor != null && (pred == null || pred(labor)))
 			{
 				list.Add(cardData.Id);
 			}

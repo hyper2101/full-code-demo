@@ -15,13 +15,13 @@ public class GodCatPackCard : RewardPackCard
             };
             
             // 100% Linh thạch cấp thấp
-            instance.GeneratedCards.Add("item_low_spirit_stone");
+            instance.GeneratedCards.Add("low_spirit_stone");
 
-            // 15% random weapon (dùng sword hoặc spear tạm thời)
+            // 15% random bonus (chỉ rớt đồ Mewtations)
             if (UnityEngine.Random.value <= 0.15f)
             {
-                string[] weapons = { "sword", "spear", "magic_wand", "bow" };
-                instance.GeneratedCards.Add(weapons[UnityEngine.Random.Range(0, weapons.Length)]);
+                string[] bonusItems = { "broken_spirit_stone", "refined_spirit_stone" };
+                instance.GeneratedCards.Add(bonusItems[UnityEngine.Random.Range(0, bonusItems.Length)]);
             }
 
             SaveData.Packs.Add(instance);

@@ -33,6 +33,16 @@ namespace Mewtations.Dialogue
 
         private List<DialogueChoice> _branchingChoices = null;
 
+        private struct QueuedDialogue
+        {
+            public string title;
+            public string text;
+            public List<string> choices;
+            public Action<int> onChoiceSelected;
+            public List<DialogueChoice> branchingChoices;
+        }
+        private Queue<QueuedDialogue> _dialogueQueue = new Queue<QueuedDialogue>();
+
         private bool _isChronicleVisible = false;
         private Vector2 _chronicleScrollPos = Vector2.zero;
 
@@ -60,6 +70,18 @@ namespace Mewtations.Dialogue
             Time.timeScale = 0f;
         }
 
+        public void QueueDialogue(string title, string text, List<string> choices, Action<int> onChoiceSelected)
+        {
+            if (!_isVisible)
+            {
+                StartDialogue(title, text, choices, onChoiceSelected);
+            }
+            else
+            {
+                _dialogueQueue.Enqueue(new QueuedDialogue { title = title, text = text, choices = choices, onChoiceSelected = onChoiceSelected });
+            }
+        }
+
         public void StartDialogue(string title, string text, List<DialogueChoice> branchingChoices)
         {
             _title = title;
@@ -72,9 +94,33 @@ namespace Mewtations.Dialogue
             Time.timeScale = 0f;
         }
 
+        public void QueueDialogue(string title, string text, List<DialogueChoice> branchingChoices)
+        {
+            if (!_isVisible)
+            {
+                StartDialogue(title, text, branchingChoices);
+            }
+            else
+            {
+                _dialogueQueue.Enqueue(new QueuedDialogue { title = title, text = text, branchingChoices = branchingChoices });
+            }
+        }
+
         public void HideWindow()
         {
             _isVisible = false;
+            CheckDialogueQueue();
+        }
+
+        private void CheckDialogueQueue()
+        {
+            if (_isVisible || _dialogueQueue.Count == 0) return;
+            
+            var next = _dialogueQueue.Dequeue();
+            if (next.branchingChoices != null)
+                StartDialogue(next.title, next.text, next.branchingChoices);
+            else
+                StartDialogue(next.title, next.text, next.choices, next.onChoiceSelected);
         }
 
         private void InitializeStyles()
@@ -228,6 +274,7 @@ namespace Mewtations.Dialogue
                             }
                             
                             choice.OnSelected?.Invoke();
+                            CheckDialogueQueue();
                         }
                     }
                     GUI.color = oldColor;
@@ -258,6 +305,7 @@ namespace Mewtations.Dialogue
                         }
                         
                         _onChoiceSelected?.Invoke(i);
+                        CheckDialogueQueue();
                     }
                     if (i < _choices.Count - 1)
                     {

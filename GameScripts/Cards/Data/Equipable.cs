@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Equipable : CardData
 {
+	[HideInInspector]
+	public string InstanceId;
+
 	public override bool CanBeDragged
 	{
 		get

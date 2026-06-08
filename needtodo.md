@@ -59,6 +59,30 @@ nhưng chưa tạo được cảm giác:
 
 Hiện combat tồn tại nhưng “adventure tension” còn yếu.
 
+### Các Tính Năng Thiếu Sót Cần Bổ Sung Gấp (Cập nhật tiến độ)
+- [x] **Encounter System cho Miệng Thần Mèo:** Đã tích hợp ThreatCardComponent và dùng tạm DogTaxEncounter thay thế cơ chế gọi quái vật lý. Đã dọn dẹp sạch `CatGodAnger` và `mob_void_spirit`.
+- [x] **Special Map Pool (Viễn Chinh):** Đã sửa xử lý node SpecialMap để không gây kẹt.
+- [ ] **LootProfile cho Thương Nhân:** Cần cấu hình LootProfile ngẫu nhiên theo giá trị giao dịch cho Camp Merchant thay vì gán cứng 1 Food/1 Gold như hiện tại.
+- [x] **Debt Note tại Bệnh Viện Chó:** Đã tích hợp `AddDebtAmount` để tránh spam giấy nợ, gọi đúng qua hệ thống DogTax.
+- [x] **Localization Hồi Ký (Memoir):** Đã chuyển toàn bộ text cứng (trả về, kiệt sức, bệnh viện) sang Localization ID.
+- [x] **Reset Timer Đột Phá:** Đã sửa logic Timer trận pháp, tự động reset dựa vào số lượng thẻ đang stack (`_lastChildCount`).
+- [x] **Sửa Lại Workflow Rút Lui (ReturnToBase):** Đã gỡ bỏ lệnh `RemoveFromStack()` để không phá vỡ hoạt động tại nhà khi mèo đi Viễn chinh.
+
+---
+
+# Danh Sách Tàn Dư Legacy Cần Dọn Dẹp (Chưa Gỡ Bỏ Ngay)
+
+Đây là các hệ thống không còn giá trị sử dụng nhưng vẫn đang nằm rải rác trong code, cần được note lại để có kế hoạch dọn dẹp hoặc tái cơ cấu sau:
+
+1. **Trọn bộ DLC "Greed" của Stacklands (Cursed Worlds)**: 
+   - Không liên quan đến GDD hiện tại, chứa các class đòi cống nạp đồ và sinh quái (`GreedCutscenes`, `DemandManager`, cấu hình túi thẻ `Greed_...`).
+   - Cần gỡ bỏ hoàn toàn khỏi `GameScreen.cs`, `RunOptions.cs` và `GameDataLoader.cs` để dọn dẹp kiến trúc.
+
+2. **Chỉ số Greed & Corruption gắn với hệ quả vật lý trong Expedition**:
+   - Hệ thống Viễn chinh vẫn đang tính toán `GreedLevel` và `CorruptionLevel` (ví dụ: cộng dồn dựa trên số xác mèo trên bàn cờ, cộng dồn khi chọn sai sự kiện).
+   - Tuy nhiên, hệ quả trước đây (như spawn ra `mob_void_spirit` ở mốc Greed 80) đã bị vô hiệu hóa vì quái vật lý đã xóa sổ. Cần thiết kế lại hệ quả (Consequence) cho các chỉ số này bằng hệ thống Threat mới.
+
+
 ## Cần đạt được
 
 Player phải cảm thấy:

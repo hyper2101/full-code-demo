@@ -195,14 +195,23 @@ namespace Mewtations.UI
             GUI.matrix = oldMatrix;
 
             // Draw ghost drag outside the layout
-            if (_draggedSlotData != null && _draggedSlotData.EquippedItem != null)
+            if (_draggedSlotData != null && (_draggedSlotData.EquippedItem != null || _draggedSlotData.EquipmentInstance != null))
             {
                 Vector2 mousePos = Event.current.mousePosition;
                 Rect ghostRect = new Rect(mousePos.x - 30, mousePos.y - 30, 60, 60);
-                if (_draggedSlotData.EquippedItem.Icon != null)
+                
+                Sprite iconSprite = null;
+                if (_draggedSlotData.EquipmentInstance != null) {
+                    var baseCard = _draggedSlotData.EquipmentInstance.GetBaseCardData();
+                    if (baseCard != null) iconSprite = baseCard.Icon;
+                } else if (_draggedSlotData.EquippedItem != null) {
+                    iconSprite = _draggedSlotData.EquippedItem.Icon;
+                }
+
+                if (iconSprite != null)
                 {
                     GUI.color = new Color(1, 1, 1, 0.6f);
-                    GUI.DrawTexture(ghostRect, _draggedSlotData.EquippedItem.Icon.texture);
+                    GUI.DrawTexture(ghostRect, iconSprite.texture);
                     GUI.color = Color.white;
                 }
             }
@@ -231,9 +240,12 @@ namespace Mewtations.UI
             if (slot.IsUnlocked)
             {
                 text = "[ Trống ]";
-                if (slot.EquippedItem != null)
+                if (slot.EquipmentInstance != null || slot.EquippedItem != null)
                 {
-                    text = $"<b>{slot.EquippedItem.Name}</b>";
+                    string itemName = slot.EquipmentInstance != null ? (slot.EquipmentInstance.GetBaseCardData()?.Name ?? "Unknown") : slot.EquippedItem.Name;
+                    if (slot.EquipmentInstance != null && slot.EquipmentInstance.UpgradeLevel > 0) itemName += $" (+{slot.EquipmentInstance.UpgradeLevel})";
+
+                    text = $"<b>{itemName}</b>";
                     if (_draggedSlotData == slot)
                     {
                         text = "<color=#888>[ Đang Kéo... ]</color>";
@@ -251,7 +263,7 @@ namespace Mewtations.UI
             if (!slot.IsUnlocked) return;
 
             // Handle Drag Out
-            if (slot.EquippedItem != null && _draggedSlotData == null)
+            if ((slot.EquipmentInstance != null || slot.EquippedItem != null) && _draggedSlotData == null)
             {
                 if (r.Contains(Event.current.mousePosition) && Event.current.type == EventType.MouseDown && Event.current.button == 0)
                 {

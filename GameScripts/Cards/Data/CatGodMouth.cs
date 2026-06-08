@@ -15,8 +15,11 @@ public class CatGodMouth : CardData
     [ExtraData("total_blasphemy")]
     public int TotalBlasphemy = 0;
 
-    private bool _hasWarnedBlasphemy = false;
-    private bool _hasTriggeredThreat = false;
+    [ExtraData("has_warned_blasphemy")]
+    public bool HasWarnedBlasphemy = false;
+    
+    [ExtraData("has_triggered_threat")]
+    public bool HasTriggeredThreat = false;
 
     public override bool DetermineCanHaveCardsWhenIsRoot => true;
     public override bool UsesHorizontalSlots => true;
@@ -46,8 +49,8 @@ public class CatGodMouth : CardData
             this.descriptionOverride = MewtationsLoc.Translate("catgod_idle", "Kéo một Thẻ Nghi Lễ (Ritual Card) vào đây để bắt đầu.");
             OfferingProgress = 0;
             TotalBlasphemy = 0;
-            _hasWarnedBlasphemy = false;
-            _hasTriggeredThreat = false;
+            HasWarnedBlasphemy = false;
+            HasTriggeredThreat = false;
         }
     }
 
@@ -113,69 +116,122 @@ public class CatGodMouth : CardData
     {
         int percent = GetBlasphemyPercent(ritualCard);
 
-        if (percent >= 20 && !_hasWarnedBlasphemy)
+        if (percent >= 20 && !HasWarnedBlasphemy)
         {
-            _hasWarnedBlasphemy = true;
+            HasWarnedBlasphemy = true;
             WorldManager.instance.CreateFloatingText(this.MyGameCard, false, 0, MewtationsLoc.Translate("catgod_warn_blasphemy", "Ngươi dâng thứ ô uế cho ta?"), "", false, 0, 2f, true);
         }
 
-        if (percent >= 40 && !_hasTriggeredThreat)
+        bool threatTriggeredNow = false;
+        if (percent >= 40 && !HasTriggeredThreat)
         {
-            _hasTriggeredThreat = true;
-            TriggerGodCatThreat(ritualCard);
+            HasTriggeredThreat = true;
+            threatTriggeredNow = true;
+            
+            if (GameCamera.instance != null) GameCamera.instance.Screenshake = 0.5f;
+
+            // Spawn quái vật lệch sang bên trái để tránh đè lên rương
+            Vector3 threatSpawnPos = this.transform.position + Vector3.left * 1.5f + Vector3.back * 1.5f;
+            
+            // Tích hợp hệ thống Encounter/Threat (dùng tạm pool của Dog Tax)
+            int encounterId = -1;
+            if (Mewtations.Combat.Core.EncounterManager.Instance != null)
+            {
+                var template = UnityEngine.Resources.Load<Mewtations.Combat.Encounters.EncounterTemplateSO>("Encounters/DogTaxEncounter");
+                Mewtations.Combat.Encounters.EncounterData newEncounter;
+                if (template != null)
+                {
+                    newEncounter = Mewtations.Combat.Encounters.EncounterGenerator.Generate(template, UnityEngine.Random.Range(0, 99999), 1);
+                    newEncounter.EncounterName = "Sự nổi giận của Mèo Thần";
+                    newEncounter.TurnLimit = 30;
+                }
+                else
+                {
+                    newEncounter = new Mewtations.Combat.Encounters.EncounterData
+                    {
+                        EncounterName = "Sự nổi giận của Mèo Thần",
+                        Context = Mewtations.Combat.Encounters.EncounterContext.DogTax,
+                        TurnLimit = 30
+                    };
+                }
+                encounterId = Mewtations.Combat.Core.EncounterManager.Instance.RegisterEncounter(newEncounter);
+            }
+
+            if (encounterId != -1)
+            {
+                int currentMonth = WorldManager.instance != null ? WorldManager.instance.CurrentMonth : 0;
+                var threatInstance = new GameScripts.Systems.Threat.ThreatInstance(null, GameScripts.Systems.Threat.ThreatSourceType.Event)
+                {
+                    CurrentSeverity = GameScripts.Systems.Threat.Severity.Normal,
+                    ThreatExpiryMonth = currentMonth + 5,
+                    EncounterId = encounterId
+                };
+                
+                // ThreatInstance doesn't have State setter in constructor, setting it to Active so component can work
+                threatInstance.State = GameScripts.Systems.Threat.ThreatState.Active;
+
+                GameCard spawnedCard = WorldManager.instance.CreateCard(threatSpawnPos, "dogtax_threat", true, true, true);
+                if (spawnedCard != null)
+                {
+                    var threatComp = spawnedCard.gameObject.GetComponent<GameScripts.Systems.Threat.UI.ThreatCardComponent>();
+                    if (threatComp == null) threatComp = spawnedCard.gameObject.AddComponent<GameScripts.Systems.Threat.UI.ThreatCardComponent>();
+                    threatComp.Initialize(threatInstance);
+                }
+            }
         }
 
         if (OfferingProgress >= ritualCard.RequiredDevotion)
         {
-            CompleteRitual(ritualCard);
+            // Push remaining offerings out of the stack
+            GameCard current = ritualCard.MyGameCard.Child;
+            while (current != null)
+            {
+                GameCard next = current.Child;
+                current.RemoveFromStack();
+                Vector2 randomDir = UnityEngine.Random.insideUnitCircle.normalized;
+                current.BounceTarget = current.transform.position + new Vector3(randomDir.x, 0, randomDir.y) * 2.5f;
+                current = next;
+            }
+
+            // Spawn phần thưởng lệch sang bên phải để tránh đè lên quái vật
+            Vector3 rewardSpawnPos = this.transform.position + Vector3.right * 1.5f + Vector3.back * 1.5f;
+            WorldManager.instance.CreateCard(rewardSpawnPos, ritualCard.RewardPackId, true, true, true);
+
+            ritualCard.MyGameCard.DestroyCard(true, true);
+
+            OfferingProgress = 0;
+            TotalBlasphemy = 0;
+            HasWarnedBlasphemy = false;
+            HasTriggeredThreat = false;
+
+            if (threatTriggeredNow)
+            {
+                string title = MewtationsLoc.Translate("catgod_ritual_threat_complete_title", "TÀ THẦN NỔI GIẬN NHƯNG VẪN BAN PHƯỚC");
+                string text = MewtationsLoc.Translate("catgod_ritual_threat_complete_desc", "Thần Mèo đã tiếp nhận đủ lễ vật nhưng nổi giận vì ô uế! Ngài ném lại phần thưởng nhưng gọi thêm quái vật trừng phạt!");
+                if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+                {
+                    Mewtations.Dialogue.DialogueSystem.Instance.QueueDialogue(title, text, new List<string> { MewtationsLoc.Translate("btn_combat_accept", "Tiếp nhận hình phạt") }, (idx) => {});
+                }
+            }
+            else
+            {
+                string title = MewtationsLoc.Translate("catgod_ritual_complete_title", "NGHI LỄ HOÀN THÀNH");
+                string text = MewtationsLoc.Translate("catgod_ritual_complete_desc", "Thần Mèo đã tiếp nhận đủ lễ vật và ban phát phần thưởng!");
+                if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+                {
+                    Mewtations.Dialogue.DialogueSystem.Instance.QueueDialogue(title, text, new List<string> { MewtationsLoc.Translate("btn_accept", "Tiếp nhận") }, (idx) => {});
+                }
+            }
         }
-    }
-
-    private void TriggerGodCatThreat(RitualCardData ritualCard)
-    {
-        if (GameCamera.instance != null) GameCamera.instance.Screenshake = 0.5f;
-
-        Vector3 spawnPos = this.transform.position + Vector3.back * 1.5f;
-        WorldManager.instance.CreateCard(spawnPos, "mob_void_spirit", true, true, true);
-
-        string title = MewtationsLoc.Translate("catgod_threat_title", "TÀ THẦN PHẪN NỘ!");
-        string text = MewtationsLoc.Translate("catgod_threat_desc", "Mùi xác thối và lòng thành giả dối đã làm bẩn nghi lễ! Một kẻ thù Hư Không đã xuất hiện để trừng phạt ngươi!");
-
-        if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+        else if (threatTriggeredNow)
         {
-            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { MewtationsLoc.Translate("btn_combat", "Chiến đấu!") }, (idx) => {});
-        }
-    }
+            string title = MewtationsLoc.Translate("catgod_threat_title", "TÀ THẦN PHẪN NỘ!");
+            string text = MewtationsLoc.Translate("catgod_threat_desc", "Mùi xác thối và lòng thành giả dối đã làm bẩn nghi lễ! Một kẻ thù Hư Không đã xuất hiện để trừng phạt ngươi!");
 
-    private void CompleteRitual(RitualCardData ritualCard)
-    {
-        // Push remaining offerings out of the stack
-        GameCard current = ritualCard.MyGameCard.Child;
-        while (current != null)
-        {
-            GameCard next = current.Child;
-            current.RemoveFromStack();
-            Vector2 randomDir = UnityEngine.Random.insideUnitCircle.normalized;
-            current.BounceTarget = current.transform.position + new Vector3(randomDir.x, 0, randomDir.y) * 2.5f;
-            current = next;
-        }
-
-        Vector3 spawnPos = this.transform.position + Vector3.back * 1.5f;
-        WorldManager.instance.CreateCard(spawnPos, ritualCard.RewardPackId, true, true, true);
-
-        ritualCard.MyGameCard.DestroyCard(true, true);
-
-        OfferingProgress = 0;
-        TotalBlasphemy = 0;
-        _hasWarnedBlasphemy = false;
-        _hasTriggeredThreat = false;
-
-        string title = MewtationsLoc.Translate("catgod_ritual_complete_title", "NGHI LỄ HOÀN THÀNH");
-        string text = MewtationsLoc.Translate("catgod_ritual_complete_desc", "Thần Mèo đã tiếp nhận đủ lễ vật và ban phát phần thưởng!");
-
-        if (Mewtations.Dialogue.DialogueSystem.Instance != null)
-        {
-            Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { MewtationsLoc.Translate("btn_accept", "Tiếp nhận") }, (idx) => {});
+            if (Mewtations.Dialogue.DialogueSystem.Instance != null)
+            {
+                Mewtations.Dialogue.DialogueSystem.Instance.QueueDialogue(title, text, new List<string> { MewtationsLoc.Translate("btn_combat", "Chiến đấu!") }, (idx) => {});
+            }
         }
     }
 

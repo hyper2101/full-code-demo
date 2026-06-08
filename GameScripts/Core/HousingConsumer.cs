@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 public interface HousingConsumer
 {
@@ -10,5 +10,4 @@ public interface HousingConsumer
 
 	int GetHousingSpaceRequired();
 
-	WorkerType GetWorkerType();
 }

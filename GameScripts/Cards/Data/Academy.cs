@@ -8,13 +8,13 @@ public class Academy : Landmark
 		{
 			return false;
 		}
-		Worker worker = otherCard as Worker;
-		if (worker != null && (worker.GetWorkerType() == WorkerType.Educated || worker.GetWorkerType() == WorkerType.Robot) && CitiesManager.instance.Wellbeing >= 50)
+		Mewtations.Systems.Labor.ILaborCapable worker = otherCard as Mewtations.Systems.Labor.ILaborCapable;
+		if (worker != null && CitiesManager.instance.Wellbeing >= 50)
 		{
 			return true;
 		}
-		Worker worker2 = otherCard as Worker;
-		return worker2 != null && worker2.GetWorkerType() == WorkerType.Normal;
+		Mewtations.Systems.Labor.ILaborCapable worker2 = otherCard as Mewtations.Systems.Labor.ILaborCapable;
+		return worker2 != null;
 	}
 
 	public override void UpdateCard()

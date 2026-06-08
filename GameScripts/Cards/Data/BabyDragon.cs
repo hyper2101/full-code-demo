@@ -1,5 +1,5 @@
-﻿using System;
+using System;
 
-public class BabyDragon : Mob
+public class BabyDragon : Combatable
 {
 }

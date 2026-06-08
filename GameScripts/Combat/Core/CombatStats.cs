@@ -9,10 +9,27 @@ public class CombatStats
 	public void InitStats(CombatStats stats)
 	{
 		this.Initiative = stats.Initiative;
-		this.SpecialHits = new List<SpecialHit>(stats.SpecialHits);
+		this.SpecialHits = new List<SpecialHit>();
+		if (stats.SpecialHits != null)
+		{
+			foreach (var sh in stats.SpecialHits)
+			{
+				this.SpecialHits.Add(sh.Clone());
+			}
+		}
 		this.MaxHealth = stats.MaxHealth;
 		this.AttackDamage = stats.AttackDamage;
 		this.Defence = stats.Defence;
+	}
+
+	public CombatStats Clone()
+	{
+		CombatStats clone = new CombatStats();
+		clone.InitStats(this);
+		clone.InitiativeIncrement = this.InitiativeIncrement;
+		clone.AttackDamageIncrement = this.AttackDamageIncrement;
+		clone.DefenceIncrement = this.DefenceIncrement;
+		return clone;
 	}
 
 	public void AddStats(CombatStats equipment)

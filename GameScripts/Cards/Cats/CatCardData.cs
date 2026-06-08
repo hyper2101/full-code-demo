@@ -56,6 +56,38 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
             EquipmentSlots[Mewtations.Expedition.CatSlotType.Torso].IsUnlocked = !this.IsEquipmentSlotsLocked;
             EquipmentSlots[Mewtations.Expedition.CatSlotType.Head].IsUnlocked = !this.IsEquipmentSlotsLocked;
             EquipmentSlots[Mewtations.Expedition.CatSlotType.SpecialCombat].IsUnlocked = false;
+            
+            // --- MIGRATION LAYER ---
+            foreach (var kvp in EquipmentSlots)
+            {
+                var s = kvp.Value;
+                if (s.EquippedItem != null && s.EquipmentInstance == null)
+                {
+                    if (s.EquippedItem.MyGameCard == null || s.EquippedItem.MyGameCard.Destroyed)
+                    {
+                        Debug.LogWarning($"[Migration] Thẻ vật lý của trang bị {s.EquippedItem.Id} không tồn tại. Bỏ qua slot này để tránh lỗi rác.");
+                        s.EquippedItem = null;
+                        continue;
+                    }
+                    
+                    s.EquipmentInstance = new Mewtations.Expedition.EquipmentInstance(s.EquippedItem.Id, 0);
+                    if (s.EquippedItem is Equipable eq)
+                    {
+                        s.EquipmentInstance.UpgradeLevel = eq.Level;
+                        if (eq.MyStats != null) s.EquipmentInstance.CachedBaseStats = eq.MyStats.Clone();
+                    }
+                    
+                    var legacyCard = s.EquippedItem;
+                    s.EquippedItem = null;
+                    
+                    if (legacyCard != null && legacyCard.MyGameCard != null)
+                    {
+                        legacyCard.MyGameCard.DestroyCard(true, true);
+                    }
+                }
+            }
+            // -----------------------
+            
             return;
         }
         
@@ -78,28 +110,41 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
         var slot = EquipmentSlots[type];
         
         if (!slot.IsUnlocked) return false;
-        if (!slot.CanEquip(equipable)) return false;
+        
+        // Dùng isPlayerDrag = true vì hàm này thường được gọi khi người chơi tương tác. 
+        // Các hàm auto-load sẽ gọi logic riêng hoặc truyền isPlayerDrag = false (ta sẽ xử lý sau nếu cần).
+        if (!slot.CanEquip(equipable, true)) return false;
 
-        // If there's an old item, unequip it
-        if (slot.EquippedItem != null)
+        // 1. Validate - Đảm bảo thẻ vật lý còn hợp lệ
+        if (equipable == null || equipable.MyGameCard == null || equipable.MyGameCard.Destroyed) return false;
+
+        // 2. Remove old item if exists
+        if (slot.EquipmentInstance != null || slot.EquippedItem != null)
         {
             UnequipFromSlot(type, true);
         }
 
-        slot.EquippedItem = equipable;
-        
+        // 3. Create EquipmentInstance
+        var instance = new Mewtations.Expedition.EquipmentInstance(equipable.Id, 0);
         if (equipable is Equipable eq)
         {
-            this.MyGameCard.Equip(eq);
+            instance.UpgradeLevel = eq.Level;
+            if (!string.IsNullOrEmpty(eq.InstanceId)) instance.InstanceId = eq.InstanceId;
+            if (eq.MyStats != null) instance.CachedBaseStats = eq.MyStats.Clone();
+            // Todo: copy RuntimeModifiers if any
         }
-        else
-        {
-            var context = new ContainerInsertContext { SourceCard = this.MyGameCard, ContextSource = "Equip" };
-            ContainerTransactionSystem.Instance.RequestInsert(equipable.MyGameCard, this.MyGameCard.InventoryContainer, context);
-            equipable.MyGameCard.IsEquipped = true;
-            equipable.MyGameCard.RemoveFromStack();
-            this.OnEquipItem(null); // Just trigger memoir or general update
-        }
+        
+        // 4. Attach to Cat
+        slot.EquipmentInstance = instance;
+        // Xóa liên kết vật lý (EquippedItem legacy)
+        slot.EquippedItem = null; 
+
+        // Trigger logic
+        this.OnEquipItem(equipable as Equipable);
+
+        // 5. Remove Board Card safely
+        equipable.MyGameCard.DestroyCard(true, true);
+        
         return true;
     }
 
@@ -108,40 +153,52 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
         InitializeEquipmentSlots();
         if (!EquipmentSlots.ContainsKey(type)) return;
         var slot = EquipmentSlots[type];
-        var item = slot.EquippedItem;
-        if (item != null)
+        
+        var instance = slot.EquipmentInstance;
+        var legacyItem = slot.EquippedItem;
+
+        if (instance != null || legacyItem != null)
         {
+            // Clear slot data
+            slot.EquipmentInstance = null;
             slot.EquippedItem = null;
-            
-            if (item is Equipable eq)
+
+            if (legacyItem != null)
             {
-                this.MyGameCard.Unequip(eq);
-            }
-            else
-            {
-                ContainerTransactionSystem.Instance.RequestRemove(item.MyGameCard, this.MyGameCard.InventoryContainer);
-                item.MyGameCard.IsEquipped = false;
-                this.OnUnequipItem(null);
-            }
-            
-            if (dropToWorld)
-            {
-                if (TurnBasedCombatManager.Instance != null && TurnBasedCombatManager.Instance.IsCombatActive)
-                {
-                    var ringCard = WorldManager.instance.AllCards.FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.OrderingCardData && !c.Destroyed);
-                    if (ringCard != null)
-                    {
-                        var context = new ContainerInsertContext { SourceCard = this.MyGameCard, ContextSource = "Unequip" };
-                        ContainerTransactionSystem.Instance.RequestInsert(item.MyGameCard, ringCard.InventoryContainer, context);
-                    }
-                    else
-                    {
-                        DropItemNearCat(item);
-                    }
+                // Legacy logic
+                if (legacyItem is Equipable eq) this.MyGameCard.Unequip(eq);
+                else {
+                    ContainerTransactionSystem.Instance.RequestRemove(legacyItem.MyGameCard, this.MyGameCard.InventoryContainer);
+                    legacyItem.MyGameCard.IsEquipped = false;
                 }
-                else
+                this.OnUnequipItem(null);
+
+                if (dropToWorld) DropItemNearCat(legacyItem);
+            }
+            else if (instance != null)
+            {
+                this.OnUnequipItem(null);
+                
+                if (dropToWorld && WorldManager.instance != null)
                 {
-                    DropItemNearCat(item);
+                    // Create new physical card from instance data
+                    Vector3 dropPos = this.MyGameCard.transform.position + new Vector3(UnityEngine.Random.Range(-0.5f, 0.5f), 0.2f, UnityEngine.Random.Range(-0.5f, 0.5f));
+                    GameCard newCard = WorldManager.instance.CreateCard(dropPos, instance.EquipmentId, false, false, true);
+                    
+                    if (newCard != null && newCard.CardData is Equipable eqNew)
+                    {
+                        eqNew.Level = instance.UpgradeLevel;
+                        eqNew.InstanceId = instance.InstanceId;
+                        
+                        // Phục hồi lại chính xác chỉ số mà món đồ đã có lúc được mặc vào!
+                        if (instance.CachedBaseStats != null)
+                        {
+                            eqNew.MyStats = instance.CachedBaseStats.Clone();
+                        }
+
+                        // Todo: restore RuntimeModifiers
+                        newCard.SendIt();
+                    }
                 }
             }
         }
@@ -336,6 +393,41 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
         _modifierPipeline?.RemoveModifier(id);
     }
 
+    public override List<Equipable> GetAllEquipables()
+    {
+        List<Equipable> list = new List<Equipable>();
+        foreach (var kvp in EquipmentSlots)
+        {
+            if (kvp.Value.EquipmentInstance != null)
+            {
+                var eq = kvp.Value.EquipmentInstance.GetBaseCardData() as Equipable;
+                if (eq != null) list.Add(eq);
+            }
+        }
+        return list;
+    }
+
+    public CombatStats GetEquipmentStats()
+    {
+        CombatStats stats = new CombatStats();
+        foreach (var kvp in EquipmentSlots)
+        {
+            if (kvp.Value.EquipmentInstance != null)
+            {
+                var cached = kvp.Value.EquipmentInstance.CachedBaseStats;
+                if (cached != null)
+                {
+                    stats.AddStats(cached);
+                }
+                else
+                {
+                    Debug.LogWarning($"[Equipment] Trang bị {kvp.Value.EquipmentInstance.EquipmentId} bị thiếu CachedBaseStats!");
+                }
+            }
+        }
+        return stats;
+    }
+
     public override CombatStats ProcessedCombatStats
     {
         get
@@ -343,7 +435,10 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
             if (_statsDirty || _cachedCombatStats == null)
             {
                 _statsDirty = false;
-                CombatStats stats = base.ProcessedCombatStats;
+                CombatStats stats = this.RealBaseCombatStats;
+                stats.MaxHealth = ((stats.MaxHealth >= 1) ? stats.MaxHealth : 1);
+                
+                stats.AddStats(GetEquipmentStats());
 
                 // Áp dụng Modifier Pipeline
                 if (_modifierPipeline != null)
