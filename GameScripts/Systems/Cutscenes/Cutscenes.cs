@@ -171,11 +171,7 @@ public static class Cutscenes
 		{
 			WorldManager.instance.RemoveAllCardsFromBoard(boardId, true);
 			WorldManager.instance.ResetBoughtBoostersOnLocation(currentBoard.Location);
-			if (currentBoard.Id == "greed")
-			{
-				DemandManager.instance.ResetDemands();
-				WorldManager.instance.BoardMonths.GreedMonth = 1;
-			}
+
 			if (currentBoard.Id == "happiness")
 			{
 				WorldManager.instance.BoardMonths.HappinessMonth = 1;
@@ -272,33 +268,7 @@ public static class Cutscenes
 
 
 
-	public static IEnumerator GreedIntro()
-	{
-		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		Cutscenes.Title = "";
-		Spirit spirit = Cutscenes.FindOrCreateSpirit(CurseType.Greed, null);
-		GameCamera.instance.TargetCardOverride = spirit;
-		Cutscenes.Text = MewtationsLoc.Translate("label_greed_intro_1");
-		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
-		Royal royal = Cutscenes.FindOrCreateGameCard("royal", WorldManager.instance.MiddleOfBoard()).CardData as Royal;
-		GameCamera.instance.TargetCardOverride = royal;
-		Cutscenes.Text = MewtationsLoc.Translate("label_greed_intro_2");
-		AudioManager.me.PlaySound2D(DemandManager.instance.StartDemandSound, 1f, 0.4f);
-		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
-		Cutscenes.Text = MewtationsLoc.Translate("label_greed_intro_3");
-		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
-		Cutscenes.Text = MewtationsLoc.Translate("label_greed_intro_4");
-		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
-		GameCamera.instance.TargetCardOverride = spirit;
-		Cutscenes.Text = MewtationsLoc.Translate("label_greed_intro_5");
-		yield return Cutscenes.WaitForContinueClicked(MewtationsLoc.Translate("label_okay"));
-		GameCamera.instance.CenterOnBoard(WorldManager.instance.GetBoardWithId("greed"));
-		spirit.MyGameCard.DestroyCard(false, true);
-		yield return new WaitForSeconds(0.5f);
-		WorldManager.instance.CurrentRunVariables.VisitedGreed = true;
-		Cutscenes.Stop(false);
-		yield break;
-	}
+
 
 	public static IEnumerator HappinessIntro()
 	{

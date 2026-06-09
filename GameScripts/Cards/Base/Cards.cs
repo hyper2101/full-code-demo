@@ -8,6 +8,14 @@ public static class Cards
 	public const string event_beast_tide = "event_beast_tide";
 	public const string event_tribulation = "event_tribulation";
 	public const string item_revive_pill = "item_revive_pill";
+
+	// Mewtations: Cat God Rituals
+	public const string godcat_pack_low = "godcat_pack_low";
+	public const string godcat_pack_mid = "godcat_pack_mid";
+	public const string godcat_pack_high = "godcat_pack_high";
+	public const string ritual_tier1 = "ritual_tier1";
+	public const string ritual_tier2 = "ritual_tier2";
+	public const string ritual_tier3 = "ritual_tier3";
 	
 	public const string ideas_base = "ideas_base";
 

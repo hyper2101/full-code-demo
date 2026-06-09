@@ -10,7 +10,7 @@ public class RitualCardData : CardData
 	protected int _requiredDevotion = 50;
 
 	[SerializeField]
-	protected string _rewardPackId = "godcat_pack";
+	protected string _rewardPackId = Cards.godcat_pack_low;
 
 	[HideInInspector]
 	public bool IsLockedWhileActive = true;
@@ -35,6 +35,7 @@ public class RitualTier1 : RitualCardData
 	{
 		_ritualTier = 1;
 		_requiredDevotion = 50;
+		_rewardPackId = Cards.godcat_pack_low;
 	}
 }
 
@@ -44,6 +45,7 @@ public class RitualTier2 : RitualCardData
 	{
 		_ritualTier = 2;
 		_requiredDevotion = 100;
+		_rewardPackId = Cards.godcat_pack_mid;
 	}
 }
 
@@ -53,6 +55,7 @@ public class RitualTier3 : RitualCardData
 	{
 		_ritualTier = 3;
 		_requiredDevotion = 200;
+		_rewardPackId = Cards.godcat_pack_high;
 	}
 }
 

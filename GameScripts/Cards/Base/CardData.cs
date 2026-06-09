@@ -131,6 +131,23 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 		}
 	}
 
+	// Lớp bảo vệ chống nuốt nhầm vật phẩm quan trọng (Quest, Relic...)
+	public virtual bool IsProtectedFromConsumption => false;
+
+	// Dành cho các thẻ đặc biệt muốn override tường minh
+	public virtual bool IsValidRitualOffering => false;
+
+	// Hành vi mặc định an toàn
+	public virtual bool DefaultRitualOfferingByType => 
+		this.MyCardType == CardType.Resources || 
+		this.MyCardType == CardType.Food || 
+		this.Id == "gold";
+
+	// Tổng hợp điều kiện nuốt
+	public bool CanBeConsumedByRitual => 
+		!IsProtectedFromConsumption && 
+		(IsValidRitualOffering || DefaultRitualOfferingByType);
+
 	// Xác định thẻ này có thể dùng làm vật phẩm hỗ trợ trong Đột Phá Trận hay không.
 	public virtual bool IsBreakthroughSupport
 	{
@@ -1000,6 +1017,7 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 
 	public virtual void StoppedDragging()
 	{
+		Mewtations.Core.StructureInteractionService.TryInteractWithNearbyStructure(this);
 	}
 
 	public virtual void OnEquipItem(Equipable equipable)

@@ -7,37 +7,20 @@ namespace Mewtations.Combat.Battlefield
 {
 	public class BattlefieldContext
 	{
+		public BattlefieldContext()
+		{
+			Debug.LogError("Legacy BattlefieldContext invoked");
+		}
 		public static BattlefieldContext CreateFromSavedConflict(SavedConflict savedConflict)
 		{
-			BattlefieldContext conflict = new BattlefieldContext();
-			conflict.Id = savedConflict.Id;
-			conflict.ConflictStartPosition = savedConflict.StartPosition;
-			GameCard cardWithUniqueId = WorldManager.instance.GetCardWithUniqueId(savedConflict.InitiatorCardId);
-			if (cardWithUniqueId == null)
-			{
-				return null;
-			}
-			conflict.Initiator = cardWithUniqueId.Combatable;
-			foreach (string text in savedConflict.InvolvedCards)
-			{
-				GameCard cardWithUniqueId2 = WorldManager.instance.GetCardWithUniqueId(text);
-				if (cardWithUniqueId2 != null)
-				{
-					conflict.JoinConflict(cardWithUniqueId2.Combatable);
-				}
-			}
-			return conflict;
+			Debug.LogWarning("Legacy Conflict disabled.");
+			return null;
 		}
 
 		public static BattlefieldContext StartConflict(Combatable initiator)
 		{
-			BattlefieldContext conflict = new BattlefieldContext();
-			conflict.Id = Guid.NewGuid().ToString().Substring(0, 10);
-			conflict.Initiator = initiator;
-			Vector3 position = initiator.MyGameCard.transform.position;
-			conflict.ConflictStartPosition = new Vector3(position.x, -position.z * 0.001f, position.z);
-			conflict.JoinConflict(initiator);
-			return conflict;
+			Debug.LogError("Legacy BattlefieldContext invoked");
+			return null;
 		}
 
 		public bool CanLeaveConflict(Combatable b)

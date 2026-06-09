@@ -732,6 +732,10 @@ public class GameCard : Draggable, IGameCardOrCardData
 
 	public override bool CanBeDragged()
 	{
+		if (this.IsInteractionLocked)
+		{
+			return false;
+		}
 		Combatable combatable = this.CardData as Combatable;
 		if (combatable != null && combatable.BeingAttacked)
 		{
@@ -946,15 +950,7 @@ public class GameCard : Draggable, IGameCardOrCardData
 			this.ShowInventory = false;
 		}
 		this.FoilParticles.emission.enabled = !this.IsDemoCard && (this.CardData.IsFoil || this.CardData.Id == "goblet");
-		PerformanceHelper.SetActive(this.CombatStatusCircle.gameObject, this.InConflict || (this.Combatable != null && this.Combatable is Enemy && !this.IsDemoCard));
-		if (this.Combatable != null)
-		{
-			this.CombatStatusCircle.sprite = GameCard.GetSpriteForAttackType(this.Combatable.ProcessedAttackType);
-			this.CombatStatusCircle.GetPropertyBlock(this.combatCirclePropBlock);
-			float num = (this.Combatable.InConflict ? this.Combatable.TimeToAttackNormalized : 1f);
-			this.combatCirclePropBlock.SetFloat("_FillAmount", num);
-			this.CombatStatusCircle.SetPropertyBlock(this.combatCirclePropBlock);
-		}
+		// Legacy: CombatStatusCircle logic removed
 		PerformanceHelper.SetActive(this.SpecialText.gameObject, this.SpecialValue != null);
 		if (this.SpecialValue != null)
 		{
@@ -1293,18 +1289,7 @@ public class GameCard : Draggable, IGameCardOrCardData
 			}
 			return GameCard.PositionType.IsWorking;
 		}
-		else if (this.InConflict)
-		{
-			if (this.BeingDragged)
-			{
-				return GameCard.PositionType.None;
-			}
-			if (this.InAttack)
-			{
-				return GameCard.PositionType.InAttack;
-			}
-			return GameCard.PositionType.InConflict;
-		}
+		// Legacy: InConflict PositionType removed
 		else
 		{
 			if (this.Parent != null)
@@ -1322,12 +1307,7 @@ public class GameCard : Draggable, IGameCardOrCardData
 	private void UpdatePosition()
 	{
 		GameCard.PositionType positionType = this.DeterminePositionType();
-		if (positionType == GameCard.PositionType.InConflict)
-		{
-			this.TargetPosition = this.Combatable.MyConflict.GetPositionInConflict(this.Combatable);
-			base.transform.position = Vector3.Lerp(base.transform.position, this.TargetPosition, Time.deltaTime * 20f);
-		}
-		else if (positionType == GameCard.PositionType.InAttack)
+		if (positionType == GameCard.PositionType.InAttack)
 		{
 			AttackAnimation currentAttackAnimation = this.Combatable.CurrentAttackAnimation;
 			base.transform.position = currentAttackAnimation.Position;
@@ -1646,6 +1626,7 @@ public class GameCard : Draggable, IGameCardOrCardData
 		}
 	}
 
+	[System.Obsolete("Board combat is disabled. Used for legacy state tracking.")]
 	public bool InConflict
 	{
 		get
@@ -2438,6 +2419,9 @@ public class GameCard : Draggable, IGameCardOrCardData
 	public bool IsEquipped;
 
 	public bool IsWorking;
+
+	public Mewtations.Core.CardLockReason CurrentLock = Mewtations.Core.CardLockReason.None;
+	public bool IsInteractionLocked => CurrentLock != Mewtations.Core.CardLockReason.None;
 
 	public bool ShowInventory;
 

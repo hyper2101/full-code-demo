@@ -3153,20 +3153,6 @@ public class WorldManager : MonoBehaviour
 		Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("month_end", null);
 	}
 
-	public IEnumerator FinishDemand(Demand demand, DemandEvent demandEvent)
-	{
-		GameCanvas.instance.SetScreen<CutsceneScreen>();
-		this.CloseOpenInventories();
-		yield return this.FinishDemandRoutine(demand, demandEvent);
-		if (GameScreen.instance.ControllerIsInUI)
-		{
-			GameScreen.instance.SetControllerInUI(false);
-		}
-		this.SpeedUp = 1f;
-		Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("first_demand", null);
-		yield break;
-	}
-
 	public void ForceEndOfMoon(EndOfMonthParameters param)
 	{
 		this.MonthTimer = 0f;
@@ -3212,10 +3198,6 @@ public class WorldManager : MonoBehaviour
 		}
 		yield return new WaitForSeconds(1.5f);
 		yield return EndOfMonthCutscenes.MaxCardCount();
-		if (this.CurseIsActive(CurseType.Greed))
-		{
-			yield return Mewtations.Core.LegacyDemandHooks.CheckDemands(this.CurrentMonth);
-		}
 		if (this.IsCitiesDlcActive() && this.CurrentBoard.Id == "main")
 		{
 			if (this.GetCards<Consumable>().Sum<Consumable>((Consumable x) => x.FoodValue) >= 25 && this.GetCard("event_industrial_revolution") == null)
@@ -3579,40 +3561,6 @@ public class WorldManager : MonoBehaviour
 		throw new NotImplementedException("Icon is not implemented");
 	}
 
-	private IEnumerator FinishDemandRoutine(Demand demand, DemandEvent demandEvent)
-    {
-        if (!Mewtations.Core.LegacyRuntimeFlags.EnableDemands) yield break;
-		if (demand.Amount == demandEvent.AmountGiven)
-		{
-			yield return GreedCutscenes.FinishDemandSuccessPreMoon(demand);
-			demandEvent.Successful = true;
-			this.CurrentRunVariables.LastDemandMonth = this.CurrentMonth + 1;
-		}
-		else if (this.GetCardCount((CardData x) => x.Id == demand.CardToGet) >= demand.Amount - demandEvent.AmountGiven)
-		{
-			yield return GreedCutscenes.FinishDemandSuccess(demandEvent);
-			demandEvent.Successful = true;
-			this.CurrentRunVariables.LastDemandMonth = this.CurrentMonth;
-		}
-		else
-		{
-			yield return GreedCutscenes.FinishDemandFailed(demand);
-			demandEvent.Successful = false;
-			this.CurrentRunVariables.LastDemandMonth = this.CurrentMonth;
-		}
-		this.CurrentRunVariables.PreviousDemandEvents.Add(demandEvent);
-		this.CurrentRunVariables.ActiveDemand = null;
-		if (demandEvent.Successful)
-		{
-			Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("demand_success", null);
-		}
-		else
-		{
-			Mewtations.Core.LegacyQuestHooks.SpecialActionComplete("demand_failed", null);
-		}
-		yield break;
-	}
-
 	private void LateUpdate()
 	{
 		if (!this.ShowContinueButton)
@@ -3968,10 +3916,6 @@ public class WorldManager : MonoBehaviour
 		Mewtations.Core.LegacyCitiesHooks.Wellbeing = saveRound.CitiesWellbeing;
 		Mewtations.Core.LegacyCitiesHooks.NextConflictMonth = saveRound.CitiesConflictMonth;
 		Mewtations.Core.LegacyCitiesHooks.ActiveEvent = saveRound.CitiesDisaster;
-		if (this.CurrentRunVariables.ActiveDemand != null && string.IsNullOrEmpty(this.CurrentRunVariables.ActiveDemand.DemandId))
-		{
-			this.CurrentRunVariables.ActiveDemand = null;
-		}
 		foreach (SavedCard savedCard in saveRound.SavedCards)
 		{
 			// --- CAT CIVILIZATION REPLACEMENT MIGRATION ---

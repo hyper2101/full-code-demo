@@ -164,7 +164,7 @@ public class CleansingAltar : CardData
                     }
                 }
                 else
-反反            {
+                {
                     if (Mewtations.Expedition.ExpeditionManager.Instance != null && Mewtations.Expedition.ExpeditionManager.Instance.RunState != null)
                     {
                         Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel = Mathf.Min(100, Mewtations.Expedition.ExpeditionManager.Instance.RunState.GreedLevel + 40);

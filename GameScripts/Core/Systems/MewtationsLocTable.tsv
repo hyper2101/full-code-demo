@@ -417,3 +417,15 @@ combat_log_over_rage	Unleashed {0} Rage! Dealt {1}% Damage!	Thi triển bằng {
 ui_skill_slot	SKILL SLOT	KỸ NĂNG	SKILL SLOT	SKILL SLOT	SKILL SLOT
 ui_pill_slot	PILL SLOT	LINH ĐAN	PILL SLOT	PILL SLOT	PILL SLOT
 ui_weapon_slot	WEAPON SLOT	VŨ KHÍ	WEAPON SLOT	WEAPON SLOT	WEAPON SLOT
+card_ritual_tier1_name	Low Ritual	Nghi Lễ Sơ Cấp	Low Ritual	Low Ritual	Low Ritual
+card_ritual_tier1_description	Sacrifice low offerings to the Cat God.	Dâng hiến vật phẩm cơ bản cho Thần Mèo.	Sacrifice low offerings to the Cat God.	Sacrifice low offerings to the Cat God.	Sacrifice low offerings to the Cat God.
+card_ritual_tier2_name	Medium Ritual	Nghi Lễ Trung Cấp	Medium Ritual	Medium Ritual	Medium Ritual
+card_ritual_tier2_description	Sacrifice medium offerings to the Cat God.	Dâng hiến vật phẩm bậc trung cho Thần Mèo.	Sacrifice medium offerings to the Cat God.	Sacrifice medium offerings to the Cat God.	Sacrifice medium offerings to the Cat God.
+card_ritual_tier3_name	High Ritual	Nghi Lễ Cao Cấp	High Ritual	High Ritual	High Ritual
+card_ritual_tier3_description	Sacrifice high offerings to the Cat God.	Dâng hiến bảo vật cao cấp cho Thần Mèo.	Sacrifice high offerings to the Cat God.	Sacrifice high offerings to the Cat God.	Sacrifice high offerings to the Cat God.
+card_godcat_pack_low_name	Minor Blessing	Phước Lành Sơ Cấp	Minor Blessing	Minor Blessing	Minor Blessing
+card_godcat_pack_low_description	A minor reward from the Cat God.	Phần thưởng cơ bản từ Thần Mèo.	A minor reward from the Cat God.	A minor reward from the Cat God.	A minor reward from the Cat God.
+card_godcat_pack_mid_name	Medium Blessing	Phước Lành Trung Cấp	Medium Blessing	Medium Blessing	Medium Blessing
+card_godcat_pack_mid_description	A moderate reward from the Cat God.	Phần thưởng cấp trung từ Thần Mèo.	A moderate reward from the Cat God.	A moderate reward from the Cat God.	A moderate reward from the Cat God.
+card_godcat_pack_high_name	Major Blessing	Phước Lành Cao Cấp	Major Blessing	Major Blessing	Major Blessing
+card_godcat_pack_high_description	A rare reward containing precious treasures.	Phần thưởng hiếm chứa bảo vật quý giá.	A rare reward containing precious treasures.	A rare reward containing precious treasures.	A rare reward containing precious treasures.

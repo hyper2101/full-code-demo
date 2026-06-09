@@ -54,11 +54,7 @@ public class RunVariables
 
 	public bool CompletedDeathSpirit;
 
-	public List<DemandEvent> PreviousDemandEvents = new List<DemandEvent>();
-
 	public bool CanDropItem = true;
-
-	public DemandEvent ActiveDemand;
 
 	public List<string> PlayedCutsceneIds = new List<string>();
 
@@ -75,3 +71,4 @@ public class RunVariables
 	public bool HasCatReachedLevel9;
 	public bool HasFoundBlackAltarBlueprint;
 }
+

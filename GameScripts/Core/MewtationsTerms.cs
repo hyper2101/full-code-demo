@@ -5582,4 +5582,37 @@ public static class MewtationsTerms
 		"control_toggle_view", "label_energy_view_infobox", "card_fancy_apartment_description", "card_transmission_tower_description", "card_transmission_tower_name", "card_transmission_tower_status_0", "card_junction_name", "card_junction_description", "card_junction_status_0", "card_crossroad_name",
 		"card_crossroad_description", "card_crossroad_status_0", "label_framerate_vsync", "idea_resourcechest_status_2", "card_pack_sale_description"
 	};
+
+	public const string plant_stage_seed = "plant_stage_seed";
+	public const string drug_field_growing = "drug_field_growing";
+	public const string plant_stage_mature = "plant_stage_mature";
+	public const string drug_field_matured = "drug_field_matured";
+	public const string drug_field_tier_too_low = "drug_field_tier_too_low";
+	public const string drug_field_no_empty_slot = "drug_field_no_empty_slot";
+	public const string drug_field_invalid_item = "drug_field_invalid_item";
+	public const string drug_field_water_pool_full = "drug_field_water_pool_full";
+	public const string drug_field_growth_boosted = "drug_field_growth_boosted";
+	public const string drug_field_insufficient_water = "drug_field_insufficient_water";
+	public const string drug_field_water_pool = "drug_field_water_pool";
+	public const string drug_field_growth_progress = "drug_field_growth_progress";
+	public const string drug_field_required_tier = "drug_field_required_tier";
+	public const string drug_field_current_tier = "drug_field_current_tier";
+	public const string drug_field_seed_lost = "drug_field_seed_lost";
+	public const string drug_field_seed_preserved = "drug_field_seed_preserved";
+	public const string structure_drug_field_t1_name = "structure_drug_field_t1_name";
+	public const string structure_drug_field_t1_description = "structure_drug_field_t1_description";
+	public const string resource_spiritual_water_small_name = "resource_spiritual_water_small_name";
+	public const string resource_spiritual_water_small_description = "resource_spiritual_water_small_description";
+	public const string seed_green_cat_herb_name = "seed_green_cat_herb_name";
+	public const string seed_green_cat_herb_description = "seed_green_cat_herb_description";
+	public const string herb_green_cat_grass_name = "herb_green_cat_grass_name";
+	public const string herb_green_cat_grass_description = "herb_green_cat_grass_description";
+	public const string seed_spirit_mint_name = "seed_spirit_mint_name";
+	public const string seed_spirit_mint_description = "seed_spirit_mint_description";
+	public const string herb_spirit_mint_name = "herb_spirit_mint_name";
+	public const string herb_spirit_mint_description = "herb_spirit_mint_description";
+	public const string seed_blood_heart_lotus_name = "seed_blood_heart_lotus_name";
+	public const string seed_blood_heart_lotus_description = "seed_blood_heart_lotus_description";
+	public const string herb_blood_heart_lotus_name = "herb_blood_heart_lotus_name";
+	public const string herb_blood_heart_lotus_description = "herb_blood_heart_lotus_description";
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,4 +12,6 @@ public class SavedConflict
 	public string InitiatorCardId;
 
 	public Vector3 StartPosition;
+
+	public bool LegacyDisabled = true;
 }

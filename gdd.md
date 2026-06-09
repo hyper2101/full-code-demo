@@ -646,6 +646,13 @@ Linh thảo là nhóm tài nguyên chính dùng cho:
 * đan
 * linh dược.
 
+### Hệ Dược Điền (Spirit Field)
+Hệ thống trồng linh thảo hoạt động độc lập, không sử dụng cơ chế transform stack của Stacklands.
+- **Thực thể Runtime Nội Bộ:** Hạt giống trồng trong Dược Điền không phải là các thẻ bài (Card) vật lý nằm chồng lên nhau. Khi gieo hạt, hạt giống bị tiêu hủy và chuyển thành một tiến trình `PlantRuntimeState` ẩn bên trong Dược Điền.
+- **Linh Trì (Water Pool):** Dược Điền sở hữu một bể chứa linh thủy. Người chơi nạp linh thủy vào để tăng tốc độ sinh trưởng của linh thảo.
+- **Cơ chế Tier:** Mỗi hạt giống yêu cầu Dược Điền có bậc (Tier) tương ứng (Ví dụ Huyết Tâm Liên Tier 2 không thể trồng ở Dược Điền Tier 1).
+- **Auto-Eject:** Khi linh thảo trưởng thành, nó tự động nảy ra thành một thẻ bài vật lý trên bàn cờ, không cần tương tác thu hoạch thủ công. Nếu bàn cờ quá chật, linh thảo sẽ đợi sẵn trong Dược Điền.
+
 ---
 
 ## 10.2. Linh Khoáng

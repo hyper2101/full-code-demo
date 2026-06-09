@@ -895,46 +895,21 @@ public static class AllQuests
 
 	public static Quest FirstDemand = new Quest("first_demand")
 	{
-		OnSpecialAction = (string action) => action == "demand_start" && WorldManager.instance.CurrentRunVariables.PreviousDemandEvents.Count == 0,
 		QuestGroup = QuestGroup.Greed_Starter
 	};
 
 	public static Quest ThreeSuccessfullDemands = new Quest("3_succesfull_demands")
 	{
-		OnSpecialAction = delegate(string action)
-		{
-			if (action == "demand_success")
-			{
-				return WorldManager.instance.CurrentRunVariables.PreviousDemandEvents.Count<DemandEvent>((DemandEvent x) => x.Successful) >= 3;
-			}
-			return false;
-		},
 		QuestGroup = QuestGroup.Greed_MainQuest
 	};
 
 	public static Quest FiveSuccessfullDemands = new Quest("5_succesfull_demands")
 	{
-		OnSpecialAction = delegate(string action)
-		{
-			if (action == "demand_success")
-			{
-				return WorldManager.instance.CurrentRunVariables.PreviousDemandEvents.Count<DemandEvent>((DemandEvent x) => x.Successful) >= 5;
-			}
-			return false;
-		},
 		QuestGroup = QuestGroup.Greed_MainQuest
 	};
 
 	public static Quest TenSuccessfullDemands = new Quest("8_succesfull_demands")
 	{
-		OnSpecialAction = delegate(string action)
-		{
-			if (action == "demand_success")
-			{
-				return WorldManager.instance.CurrentRunVariables.PreviousDemandEvents.Count<DemandEvent>((DemandEvent x) => x.Successful) >= 8;
-			}
-			return false;
-		},
 		QuestGroup = QuestGroup.Greed_MainQuest
 	};
 
@@ -1518,3 +1493,5 @@ public static class AllQuests
 		QuestGroup = QuestGroup.Cities_Misc
 	};
 }
+
+

@@ -50,7 +50,6 @@ public static class EndOfMonthCutscenes
 		{
 			return null;
 		}
-		Demand currentDemand = ((WorldManager.instance.CurrentRunVariables.ActiveDemand != null) ? DemandManager.instance.GetDemandById(WorldManager.instance.CurrentRunVariables.ActiveDemand.DemandId) : null);
 		return cards.OrderBy<Consumable, int>(delegate(Consumable c)
 		{
 			bool flag = c.MyGameCard.GetCardWithStatusInStack() != null;
@@ -65,17 +64,6 @@ public static class EndOfMonthCutscenes
 			if (c.IsSpoiling && !flag)
 			{
 				return -5;
-			}
-			if (currentDemand != null)
-			{
-				if (currentDemand.CardToGet == "royal_banquet" && (c.Id == "fruit_salad" || c.Id == "wine" || c.Id == "roasted_meat" || c.Id == "olive_oil"))
-				{
-					return 5;
-				}
-				if (currentDemand.CardToGet == c.Id)
-				{
-					return 5;
-				}
 			}
 			if (flag)
 			{
@@ -967,3 +955,4 @@ public static class EndOfMonthCutscenes
 		yield break;
 	}
 }
+

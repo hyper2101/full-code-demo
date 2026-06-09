@@ -286,6 +286,7 @@ public class Combatable : CardData
 		this._combatableDescription = null;
 	}
 
+	[System.Obsolete("Board combat is disabled. Use TurnBasedCombatManager instead.")]
 	private void StartOrJoinConflictInStack()
 	{
 		if (this.MyGameCard.HasTransportCard())
@@ -397,7 +398,7 @@ public class Combatable : CardData
 		this.UpdateCombatableTargets();
 		if (this.Team != Team.Enemy && (this.combatableTargets.Count > 0 || this.GetConflictInStack() != null) && !this.InConflict)
 		{
-			this.StartOrJoinConflictInStack();
+			// Legacy: this.StartOrJoinConflictInStack();
 		}
 		if (this.MyConflict != null && this.MyConflict.Initiator == this)
 		{
@@ -452,7 +453,7 @@ public class Combatable : CardData
 				else
 				{
 					this.MyConflict.LeaveConflict(this);
-					this.StartOrJoinConflictInStack();
+					// Legacy: this.StartOrJoinConflictInStack();
 				}
 				this.MyGameCard.RemoveFromStack();
 				return;
@@ -479,7 +480,7 @@ public class Combatable : CardData
 			if (combatable != null && combatable.Team != this.Team)
 			{
 				this.MyGameCard.transform.position = combatable.transform.position;
-				this.StartOrJoinConflictInStack();
+				// Legacy: this.StartOrJoinConflictInStack();
 			}
 			BattlefieldContext overlappingConflict2 = this.MyGameCard.GetOverlappingConflict();
 			if (overlappingConflict2 != null && !this.InConflict)

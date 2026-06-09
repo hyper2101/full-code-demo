@@ -47,10 +47,6 @@ public class SaveSystem
         CitiesManager.instance.Wellbeing = saveRound.CitiesWellbeing;
         CitiesManager.instance.NextConflictMonth = saveRound.CitiesConflictMonth;
         CitiesManager.instance.ActiveEvent = saveRound.CitiesDisaster;
-        if (_world.CurrentRunVariables.ActiveDemand != null && string.IsNullOrEmpty(_world.CurrentRunVariables.ActiveDemand.DemandId))
-        {
-            _world.CurrentRunVariables.ActiveDemand = null;
-        }
 
         // ==========================================
         // PHASE A: CARD INSTANTIATION & REGISTRY
@@ -260,6 +256,7 @@ public class SaveSystem
         // 7. Reconnect active combat conflicts
         foreach (SavedConflict savedConflict in saveRound.SavedConflicts)
         {
+            if (savedConflict.LegacyDisabled) continue;
             BattlefieldContext.CreateFromSavedConflict(savedConflict);
         }
 

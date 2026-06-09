@@ -94,7 +94,6 @@ public class Spirit : CardData
 			WorldManager.instance.ResetBoughtBoostersOnLocation(board.Location);
 			if (board.Id == "greed")
 			{
-				DemandManager.instance.ResetDemands();
 				WorldManager.instance.BoardMonths.GreedMonth = 1;
 			}
 			if (board.Id == "happiness")
@@ -140,3 +139,4 @@ public class Spirit : CardData
 
 	public int MaxCapacity = 10;
 }
+
