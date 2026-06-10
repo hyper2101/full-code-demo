@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mewtations.Core; // Assuming we use StructureSlotType if needed, or just strings
 
-public class BreakthroughArrayCardData : CardData
+public class BreakthroughArrayCardData : CardData, IStructureContainer
 {
     // [PHASE 4: BREAKTHROUGH ARRAY MIGRATION]
     public StructureSlotData CenterSlot;
@@ -87,12 +87,15 @@ public class BreakthroughArrayCardData : CardData
         return null;
     }
 
-    private IEnumerable<StructureSlotData> GetAllSlots()
+    public IEnumerable<StructureSlotData> GetAllSlots()
     {
         yield return CenterSlot;
         yield return CatalystSlot;
         foreach (var slot in SupportSlots) yield return slot;
     }
+
+    public void OnCardAttached(GameCard childCard, string slotId) { }
+    public void OnCardDetached(GameCard childCard, string slotId) { }
 
 	protected override bool CanHaveCard(CardData otherCard)
 	{
@@ -108,19 +111,6 @@ public class BreakthroughArrayCardData : CardData
 
 		if (this.MyGameCard != null)
 		{
-            // Cập nhật nam châm vật lý cho tất cả Slot
-            foreach (var slot in GetAllSlots())
-            {
-                if (slot.SlotOccupants.Count > 0)
-                {
-                    GameCard card = slot.SlotOccupants[0];
-                    if (card != null && !card.Destroyed)
-                    {
-                        Vector3 targetPos = transform.position + slot.LocalOffset;
-                        card.transform.position = Vector3.Lerp(card.transform.position, targetPos, Time.deltaTime * 10f);
-                    }
-                }
-            }
 
             int currentOccupied = 0;
             foreach (var slot in GetAllSlots())

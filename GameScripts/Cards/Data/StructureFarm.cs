@@ -5,12 +5,9 @@ using Mewtations.Core;
 // Phase 4: Farm Structure Migration
 // The Farm is now just a host container with 1 Slot (or more).
 // It does NOT manage the timer of the seed.
-public class StructureFarm : CardData
+public class StructureFarm : CardData, IStructureContainer
 {
     public StructureSlotData SeedSlot;
-    
-    // We keep a reference to the attachment system for easy access
-    private StructureAttachmentSystem _attachmentSystem;
 
     protected override void Awake()
     {
@@ -26,40 +23,51 @@ public class StructureFarm : CardData
         };
     }
 
-    private void Start()
-    {
-        if (WorldManager.instance != null)
-        {
-            _attachmentSystem = WorldManager.instance.Attachment;
-        }
-    }
-
-    // This overrides the old CanHaveCard from Farmland/Garden.
-    // Instead of stacking, we use the Attachment System.
     protected override bool CanHaveCard(CardData otherCard)
     {
-        // Stacklands core expects true if they can stack.
-        // We return false for seeds so that normal stacking fails, 
-        // allowing our AttachmentSystem to catch it during DropCard!
-        // (However, for now, we can just return true and intercept in AttachmentSystem).
         return false; 
     }
 
-    // Logic update cho Farm host. Hiện tại nó không làm gì cả, 
-    // vì Seed tự quản lý Progress của nó.
-    public override void UpdateCard()
+    public string GetValidSlotFor(CardData cardData)
     {
-        base.UpdateCard();
-        
-        // Optional: Update visuals for the slot if it's occupied.
-        if (SeedSlot.SlotOccupants.Count > 0)
+        if (SeedSlot.SlotOccupants.Count == 0 && SeedSlot.AcceptedTypes.Contains(cardData.Id))
         {
-            GameCard seedCard = SeedSlot.SlotOccupants[0];
-            if (seedCard != null)
+            return SeedSlot.SlotId;
+        }
+        return null;
+    }
+
+    public StructureSlotData GetSlotById(string slotId)
+    {
+        if (slotId == SeedSlot.SlotId) return SeedSlot;
+        return null;
+    }
+
+    public IEnumerable<StructureSlotData> GetAllSlots()
+    {
+        yield return SeedSlot;
+    }
+
+    public void OnCardAttached(GameCard childCard, string slotId)
+    {
+        if (slotId == SeedSlot.SlotId)
+        {
+            SeedRuntime seed = childCard.gameObject.GetComponent<SeedRuntime>();
+            if (seed == null) seed = childCard.gameObject.AddComponent<SeedRuntime>();
+            
+            seed.Initialize(childCard.CardData.Id + "bush", 120f); 
+            seed.StartGrowing();
+        }
+    }
+
+    public void OnCardDetached(GameCard childCard, string slotId)
+    {
+        if (slotId == SeedSlot.SlotId)
+        {
+            SeedRuntime seed = childCard.gameObject.GetComponent<SeedRuntime>();
+            if (seed != null)
             {
-                // Từ từ nam châm hút seed về LocalOffset
-                Vector3 targetPos = transform.position + SeedSlot.LocalOffset;
-                seedCard.transform.position = Vector3.Lerp(seedCard.transform.position, targetPos, Time.deltaTime * 10f);
+                seed.StopGrowing(); // Lưu lại tiến trình
             }
         }
     }

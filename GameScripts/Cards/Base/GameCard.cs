@@ -643,8 +643,18 @@ public class GameCard : Draggable, IGameCardOrCardData
 		this.SetParent(null);
 	}
 
-	public GameCard StructureParent;
+	public GameCard StructureParent { get; private set; }
 	public bool HasStructureParent() => StructureParent != null;
+
+	internal void SetStructureParent(GameCard newParent, AttachContext context)
+	{
+		UnityEngine.Debug.Assert(context.Reason != AttachmentReason.DebugForceAttach || context.BypassValidation, "Forbidden Direct Mutation without AttachContext!");
+		StructureParent = newParent;
+		if (WorldManager.instance != null && WorldManager.instance.BoardIntegrity != null)
+		{
+			WorldManager.instance.BoardIntegrity.ValidateOwnershipInvariant(this);
+		}
+	}
 
 	public override bool CanBePushed()
 	{
@@ -2250,7 +2260,7 @@ public class GameCard : Draggable, IGameCardOrCardData
 		}
 		if (this.HasStructureParent())
 		{
-			WorldManager.instance.Attachment.RequestDetach(this, "UserDrag");
+			WorldManager.instance.Attachment.RequestDetach(this, AttachContext.Drop());
 		}
 		this.BounceTarget = null;
 		base.StartDragging();
@@ -2325,6 +2335,22 @@ public class GameCard : Draggable, IGameCardOrCardData
 		if (this.Parent != null)
 		{
 			savedCard.ParentUniqueId = this.Parent.CardData.UniqueId;
+		}
+		if (this.HasStructureParent())
+		{
+			savedCard.RelationType = ChildRelationType.StructureSlot;
+			savedCard.ParentUniqueId = this.StructureParent.CardData.UniqueId;
+			if (this.StructureParent.CardData is IStructureContainer container)
+			{
+				foreach (var slot in container.GetAllSlots())
+				{
+					if (slot.SlotOccupants.Contains(this))
+					{
+						savedCard.SlotId = slot.SlotId;
+						break;
+					}
+				}
+			}
 		}
 		if (this.EquipmentHolder != null)
 		{

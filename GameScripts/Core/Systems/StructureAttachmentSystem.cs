@@ -24,44 +24,12 @@ public class StructureAttachmentSystem
         {
             if (overlapCard == null || overlapCard.Destroyed) continue;
 
-            // [PHASE 4: FARM MIGRATION]
-            if (overlapCard.CardData is StructureFarm farm)
+            if (overlapCard.CardData is IStructureContainer container)
             {
-                if (farm.SeedSlot.SlotOccupants.Count == 0 && farm.SeedSlot.AcceptedTypes.Contains(draggedCard.CardData.Id))
-                {
-                    return RequestAttach(overlapCard, draggedCard, farm.SeedSlot.SlotId, "DropResolver");
-                }
-            }
-            // [PHASE 4: SHRINE MIGRATION]
-            else if (overlapCard.CardData is ShrineCardData shrine)
-            {
-                if (shrine.IsValidOffering(draggedCard.CardData))
-                {
-                    foreach (var slot in shrine.ShrineSlots)
-                    {
-                        if (slot.SlotOccupants.Count == 0)
-                        {
-                            return RequestAttach(overlapCard, draggedCard, slot.SlotId, "DropResolver");
-                        }
-                    }
-                }
-            }
-            // [PHASE 4: BREAKTHROUGH ARRAY MIGRATION]
-            else if (overlapCard.CardData is BreakthroughArrayCardData arrayData)
-            {
-                string validSlotId = arrayData.GetValidSlotFor(draggedCard.CardData);
+                string validSlotId = container.GetValidSlotFor(draggedCard.CardData);
                 if (!string.IsNullOrEmpty(validSlotId))
                 {
-                    return RequestAttach(overlapCard, draggedCard, validSlotId, "DropResolver");
-                }
-            }
-            // [PHASE 4: GOD CAT MIGRATION]
-            else if (overlapCard.CardData is CatGodMouth godMouth)
-            {
-                string validSlotId = godMouth.GetValidSlotFor(draggedCard.CardData);
-                if (!string.IsNullOrEmpty(validSlotId))
-                {
-                    return RequestAttach(overlapCard, draggedCard, validSlotId, "DropResolver");
+                    return RequestAttach(overlapCard, draggedCard, validSlotId, AttachContext.Drop());
                 }
             }
         }
@@ -69,117 +37,68 @@ public class StructureAttachmentSystem
         return false;
     }
 
-    public bool RequestAttach(GameCard parentStructure, GameCard childCard, string slotId, string reason = "DropResolver")
+    public bool RequestAttach(GameCard parentStructure, GameCard childCard, string slotId, AttachContext context)
     {
-        Debug.Log($"[Attach] Card={childCard.CardData?.Id} Parent={parentStructure.CardData?.Id} Slot={slotId} Reason={reason}");
+        Debug.Log($"[Attach] Card={childCard.CardData?.Id} Parent={parentStructure.CardData?.Id} Slot={slotId} Reason={context.Reason}");
 
-        if (parentStructure.CardData is StructureFarm farm && slotId == farm.SeedSlot.SlotId)
+        if (parentStructure.CardData is IStructureContainer container)
         {
-            farm.SeedSlot.SlotOccupants.Add(childCard);
-            childCard.RemoveFromStack();
-            
-            Vector3 targetPos = parentStructure.transform.position + farm.SeedSlot.LocalOffset;
-            childCard.transform.position = targetPos;
-            childCard.BounceTarget = null;
-            childCard.Velocity = null;
-
-            SeedRuntime seed = childCard.gameObject.GetComponent<SeedRuntime>();
-            if (seed == null) seed = childCard.gameObject.AddComponent<SeedRuntime>();
-            
-            seed.Initialize(childCard.CardData.Id + "bush", 120f); 
-            seed.StartGrowing();
-
-            childCard.StructureParent = parentStructure;
-            return true;
-        }
-        else if (parentStructure.CardData is ShrineCardData shrine)
-        {
-            foreach (var slot in shrine.ShrineSlots)
+            StructureSlotData slot = container.GetSlotById(slotId);
+            if (slot != null)
             {
-                if (slot.SlotId == slotId)
+                // Nếu không bypass validation thì kiểm tra type
+                if (!context.BypassValidation && !slot.AcceptedTypes.Contains(childCard.CardData.Id) && slot.AcceptedTypes.Count > 0)
                 {
-                    slot.SlotOccupants.Add(childCard);
-                    childCard.RemoveFromStack();
-
-                    Vector3 targetPos = parentStructure.transform.position + slot.LocalOffset;
-                    childCard.transform.position = targetPos;
-                    childCard.BounceTarget = null;
-                    childCard.Velocity = null;
-                    childCard.StructureParent = parentStructure;
-                    return true;
+                    return false;
                 }
-            }
-        }
-        else if (parentStructure.CardData is BreakthroughArrayCardData arrayData)
-        {
-            StructureSlotData slot = arrayData.GetSlotById(slotId);
-            if (slot != null)
-            {
+
                 slot.SlotOccupants.Add(childCard);
                 childCard.RemoveFromStack();
-
+                
                 Vector3 targetPos = parentStructure.transform.position + slot.LocalOffset;
                 childCard.transform.position = targetPos;
                 childCard.BounceTarget = null;
                 childCard.Velocity = null;
-                childCard.StructureParent = parentStructure;
-                return true;
-            }
-        }
-        else if (parentStructure.CardData is CatGodMouth godMouth)
-        {
-            StructureSlotData slot = godMouth.GetSlotById(slotId);
-            if (slot != null)
-            {
-                slot.SlotOccupants.Add(childCard);
-                childCard.RemoveFromStack();
+                childCard.SetStructureParent(parentStructure, context);
 
-                Vector3 targetPos = parentStructure.transform.position + slot.LocalOffset;
-                childCard.transform.position = targetPos;
-                childCard.BounceTarget = null;
-                childCard.Velocity = null;
-                childCard.StructureParent = parentStructure;
+                container.OnCardAttached(childCard, slotId);
                 return true;
             }
         }
         return false;
     }
 
-    public bool RequestDetach(GameCard childCard, string reason = "UserDrag")
+    public bool RequestDetach(GameCard childCard, AttachContext context)
     {
-        Debug.Log($"[Detach] Card={childCard.CardData?.Id} Reason={reason}");
+        Debug.Log($"[Detach] Card={childCard.CardData?.Id} Reason={context.Reason}");
         
-        // Quét xem thẻ này đang ở trong slot nào
-        SeedRuntime seed = childCard.gameObject.GetComponent<SeedRuntime>();
-        if (seed != null)
-        {
-            seed.StopGrowing(); // Lưu lại tiến trình
-        }
-
-        // Logic gỡ thẻ khỏi danh sách SlotOccupants của các Structure
         if (childCard.HasStructureParent())
         {
             GameCard parentStructure = childCard.StructureParent;
             
-            if (parentStructure.CardData is StructureFarm farm)
+            if (parentStructure.CardData is IStructureContainer container)
             {
-                farm.SeedSlot.SlotOccupants.Remove(childCard);
-            }
-            else if (parentStructure.CardData is ShrineCardData shrine)
-            {
-                foreach (var slot in shrine.ShrineSlots) slot.SlotOccupants.Remove(childCard);
-            }
-            else if (parentStructure.CardData is BreakthroughArrayCardData arrayData)
-            {
-                foreach (var slot in arrayData.Slots) slot.SlotOccupants.Remove(childCard);
-            }
-            else if (parentStructure.CardData is CatGodMouth godMouth)
-            {
-                foreach (var slot in godMouth.MouthSlots) slot.SlotOccupants.Remove(childCard);
-            }
+                // Scan all slots to find and remove the card
+                string foundSlotId = null;
+                foreach (var slot in container.GetAllSlots())
+                {
+                    if (slot.SlotOccupants.Contains(childCard))
+                    {
+                        slot.SlotOccupants.Remove(childCard);
+                        foundSlotId = slot.SlotId;
+                        break; // Card can only be in one slot
+                    }
+                }
 
-            childCard.StructureParent = null;
-            return true;
+                childCard.SetStructureParent(null, context);
+
+                if (foundSlotId != null)
+                {
+                    container.OnCardDetached(childCard, foundSlotId);
+                }
+                
+                return true;
+            }
         }
 
         return false;
@@ -194,21 +113,12 @@ public class StructureAttachmentSystem
         {
             if (card == null || card.Destroyed || card.BeingDragged) continue;
 
-            if (card.CardData is StructureFarm farm)
+            if (card.CardData is IStructureContainer container)
             {
-                ReconcileSlot(card, farm.SeedSlot);
-            }
-            else if (card.CardData is ShrineCardData shrine)
-            {
-                foreach (var slot in shrine.ShrineSlots) ReconcileSlot(card, slot);
-            }
-            else if (card.CardData is BreakthroughArrayCardData arrayData)
-            {
-                foreach (var slot in arrayData.Slots) ReconcileSlot(card, slot);
-            }
-            else if (card.CardData is CatGodMouth godMouth)
-            {
-                foreach (var slot in godMouth.MouthSlots) ReconcileSlot(card, slot);
+                foreach (var slot in container.GetAllSlots())
+                {
+                    ReconcileSlot(card, slot);
+                }
             }
         }
     }

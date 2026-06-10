@@ -6,7 +6,7 @@ using Mewtations.Core; // For StructureSlotData
 
 public enum CatGodRitualState { Idle, Consuming, Completing, Invalid }
 
-public class CatGodMouth : CardData
+public class CatGodMouth : CardData, IStructureContainer
 {
     [Header("Cat God Mouth Settings")]
     [ExtraData("ritual_state")]
@@ -76,6 +76,15 @@ public class CatGodMouth : CardData
         return null;
     }
 
+    public IEnumerable<StructureSlotData> GetAllSlots()
+    {
+        yield return RitualSlot;
+        yield return OfferingSlot;
+    }
+
+    public void OnCardAttached(GameCard childCard, string slotId) { }
+    public void OnCardDetached(GameCard childCard, string slotId) { }
+
     protected override bool CanHaveCard(CardData otherCard)
     {
         // Vô hiệu hóa stack gốc
@@ -87,18 +96,6 @@ public class CatGodMouth : CardData
         base.UpdateCard();
 
         if (this.MyGameCard == null) return;
-
-        // Xử lý nam châm từ Attachment System
-        if (RitualSlot.SlotOccupants.Count > 0)
-        {
-            GameCard r = RitualSlot.SlotOccupants[0];
-            if (r != null && !r.Destroyed) r.transform.position = Vector3.Lerp(r.transform.position, transform.position + RitualSlot.LocalOffset, Time.deltaTime * 10f);
-        }
-        if (OfferingSlot.SlotOccupants.Count > 0)
-        {
-            GameCard o = OfferingSlot.SlotOccupants[0];
-            if (o != null && !o.Destroyed) o.transform.position = Vector3.Lerp(o.transform.position, transform.position + OfferingSlot.LocalOffset, Time.deltaTime * 10f);
-        }
 
         // Self-heal and cache rebuild
         if (State != CatGodRitualState.Idle && State != CatGodRitualState.Invalid)

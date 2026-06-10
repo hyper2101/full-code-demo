@@ -48,7 +48,44 @@ public class BoardQuerySystem
     {
         board = board ?? _world.CurrentBoard;
         return GetVisibleBoardCards(board).Where(c => 
-            c.Parent == null && c.Child == null && !c.BeingDragged
+            c.Parent == null && c.Child == null && !c.BeingDragged && !c.HasStructureParent()
         ).ToList();
+    }
+
+    /// <summary>
+    /// Lấy tất cả các thẻ đang được cắm trong một Structure.
+    /// </summary>
+    public List<GameCard> GetCardsInStructure(GameCard structureCard)
+    {
+        List<GameCard> result = new List<GameCard>();
+        if (structureCard == null || structureCard.Destroyed) return result;
+
+        if (structureCard.CardData is IStructureContainer container)
+        {
+            foreach (var slot in container.GetAllSlots())
+            {
+                result.AddRange(slot.SlotOccupants);
+            }
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Lấy tất cả các thẻ nằm trong một SlotId cụ thể của một Structure.
+    /// </summary>
+    public List<GameCard> GetCardsInSlot(GameCard structureCard, string slotId)
+    {
+        List<GameCard> result = new List<GameCard>();
+        if (structureCard == null || structureCard.Destroyed) return result;
+
+        if (structureCard.CardData is IStructureContainer container)
+        {
+            StructureSlotData slot = container.GetSlotById(slotId);
+            if (slot != null)
+            {
+                result.AddRange(slot.SlotOccupants);
+            }
+        }
+        return result;
     }
 }

@@ -1972,6 +1972,12 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 		set => RuntimeId = value; 
 	}
 
+	[NonSerialized]
+	public ChildRelationType SavedRelationType;
+
+	[NonSerialized]
+	public string SavedSlotId;
+
 	[HideInInspector]
 	public string ParentUniqueId 
 	{ 

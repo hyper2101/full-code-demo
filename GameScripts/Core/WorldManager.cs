@@ -279,6 +279,7 @@ public class WorldManager : MonoBehaviour
 		this.CardQuery = new CardQuerySystem(this);
 		this.BoardQuery = new BoardQuerySystem(this);
 		this.Attachment = new StructureAttachmentSystem(this);
+		this.BoardIntegrity = new BoardIntegrityValidator(this);
 		this.Cutscene = new CutsceneSystem(this);
 		this.Input = new InputSystem(this);
 		this.DayEvent = new DayEventSystem(this);
@@ -3957,6 +3958,8 @@ public class WorldManager : MonoBehaviour
 				cardData.UniqueId = savedCard.UniqueId;
 				this.UniqueIdToCard[cardData.UniqueId] = cardData.MyGameCard;
 				cardData.ParentUniqueId = savedCard.ParentUniqueId;
+				cardData.SavedRelationType = savedCard.RelationType;
+				cardData.SavedSlotId = savedCard.SlotId;
 				cardData.EquipmentHolderUniqueId = savedCard.EquipmentHolderUniqueId;
 				cardData.WorkerHolderUniqueId = savedCard.WorkerHolderUniqueId;
 				cardData.WorkerIndex = savedCard.WorkerIndex;
@@ -4043,7 +4046,14 @@ public class WorldManager : MonoBehaviour
 				GameCard cardWithUniqueId = this.GetCardWithUniqueId(gameCard2.CardData.ParentUniqueId);
 				if (cardWithUniqueId != null)
 				{
-					gameCard2.SetParent(cardWithUniqueId);
+					if (gameCard2.CardData.SavedRelationType == ChildRelationType.StructureSlot)
+					{
+						this.Attachment.RequestAttach(cardWithUniqueId, gameCard2, gameCard2.CardData.SavedSlotId, AttachContext.Restore());
+					}
+					else
+					{
+						gameCard2.SetParent(cardWithUniqueId);
+					}
 				}
 			}
 		}
@@ -4672,6 +4682,7 @@ public class WorldManager : MonoBehaviour
 	public CardQuerySystem CardQuery { get; private set; }
 	public BoardQuerySystem BoardQuery { get; private set; }
 	public StructureAttachmentSystem Attachment { get; private set; }
+	public BoardIntegrityValidator BoardIntegrity { get; private set; }
 	public CutsceneSystem Cutscene { get; private set; }
 	public DayEventSystem DayEvent { get; private set; }
 	public float MonthTimer { get => Time.MonthTimer; set => Time.MonthTimer = value; }

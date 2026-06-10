@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShrineCardData : CardData
+public class ShrineCardData : CardData, IStructureContainer
 {
 	[ExtraData("max_shrine_slots")]
 	public int MaxSlots = 2;
@@ -72,7 +72,36 @@ public class ShrineCardData : CardData
 		return false;
 	}
 
-    // Kiểm tra xem 1 thẻ có thể vào đền không (Gọi bởi AttachmentSystem)
+    public string GetValidSlotFor(CardData cardData)
+    {
+        if (IsValidOffering(cardData))
+        {
+            foreach (var slot in ShrineSlots)
+            {
+                if (slot.SlotOccupants.Count == 0) return slot.SlotId;
+            }
+        }
+        return null;
+    }
+
+    public StructureSlotData GetSlotById(string slotId)
+    {
+        foreach (var slot in ShrineSlots)
+        {
+            if (slot.SlotId == slotId) return slot;
+        }
+        return null;
+    }
+
+    public IEnumerable<StructureSlotData> GetAllSlots()
+    {
+        return ShrineSlots;
+    }
+
+    public void OnCardAttached(GameCard childCard, string slotId) { }
+    public void OnCardDetached(GameCard childCard, string slotId) { }
+
+    // Kiểm tra xem 1 thẻ có thể vào đền không
     public bool IsValidOffering(CardData otherCard)
     {
         return otherCard.IsShrineOffering || otherCard.IsAncientRelic;
@@ -84,19 +113,6 @@ public class ShrineCardData : CardData
 
 		if (this.MyGameCard != null)
 		{
-            // Nam châm giữ các thẻ trong slot
-            foreach (var slot in ShrineSlots)
-            {
-                if (slot.SlotOccupants.Count > 0)
-                {
-                    GameCard card = slot.SlotOccupants[0];
-                    if (card != null && !card.Destroyed)
-                    {
-                        Vector3 targetPos = transform.position + slot.LocalOffset;
-                        card.transform.position = Vector3.Lerp(card.transform.position, targetPos, Time.deltaTime * 10f);
-                    }
-                }
-            }
 
 			// 1. Kiểm tra sự thay đổi của các cổ vật trong Shrine (Event-driven)
 			string currentHash = GetRelicsHash();

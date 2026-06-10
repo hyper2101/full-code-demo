@@ -35,11 +35,21 @@ public static class EventBus
 		}
 	}
 
+	private static int _currentDepth = 0;
+	private const int MAX_DEPTH = 5;
+
 	public static void Publish<T>(T eventData)
 	{
 		Type type = typeof(T);
 		if (Listeners.TryGetValue(type, out var list))
 		{
+			_currentDepth++;
+			if (_currentDepth > MAX_DEPTH)
+			{
+				_currentDepth--;
+				throw new Exception($"[EventBus] FATAL: Event cascade depth exceeded MAX_DEPTH ({MAX_DEPTH}). This indicates an infinite loop or spaghetti event architecture involving {type.Name}.");
+			}
+
 			// Copy list để tránh lỗi "Collection was modified" nếu listener tự unsubscribe trong callback
 			var listCopy = new List<object>(list);
 			foreach (var listener in listCopy)
@@ -56,6 +66,8 @@ public static class EventBus
 					}
 				}
 			}
+
+			_currentDepth--;
 		}
 	}
 
