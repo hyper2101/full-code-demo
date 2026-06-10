@@ -1251,9 +1251,9 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
 
         // Hỗ trợ từ đồng đội Tank
         List<CatCardData> otherTanks = new List<CatCardData>();
-        if (WorldManager.instance != null && WorldManager.instance.AllCards != null)
+        if (WorldManager.instance != null && WorldManager.instance.BoardQuery != null)
         {
-            foreach (var gc in WorldManager.instance.AllCards)
+            foreach (var gc in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
             {
                 if (gc != null && gc.CardData is CatCardData cat && cat != this && cat.Role == CatRole.Tank)
                 {
@@ -1455,9 +1455,9 @@ public class CatCardData : Combatable, IPrimaryRunEntity, ILaborCapable
 
         // Lựa chọn 3: Đồng đội Tank đỡ (Tank Block)
         List<CatCardData> otherTanks = new List<CatCardData>();
-        if (WorldManager.instance != null && WorldManager.instance.AllCards != null)
+        if (WorldManager.instance != null && WorldManager.instance.BoardQuery != null)
         {
-            foreach (var gc in WorldManager.instance.AllCards)
+            foreach (var gc in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
             {
                 if (gc != null && gc.CardData is CatCardData cat && cat != this && cat.Role == CatRole.Tank)
                 {

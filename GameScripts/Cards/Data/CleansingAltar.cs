@@ -56,7 +56,7 @@ public class CleansingAltar : CardData
         var goldCards = new List<GameCard>();
         var potionCards = new List<GameCard>();
 
-        foreach (var gc in WorldManager.instance.AllCards)
+        foreach (var gc in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
         {
             if (gc != null && !gc.Destroyed)
             {
@@ -127,7 +127,7 @@ public class CleansingAltar : CardData
                       cat.Name);
 
         var goldCards = new List<GameCard>();
-        foreach (var gc in WorldManager.instance.AllCards)
+        foreach (var gc in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
         {
             if (gc != null && gc.CardData.Id == "resource_gold")
             {

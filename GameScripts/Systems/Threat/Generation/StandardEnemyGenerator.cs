@@ -24,7 +24,7 @@ namespace GameScripts.Systems.Threat.Generation
                 var catLevels = System.Linq.Enumerable.ToList(
                     System.Linq.Enumerable.Select(
                         System.Linq.Enumerable.Where(
-                            WorldManager.instance.AllCards, 
+                            WorldManager.instance.BoardQuery.GetVisibleBoardCards(),
                             c => c != null && c.CardData is CatCardData && !c.Destroyed
                         ),
                         c => (c.CardData as CatCardData)?.Level ?? 1

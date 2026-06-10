@@ -85,7 +85,7 @@ public static class EndOfMonthCutscenes
 	public static List<BaseVillager> GetVillagersToAge()
 	{
 		List<BaseVillager> list = new List<BaseVillager>();
-		foreach (GameCard gameCard in WorldManager.instance.AllCards)
+		foreach (GameCard gameCard in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
 		{
 			if (gameCard.MyBoard.IsCurrent)
 			{
@@ -276,7 +276,7 @@ public static class EndOfMonthCutscenes
 	public static List<CardData> GetCardsToFeed()
 	{
 		List<CardData> list = new List<CardData>();
-		foreach (GameCard gameCard in WorldManager.instance.AllCards)
+		foreach (GameCard gameCard in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
 		{
 			if (gameCard.MyBoard.IsCurrent)
 			{
@@ -491,7 +491,7 @@ public static class EndOfMonthCutscenes
 	private static List<CardData> CardsThatNeedHappiness()
 	{
 		List<CardData> list = new List<CardData>();
-		foreach (GameCard gameCard in WorldManager.instance.AllCards)
+		foreach (GameCard gameCard in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
 		{
 			if (gameCard.MyBoard.IsCurrent && WorldManager.instance.GetCardRequiredHappinessCount(gameCard) > 0)
 			{
@@ -770,7 +770,7 @@ public static class EndOfMonthCutscenes
 
 	private static bool AnyCardCanBeSold()
 	{
-		foreach (GameCard gameCard in WorldManager.instance.AllCards)
+		foreach (GameCard gameCard in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
 		{
 			if (gameCard.MyBoard.IsCurrent && !gameCard.IsEquipped)
 			{

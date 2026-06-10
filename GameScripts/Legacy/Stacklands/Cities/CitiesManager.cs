@@ -201,7 +201,7 @@ using UnityEngine;
 			DrawManager.instance.DrawShape(this.GetShapeForConnectionType(this.DrawingConnector.ConnectionType, vector, this.DrawingConnector.Middle, mouseWorldPosition));
 		}
 		GameBoard currentBoard = WorldManager.instance.CurrentBoard;
-		foreach (GameCard gameCard in WorldManager.instance.AllCards)
+		foreach (GameCard gameCard in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
 		{
 			if (gameCard.CardConnectorChildren.Count != 0 && !(gameCard.MyBoard != currentBoard))
 			{

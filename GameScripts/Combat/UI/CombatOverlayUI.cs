@@ -1038,7 +1038,7 @@ namespace Mewtations.Combat.UI
         {
             if (ringItem == null || cat == null) return;
 
-            var ringCard = WorldManager.instance.AllCards
+            var ringCard = WorldManager.instance.BoardQuery.GetVisibleBoardCards()
                 .FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.OrderingCardData && !c.Destroyed);
             if (ringCard == null) return;
 
@@ -1085,7 +1085,7 @@ namespace Mewtations.Combat.UI
         {
             GUILayout.BeginVertical(_sidebarCardStyle, GUILayout.ExpandWidth(true));
             
-            var ringCard = WorldManager.instance.AllCards
+            var ringCard = WorldManager.instance.BoardQuery.GetVisibleBoardCards()
                 .FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.OrderingCardData && !c.Destroyed);
 
             string title = "<b>HÀNH TRANG (ORDERING) - LƯỚI 6x5 TIỂU THẾ GIỚI</b>";

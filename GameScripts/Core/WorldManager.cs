@@ -277,6 +277,8 @@ public class WorldManager : MonoBehaviour
 		this.Economy = new EconomySystem(this);
 		this.Save = new SaveSystem(this);
 		this.CardQuery = new CardQuerySystem(this);
+		this.BoardQuery = new BoardQuerySystem(this);
+		this.Attachment = new StructureAttachmentSystem(this);
 		this.Cutscene = new CutsceneSystem(this);
 		this.Input = new InputSystem(this);
 		this.DayEvent = new DayEventSystem(this);
@@ -1304,7 +1306,20 @@ public class WorldManager : MonoBehaviour
 			}
 			else
 			{
-				this.CheckIfCanAddOnStack(this.DraggingCard);
+				// [PHASE 3: DRAG/DROP INTEGRATION]
+				// Release Flow Resolver (Thứ tự quét: Structure -> Recipe -> Stack)
+				bool handledByStructure = false;
+
+				if (this.Attachment != null)
+				{
+					handledByStructure = this.Attachment.TryAttachToNearbyStructure(this.DraggingCard);
+				}
+
+				if (!handledByStructure)
+				{
+					// Nếu không có Structure nào hứng, fallback về Stack/Recipe detection gốc.
+					this.CheckIfCanAddOnStack(this.DraggingCard);
+				}
 			}
 		}
 		if (this.DraggingDraggable != null)
@@ -3567,6 +3582,7 @@ public class WorldManager : MonoBehaviour
 		{
 			this.ContinueClicked = false;
 		}
+		this.Attachment?.LateUpdate();
 	}
 
 	public void KillVillager(Combatable combatable, Action onComplete = null, Action onCreateCorpse = null)
@@ -4654,6 +4670,8 @@ public class WorldManager : MonoBehaviour
 	public EconomySystem Economy { get; private set; }
 	public SaveSystem Save { get; private set; }
 	public CardQuerySystem CardQuery { get; private set; }
+	public BoardQuerySystem BoardQuery { get; private set; }
+	public StructureAttachmentSystem Attachment { get; private set; }
 	public CutsceneSystem Cutscene { get; private set; }
 	public DayEventSystem DayEvent { get; private set; }
 	public float MonthTimer { get => Time.MonthTimer; set => Time.MonthTimer = value; }

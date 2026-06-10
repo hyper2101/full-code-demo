@@ -1648,7 +1648,7 @@ public class GameScreen : MewtationsScreen
 		if (WorldManager.instance == null || WorldManager.instance.CurrentBoard == null) return;
 
 		// Count active enemy encounter cards on the board
-		var enemies = WorldManager.instance.AllCards
+		var enemies = WorldManager.instance.BoardQuery.GetVisibleBoardCards()
 			.Where(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.Enemy && !c.Destroyed)
 			.ToList();
 

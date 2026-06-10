@@ -643,9 +643,12 @@ public class GameCard : Draggable, IGameCardOrCardData
 		this.SetParent(null);
 	}
 
+	public GameCard StructureParent;
+	public bool HasStructureParent() => StructureParent != null;
+
 	public override bool CanBePushed()
 	{
-		return (!(this.CardData is Food) || !WorldManager.instance.InEatingAnimation) && !(this.CardData is Spirit) && !(this.CardData is CityAdvisor) && !this.IsWorking && !this.IsEquipped && !this.BeingDragged && this.PushEnabled;
+		return (!(this.CardData is Food) || !WorldManager.instance.InEatingAnimation) && !(this.CardData is Spirit) && !(this.CardData is CityAdvisor) && !this.IsWorking && !this.IsEquipped && !this.BeingDragged && this.PushEnabled && !this.HasStructureParent();
 	}
 
 	protected override float Mass
@@ -723,6 +726,10 @@ public class GameCard : Draggable, IGameCardOrCardData
 				return false;
 			}
 			if (!this.CardData.CanBePushedBy(gameCard.CardData))
+			{
+				return false;
+			}
+			if (this.StructureParent == gameCard || gameCard.StructureParent == this)
 			{
 				return false;
 			}
@@ -2240,6 +2247,10 @@ public class GameCard : Draggable, IGameCardOrCardData
 		{
 			gameCard.BeingDragged = true;
 			gameCard = gameCard.Child;
+		}
+		if (this.HasStructureParent())
+		{
+			WorldManager.instance.Attachment.RequestDetach(this, "UserDrag");
 		}
 		this.BounceTarget = null;
 		base.StartDragging();

@@ -180,13 +180,13 @@ public static class ChainLightningSystem
 
 	private static Combatable FindNextChainTarget(Combatable current, HashSet<string> alreadyHit)
 	{
-		if (WorldManager.instance == null || WorldManager.instance.AllCards == null) return null;
+		if (WorldManager.instance == null || WorldManager.instance.BoardQuery == null) return null;
 
 		Combatable closest = null;
 		float minDistance = float.MaxValue;
 		Vector3 currentPos = current.transform.position;
 
-		foreach (GameCard gc in WorldManager.instance.AllCards)
+		foreach (GameCard gc in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
 		{
 			if (gc != null && gc.CardData is Combatable targetCombatable && gc.CardData != current.CardData && !gc.Destroyed)
 			{

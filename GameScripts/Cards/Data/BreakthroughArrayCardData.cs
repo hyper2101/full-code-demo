@@ -1,30 +1,23 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
-public enum BreakthroughSlotRole
-{
-    Target,
-    Catalyst,
-    Support
-}
+using Mewtations.Core; // Assuming we use StructureSlotType if needed, or just strings
 
 public class BreakthroughArrayCardData : CardData
 {
+    // [PHASE 4: BREAKTHROUGH ARRAY MIGRATION]
+    public StructureSlotData CenterSlot;
+    public StructureSlotData CatalystSlot;
+    public List<StructureSlotData> SupportSlots = new List<StructureSlotData>();
+
 	public override bool UsesHorizontalSlots
 	{
-		get
-		{
-			return true;
-		}
+		get { return false; }
 	}
 
 	public override bool DetermineCanHaveCardsWhenIsRoot
 	{
-		get
-		{
-			return true;
-		}
+		get { return true; }
 	}
 
 	public override bool CanHaveCardsWhileHasStatus()
@@ -32,37 +25,82 @@ public class BreakthroughArrayCardData : CardData
 		return true;
 	}
 
+    protected override void Awake()
+    {
+        base.Awake();
+        
+        // Define Physical Slots
+        CenterSlot = new StructureSlotData
+        {
+            SlotId = "center_cat",
+            LocalOffset = new Vector3(0, 0.1f, 0f),
+            OccupancyPolicy = OccupancyPolicy.Single
+        };
+
+        CatalystSlot = new StructureSlotData
+        {
+            SlotId = "catalyst_pill",
+            LocalOffset = new Vector3(0, 0.1f, 1.5f), // Ở phía trên Mèo
+            OccupancyPolicy = OccupancyPolicy.Single
+        };
+
+        // Support slots ở bên trái và phải
+        SupportSlots.Add(new StructureSlotData
+        {
+            SlotId = "support_1",
+            LocalOffset = new Vector3(-1.5f, 0.1f, 0f),
+            OccupancyPolicy = OccupancyPolicy.Single
+        });
+
+        SupportSlots.Add(new StructureSlotData
+        {
+            SlotId = "support_2",
+            LocalOffset = new Vector3(1.5f, 0.1f, 0f),
+            OccupancyPolicy = OccupancyPolicy.Single
+        });
+    }
+
+    // Attachment System check
+    public string GetValidSlotFor(CardData otherCard)
+    {
+        if (otherCard is CatCardData && CenterSlot.SlotOccupants.Count == 0) return CenterSlot.SlotId;
+        if (otherCard.IsCultivationPill && CatalystSlot.SlotOccupants.Count == 0) return CatalystSlot.SlotId;
+        
+        if (otherCard.IsBreakthroughSupport || (otherCard.Id != null && otherCard.Id.ToLower().Contains("item_secret_lore_hint")))
+        {
+            foreach (var slot in SupportSlots)
+            {
+                if (slot.SlotOccupants.Count == 0) return slot.SlotId;
+            }
+        }
+        return null;
+    }
+
+    public StructureSlotData GetSlotById(string slotId)
+    {
+        if (CenterSlot.SlotId == slotId) return CenterSlot;
+        if (CatalystSlot.SlotId == slotId) return CatalystSlot;
+        foreach (var slot in SupportSlots)
+        {
+            if (slot.SlotId == slotId) return slot;
+        }
+        return null;
+    }
+
+    private IEnumerable<StructureSlotData> GetAllSlots()
+    {
+        yield return CenterSlot;
+        yield return CatalystSlot;
+        foreach (var slot in SupportSlots) yield return slot;
+    }
+
 	protected override bool CanHaveCard(CardData otherCard)
 	{
-		if (this.MyGameCard == null) return false;
-
-		int childCount = 0;
-		GameCard curr = this.MyGameCard.Child;
-		while (curr != null)
-		{
-			childCount++;
-			curr = curr.Child;
-		}
-
-		if (childCount >= 4) return false;
-
-        BreakthroughSlotRole role = (BreakthroughSlotRole)Mathf.Min(childCount, 2);
-
-        if (role == BreakthroughSlotRole.Target)
-        {
-            return otherCard is CatCardData;
-        }
-        else if (role == BreakthroughSlotRole.Catalyst)
-        {
-            return otherCard.IsCultivationPill;
-        }
-        else // Support
-        {
-            return otherCard.IsBreakthroughSupport;
-        }
+        // Vô hiệu hóa stack gốc, ép vào Attachment System
+		return false;
 	}
 
-	private int _lastChildCount = -1;
+	private int _lastActiveCount = -1;
 
 	public override void UpdateCard()
 	{
@@ -70,59 +108,60 @@ public class BreakthroughArrayCardData : CardData
 
 		if (this.MyGameCard != null)
 		{
-			int childCount = 0;
-			GameCard currCount = this.MyGameCard.Child;
-			while (currCount != null)
-			{
-				childCount++;
-				currCount = currCount.Child;
-			}
+            // Cập nhật nam châm vật lý cho tất cả Slot
+            foreach (var slot in GetAllSlots())
+            {
+                if (slot.SlotOccupants.Count > 0)
+                {
+                    GameCard card = slot.SlotOccupants[0];
+                    if (card != null && !card.Destroyed)
+                    {
+                        Vector3 targetPos = transform.position + slot.LocalOffset;
+                        card.transform.position = Vector3.Lerp(card.transform.position, targetPos, Time.deltaTime * 10f);
+                    }
+                }
+            }
 
-			// Kiểm tra xem Mèo đột phá còn nằm trong stack không
+            int currentOccupied = 0;
+            foreach (var slot in GetAllSlots())
+            {
+                if (slot.SlotOccupants.Count > 0) currentOccupied++;
+            }
+
+			CatCardData cat = GetCatInSlot();
+
 			if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == base.GetActionId("breakthrough_array"))
 			{
-				if (!HasCatInStack())
+				if (cat == null)
 				{
 					this.MyGameCard.CancelTimer(base.GetActionId("breakthrough_array"));
-					_lastChildCount = -1;
+					_lastActiveCount = -1;
 				}
-				else if (childCount != _lastChildCount)
+				else if (currentOccupied != _lastActiveCount)
 				{
 					this.MyGameCard.CancelTimer(base.GetActionId("breakthrough_array"));
-					_lastChildCount = childCount;
+					_lastActiveCount = currentOccupied;
 				}
 			}
-			else if (!this.MyGameCard.TimerRunning && HasCatInStack())
+			else if (!this.MyGameCard.TimerRunning && cat != null)
 			{
-				CatCardData cat = GetCatInStack();
-				if (cat != null)
-				{
-					_lastChildCount = childCount;
-					// Tốc độ chạy trận pháp phụ thuộc vào cấp độ và tốc độ của Mèo
-					float duration = Mathf.Max(5f, (10f + cat.BreakthroughLevel * 3f) - (cat.Speed * 0.03f));
-					this.MyGameCard.StartTimer(duration, new TimerAction(this.CompleteBreakthroughProcess), "Trận pháp tụ linh đột phá...", base.GetActionId("breakthrough_array"), true, false, false);
-				}
+				_lastActiveCount = currentOccupied;
+				float duration = Mathf.Max(5f, (10f + cat.BreakthroughLevel * 3f) - (cat.Speed * 0.03f));
+				this.MyGameCard.StartTimer(duration, new TimerAction(this.CompleteBreakthroughProcess), "Trận pháp tụ linh đột phá...", base.GetActionId("breakthrough_array"), true, false, false);
 			}
 		}
 	}
 
-	private bool HasCatInStack()
+	private CatCardData GetCatInSlot()
 	{
-		return GetCatInStack() != null;
-	}
-
-	private CatCardData GetCatInStack()
-	{
-		if (this.MyGameCard == null) return null;
-		GameCard curr = this.MyGameCard.Child;
-		while (curr != null)
-		{
-			if (curr.CardData is CatCardData cat)
-			{
-				return cat;
-			}
-			curr = curr.Child;
-		}
+		if (CenterSlot.SlotOccupants.Count > 0)
+        {
+            GameCard catCard = CenterSlot.SlotOccupants[0];
+            if (catCard != null && !catCard.Destroyed)
+            {
+                return catCard.CardData as CatCardData;
+            }
+        }
 		return null;
 	}
 
@@ -131,40 +170,38 @@ public class BreakthroughArrayCardData : CardData
 	{
 		if (this.MyGameCard == null) return;
 
-		CatCardData cat = GetCatInStack();
+		CatCardData cat = GetCatInSlot();
 		if (cat == null) return;
 
-		// Check for True Harmony Ceremony (3 hint cards + Breakthrough 4 cat)
 		int hintCount = 0;
 		List<GameCard> hintCards = new List<GameCard>();
-		GameCard currCard = this.MyGameCard.Child;
-		while (currCard != null)
-		{
-			if (currCard.CardData != null && currCard.CardData.Id != null && currCard.CardData.Id.ToLower().Contains("item_secret_lore_hint"))
-			{
-				hintCount++;
-				hintCards.Add(currCard);
-			}
-			currCard = currCard.Child;
-		}
+
+        // Quét các slot support xem có hint không
+        foreach (var slot in SupportSlots)
+        {
+            if (slot.SlotOccupants.Count > 0)
+            {
+                GameCard c = slot.SlotOccupants[0];
+                if (c != null && !c.Destroyed && c.CardData != null && c.CardData.Id != null && c.CardData.Id.ToLower().Contains("item_secret_lore_hint"))
+                {
+                    hintCount++;
+                    hintCards.Add(c);
+                }
+            }
+        }
 
 		if (hintCount >= 3 && cat.BreakthroughLevel >= 4)
 		{
-			// Destroy the 3 hints
 			foreach (var hc in hintCards)
 			{
-				if (hc != null && !hc.Destroyed)
-				{
-					hc.DestroyCard(true, true);
-				}
+                // Dọn slot trước khi destroy
+                foreach (var s in SupportSlots) s.SlotOccupants.Remove(hc);
+				hc.DestroyCard(true, true);
 			}
 
-			// Unlock True Harmony Covenant!
 			cat.ClearMutations();
-			cat.PermanentScarsString = ""; // Clears all permanent scars!
+			cat.PermanentScarsString = ""; 
 			cat.AddTrait("talent_true_harmony");
-			
-			// Auto heal to full
 			cat.HealthPoints = cat.ProcessedCombatStats.MaxHealth;
 
 			string title = MewtationsLoc.Translate("talent_true_harmony_name", "True Harmony Covenant");
@@ -179,56 +216,55 @@ public class BreakthroughArrayCardData : CardData
 					(idx) => {}
 				);
 			}
-
-			Debug.Log($"[TrueHarmony] {cat.Name} has achieved absolute Faction Enlightenment and unlocked True Harmony!");
 			return;
 		}
 
-		// 1. Phân tích các vật phẩm hỗ trợ đột phá trong stack
 		float damageReduction = 0f;
 		int healthBonus = 0;
 		bool hasRevivePill = false;
 		string pillToInsert = null;
 
 		List<GameCard> cardsToDestroy = new List<GameCard>();
-		GameCard curr = this.MyGameCard.Child;
-		while (curr != null)
-		{
-			CardData data = curr.CardData;
-			if (data != null && data != cat)
-			{
-				if (data.IsCultivationPill && string.IsNullOrEmpty(pillToInsert))
-				{
-					pillToInsert = data.Id;
-					cardsToDestroy.Add(curr);
-				}
-				else if (data.IsBreakthroughSupport)
-				{
-					cardsToDestroy.Add(curr);
-					damageReduction += data.BreakthroughDmgReduction;
-					healthBonus += data.BreakthroughHealthBonus;
-					if (data.BreakthroughReviveEffect)
-					{
-						hasRevivePill = true;
-					}
-				}
-			}
-			curr = curr.Child;
-		}
+        List<StructureSlotData> slotsToClear = new List<StructureSlotData>();
 
-		// Giới hạn giảm sát thương tối đa là 90%
+        // Quét Catalyst (Thuốc)
+        if (CatalystSlot.SlotOccupants.Count > 0)
+        {
+            GameCard pillCard = CatalystSlot.SlotOccupants[0];
+            if (pillCard != null && !pillCard.Destroyed && pillCard.CardData != null && pillCard.CardData.IsCultivationPill)
+            {
+                pillToInsert = pillCard.CardData.Id;
+                cardsToDestroy.Add(pillCard);
+                slotsToClear.Add(CatalystSlot);
+            }
+        }
+
+        // Quét Support
+        foreach (var slot in SupportSlots)
+        {
+            if (slot.SlotOccupants.Count > 0)
+            {
+                GameCard supp = slot.SlotOccupants[0];
+                if (supp != null && !supp.Destroyed && supp.CardData != null && supp.CardData.IsBreakthroughSupport)
+                {
+                    cardsToDestroy.Add(supp);
+                    slotsToClear.Add(slot);
+                    damageReduction += supp.CardData.BreakthroughDmgReduction;
+                    healthBonus += supp.CardData.BreakthroughHealthBonus;
+                    if (supp.CardData.BreakthroughReviveEffect) hasRevivePill = true;
+                }
+            }
+        }
+
 		damageReduction = Mathf.Min(damageReduction, 0.90f);
 
-		// 2. Tiêu hủy các vật phẩm
-		foreach (GameCard gc in cardsToDestroy)
-		{
-			if (gc != null && !gc.Destroyed)
-			{
-				gc.DestroyCard(true, true);
-			}
-		}
+        // Clear slots and destroy
+        for (int i = 0; i < cardsToDestroy.Count; i++)
+        {
+            slotsToClear[i].SlotOccupants.Remove(cardsToDestroy[i]);
+            cardsToDestroy[i].DestroyCard(true, true);
+        }
 
-		// Cấy Linh Đan vào Mèo
 		if (!string.IsNullOrEmpty(pillToInsert))
 		{
 			cat.CultivationData.InsertPill(pillToInsert);
@@ -236,7 +272,6 @@ public class BreakthroughArrayCardData : CardData
 			cat.UpdateCardText();
 		}
 
-		// 3. Tiến hành kích hoạt lôi kiếp đột phá trên Mèo
 		int targetLevel = cat.BreakthroughLevel + 1;
 		cat.PerformBreakthroughInArray(targetLevel, damageReduction, healthBonus, hasRevivePill);
 	}

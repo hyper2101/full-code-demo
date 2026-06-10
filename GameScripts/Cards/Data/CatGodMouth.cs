@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mewtations.Core; // For StructureSlotData
 
 public enum CatGodRitualState { Idle, Consuming, Completing, Invalid }
 
@@ -26,17 +27,78 @@ public class CatGodMouth : CardData
     [ExtraData("has_triggered_threat")]
     public bool HasTriggeredThreat = false;
 
+    // [PHASE 4: GOD CAT MIGRATION]
+    public StructureSlotData RitualSlot;
+    public StructureSlotData OfferingSlot;
+
     private RitualCardData CurrentRitualDef;
     private bool DirtyUI = false;
     private bool IsConsumingItem = false;
 
     public override bool DetermineCanHaveCardsWhenIsRoot => true;
 
+    protected override void Awake()
+    {
+        base.Awake();
+        
+        RitualSlot = new StructureSlotData
+        {
+            SlotId = "catgod_ritual",
+            LocalOffset = new Vector3(0, 0.1f, 1.5f),
+            OccupancyPolicy = OccupancyPolicy.Single
+        };
+
+        OfferingSlot = new StructureSlotData
+        {
+            SlotId = "catgod_offering",
+            LocalOffset = new Vector3(0, 0.1f, 0f),
+            OccupancyPolicy = OccupancyPolicy.Single
+        };
+    }
+
+    public string GetValidSlotFor(CardData otherCard)
+    {
+        if (State == CatGodRitualState.Idle && otherCard is RitualCardData && RitualSlot.SlotOccupants.Count == 0)
+        {
+            return RitualSlot.SlotId;
+        }
+        else if (State == CatGodRitualState.Consuming && otherCard.CanBeConsumedByRitual && OfferingSlot.SlotOccupants.Count == 0)
+        {
+            return OfferingSlot.SlotId;
+        }
+        return null;
+    }
+
+    public StructureSlotData GetSlotById(string slotId)
+    {
+        if (RitualSlot.SlotId == slotId) return RitualSlot;
+        if (OfferingSlot.SlotId == slotId) return OfferingSlot;
+        return null;
+    }
+
+    protected override bool CanHaveCard(CardData otherCard)
+    {
+        // Vô hiệu hóa stack gốc
+        return false;
+    }
+
     public override void UpdateCard()
     {
         base.UpdateCard();
 
         if (this.MyGameCard == null) return;
+
+        // Xử lý nam châm từ Attachment System
+        if (RitualSlot.SlotOccupants.Count > 0)
+        {
+            GameCard r = RitualSlot.SlotOccupants[0];
+            if (r != null && !r.Destroyed) r.transform.position = Vector3.Lerp(r.transform.position, transform.position + RitualSlot.LocalOffset, Time.deltaTime * 10f);
+        }
+        if (OfferingSlot.SlotOccupants.Count > 0)
+        {
+            GameCard o = OfferingSlot.SlotOccupants[0];
+            if (o != null && !o.Destroyed) o.transform.position = Vector3.Lerp(o.transform.position, transform.position + OfferingSlot.LocalOffset, Time.deltaTime * 10f);
+        }
 
         // Self-heal and cache rebuild
         if (State != CatGodRitualState.Idle && State != CatGodRitualState.Invalid)
@@ -60,18 +122,23 @@ public class CatGodMouth : CardData
 
         if (State == CatGodRitualState.Idle)
         {
-            if (this.MyGameCard.HasChild && this.MyGameCard.Child.CardData is RitualCardData ritualCard)
+            if (RitualSlot.SlotOccupants.Count > 0)
             {
-                ActivateRitual(ritualCard);
+                GameCard ritualCard = RitualSlot.SlotOccupants[0];
+                if (ritualCard != null && !ritualCard.Destroyed && ritualCard.CardData is RitualCardData rData)
+                {
+                    RitualSlot.SlotOccupants.Clear();
+                    ActivateRitual(rData);
+                }
             }
         }
         else if (State == CatGodRitualState.Consuming)
         {
             // Self-Healing Loop
-            if (!IsConsumingItem && !this.MyGameCard.TimerRunning && this.MyGameCard.HasChild)
+            if (!IsConsumingItem && !this.MyGameCard.TimerRunning && OfferingSlot.SlotOccupants.Count > 0)
             {
-                GameCard topCard = GetTopCardInStack(this.MyGameCard);
-                if (topCard != this.MyGameCard && topCard.CardData.CanBeConsumedByRitual)
+                GameCard topCard = OfferingSlot.SlotOccupants[0];
+                if (topCard != null && !topCard.Destroyed && topCard.CardData.CanBeConsumedByRitual)
                 {
                     this.MyGameCard.StartTimer(0.25f, new TimerAction(this.ConsumeOffering), MewtationsLoc.Translate("catgod_consume_timer", "Tiếp nhận..."), "offering");
                 }
@@ -161,16 +228,6 @@ public class CatGodMouth : CardData
         MarkUIDirty();
     }
 
-    private GameCard GetTopCardInStack(GameCard root)
-    {
-        GameCard current = root;
-        while (current.Child != null)
-        {
-            current = current.Child;
-        }
-        return current;
-    }
-
     private void ConsumeOffering()
     {
         if (State != CatGodRitualState.Consuming || CurrentRitualDef == null) return;
@@ -179,17 +236,18 @@ public class CatGodMouth : CardData
         {
             IsConsumingItem = true;
             
-            if (this.MyGameCard == null || !this.MyGameCard.HasChild) return;
+            if (OfferingSlot.SlotOccupants.Count == 0) return;
 
-            GameCard topCard = GetTopCardInStack(this.MyGameCard);
-            if (topCard == this.MyGameCard) return;
+            GameCard topCard = OfferingSlot.SlotOccupants[0];
+            OfferingSlot.SlotOccupants.Remove(topCard);
+
+            if (topCard == null || topCard.Destroyed) return;
 
             CardData offeringData = topCard.CardData;
 
             // Push invalid cards out just in case they slipped in
             if (!offeringData.CanBeConsumedByRitual)
             {
-                topCard.RemoveFromStack();
                 Vector2 randomDir = UnityEngine.Random.insideUnitCircle.normalized;
                 topCard.BounceTarget = topCard.transform.position + new Vector3(randomDir.x, 0, randomDir.y) * 2f;
                 return;
@@ -268,16 +326,29 @@ public class CatGodMouth : CardData
 
     private void EjectAllChildren()
     {
-        if (this.MyGameCard == null) return;
-        
-        GameCard current = this.MyGameCard.Child;
-        while (current != null)
+        if (OfferingSlot.SlotOccupants.Count > 0)
         {
-            GameCard next = current.Child;
-            current.RemoveFromStack();
-            Vector2 randomDir = UnityEngine.Random.insideUnitCircle.normalized;
-            current.BounceTarget = current.transform.position + new Vector3(randomDir.x, 0, randomDir.y) * 2.5f;
-            current = next;
+            foreach (var card in OfferingSlot.SlotOccupants)
+            {
+                if (card != null && !card.Destroyed)
+                {
+                    Vector2 randomDir = UnityEngine.Random.insideUnitCircle.normalized;
+                    card.BounceTarget = card.transform.position + new Vector3(randomDir.x, 0, randomDir.y) * 2.5f;
+                }
+            }
+            OfferingSlot.SlotOccupants.Clear();
+        }
+        if (RitualSlot.SlotOccupants.Count > 0)
+        {
+            foreach (var card in RitualSlot.SlotOccupants)
+            {
+                if (card != null && !card.Destroyed)
+                {
+                    Vector2 randomDir = UnityEngine.Random.insideUnitCircle.normalized;
+                    card.BounceTarget = card.transform.position + new Vector3(randomDir.x, 0, randomDir.y) * 2.5f;
+                }
+            }
+            RitualSlot.SlotOccupants.Clear();
         }
     }
 
@@ -371,21 +442,5 @@ public class CatGodMouth : CardData
                 Mewtations.Dialogue.DialogueSystem.Instance.QueueDialogue(title, text, new List<string> { MewtationsLoc.Translate("btn_accept", "Tiếp nhận") }, (idx) => {});
             }
         }
-    }
-
-    protected override bool CanHaveCard(CardData otherCard)
-    {
-        if (otherCard == null || otherCard.MyGameCard == null) return false;
-
-        if (State == CatGodRitualState.Idle)
-        {
-            return otherCard is RitualCardData && this.MyGameCard.Child == null;
-        }
-        else if (State == CatGodRitualState.Consuming)
-        {
-            return otherCard.CanBeConsumedByRitual;
-        }
-        
-        return false;
     }
 }

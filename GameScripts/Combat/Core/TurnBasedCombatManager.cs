@@ -548,7 +548,7 @@ namespace Mewtations.Combat.Core
         {
             if (Result != CombatResult.Defeat && Result != CombatResult.Retreated) return;
 
-            var rings = WorldManager.instance.AllCards
+            var rings = WorldManager.instance.BoardQuery.GetVisibleBoardCards()
                 .Where(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.OrderingCardData && !c.Destroyed)
                 .ToList();
 

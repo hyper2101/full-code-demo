@@ -70,35 +70,37 @@ public class RelicAutomationSystem : MonoBehaviour
 	{
 		_activeRelicEffects.Clear();
 
-		if (WorldManager.instance == null || WorldManager.instance.AllCards == null) return;
+		if (WorldManager.instance == null || WorldManager.instance.BoardQuery == null) return;
 
-		foreach (GameCard gc in WorldManager.instance.AllCards)
+		foreach (GameCard gc in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
 		{
 			if (gc != null && gc.CardData is ShrineCardData shrine && !gc.Destroyed)
 			{
-				GameCard curr = gc.Child;
-				while (curr != null)
-				{
-					if (curr.CardData != null && !curr.Destroyed && curr.CardData.IsAncientRelic)
-					{
-						string rid = curr.CardData.Id.ToLower();
-						RelicEffectType? effect = null;
+                foreach (var slot in shrine.ShrineSlots)
+                {
+                    if (slot.SlotOccupants.Count > 0)
+                    {
+                        GameCard curr = slot.SlotOccupants[0];
+                        if (curr != null && curr.CardData != null && !curr.Destroyed && curr.CardData.IsAncientRelic)
+                        {
+                            string rid = curr.CardData.Id.ToLower();
+                            RelicEffectType? effect = null;
 
-						if (rid == "item_ancient_relic_auto_farm") effect = RelicEffectType.AutoFarm;
-						else if (rid == "item_ancient_relic_auto_heal") effect = RelicEffectType.AutoHeal;
-						else if (rid == "item_ancient_relic_auto_collect") effect = RelicEffectType.AutoCollect;
+                            if (rid == "item_ancient_relic_auto_farm") effect = RelicEffectType.AutoFarm;
+                            else if (rid == "item_ancient_relic_auto_heal") effect = RelicEffectType.AutoHeal;
+                            else if (rid == "item_ancient_relic_auto_collect") effect = RelicEffectType.AutoCollect;
 
-						if (effect.HasValue)
-						{
-							if (!_activeRelicEffects.ContainsKey(effect.Value))
-							{
-								_activeRelicEffects[effect.Value] = 0;
-							}
-							_activeRelicEffects[effect.Value]++; // Cộng dồn số stack cổ vật!
-						}
-					}
-					curr = curr.Child;
-				}
+                            if (effect.HasValue)
+                            {
+                                if (!_activeRelicEffects.ContainsKey(effect.Value))
+                                {
+                                    _activeRelicEffects[effect.Value] = 0;
+                                }
+                                _activeRelicEffects[effect.Value]++; // Cộng dồn số stack cổ vật!
+                            }
+                        }
+                    }
+                }
 			}
 		}
 	}
@@ -199,98 +201,94 @@ public class RelicAutomationSystem : MonoBehaviour
 	{
 		if (WorldManager.instance == null || !_activeRelicEffects.ContainsKey(RelicEffectType.AutoCollect) || _activeRelicEffects[RelicEffectType.AutoCollect] <= 0) return;
 
-		foreach (GameCard freeCard in WorldManager.instance.AllCards)
+		foreach (GameCard freeCard in WorldManager.instance.BoardQuery.GetLooseCards())
 		{
 			if (freeCard == null || freeCard.CardData == null || freeCard.Destroyed) continue;
 
 			string freeUid = freeCard.CardData.UniqueId;
 
-			// Chỉ gom thẻ tự do hoàn toàn (không có parent, child, không đang bị drag)
-			if (freeCard.Parent == null && freeCard.Child == null && !freeCard.BeingDragged)
-			{
-				if (freeCard.CardData.MyCardType == CardType.Resources || freeCard.CardData.MyCardType == CardType.Food)
-				{
-					// Kiểm tra xem đã có đăng ký thu gom an toàn chưa
-					if (_reservations.TryGetValue(freeUid, out var res))
-					{
-						// Đang bay tới stack đích đã đăng ký
-						if (WorldManager.instance.UniqueIdToCard.TryGetValue(res.TargetStackUniqueId, out var targetStack) && targetStack != null)
-						{
-							GameCard lastCard = targetStack;
-							while (lastCard.Child != null)
-							{
-								lastCard = lastCard.Child;
-							}
+            if (freeCard.CardData.MyCardType == CardType.Resources || freeCard.CardData.MyCardType == CardType.Food)
+            {
+                // Kiểm tra xem đã có đăng ký thu gom an toàn chưa
+                if (_reservations.TryGetValue(freeUid, out var res))
+                {
+                    // Đang bay tới stack đích đã đăng ký
+                    if (WorldManager.instance.UniqueIdToCard.TryGetValue(res.TargetStackUniqueId, out var targetStack) && targetStack != null)
+                    {
+                        GameCard lastCard = targetStack;
+                        while (lastCard.Child != null)
+                        {
+                            lastCard = lastCard.Child;
+                        }
 
-							if (lastCard != freeCard)
-							{
-								// Hút Lerp mượt mà mỗi frame
-								freeCard.transform.position = Vector3.Lerp(freeCard.transform.position, lastCard.transform.position + new Vector3(0f, 0.1f, -0.1f), Time.deltaTime * 5f);
-								if (Vector3.Distance(freeCard.transform.position, lastCard.transform.position) < 0.25f)
-								{
-									// Gắn kết nối stack chính thức và xóa đăng ký
-									lastCard.SetChild(freeCard);
-									freeCard.SetParent(lastCard);
-									_reservations.Remove(freeUid);
-								}
-							}
-						}
-					}
-					else
-					{
-						// Chưa có đăng ký, tìm kiếm một stack Key X hợp lệ để giữ chỗ
-						string targetId = freeCard.CardData.Id;
-						GameCard bestStack = null;
+                        if (lastCard != freeCard)
+                        {
+                            // Hút Lerp mượt mà mỗi frame
+                            freeCard.transform.position = Vector3.Lerp(freeCard.transform.position, lastCard.transform.position + new Vector3(0f, 0.1f, -0.1f), Time.deltaTime * 5f);
+                            if (Vector3.Distance(freeCard.transform.position, lastCard.transform.position) < 0.25f)
+                            {
+                                // Gắn kết nối stack chính thức và xóa đăng ký
+                                lastCard.SetChild(freeCard);
+                                freeCard.SetParent(lastCard);
+                                _reservations.Remove(freeUid);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Chưa có đăng ký, tìm kiếm một stack Key X hợp lệ để giữ chỗ
+                    string targetId = freeCard.CardData.Id;
+                    GameCard bestStack = null;
 
-						foreach (GameCard otherCard in WorldManager.instance.AllCards)
-						{
-							if (otherCard != null && otherCard != freeCard && !otherCard.Destroyed && otherCard.Parent == null)
-							{
-								// Kiểm tra xem stack này có chứa thẻ cùng loại bên dưới không
-								GameCard childSearch = otherCard;
-								bool hasMatch = false;
-								int stackCount = 0;
-								while (childSearch != null)
-								{
-									stackCount++;
-									if (childSearch.CardData != null && childSearch.CardData.Id == targetId)
-									{
-										hasMatch = true;
-									}
-									childSearch = childSearch.Child;
-								}
+                    foreach (GameCard otherCard in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
+                    {
+                        if (otherCard != null && otherCard != freeCard && !otherCard.Destroyed && otherCard.Parent == null)
+                        {
+                            // Kiểm tra xem stack này có chứa thẻ cùng loại bên dưới không
+                            GameCard childSearch = otherCard;
+                            bool hasMatch = false;
+                            int stackCount = 0;
+                            while (childSearch != null)
+                            {
+                                stackCount++;
+                                if (childSearch.CardData != null && childSearch.CardData.Id == targetId)
+                                {
+                                    hasMatch = true;
+                                }
+                                childSearch = childSearch.Child;
+                            }
 
-								// Cân bằng giới hạn stack tối đa là 15 thẻ để tạo gameplay pressure
-								if (hasMatch && stackCount < 15)
-								{
-									// Đếm xem có bao nhiêu thẻ tự do khác đang đăng ký bay về stack này
-									int reservedCount = 0;
-									foreach (var r in _reservations.Values)
-									{
-										if (r.TargetStackUniqueId == otherCard.CardData.UniqueId)
-										{
-											reservedCount++;
-										}
-									}
+                            // Cân bằng giới hạn stack tối đa là 15 thẻ để tạo gameplay pressure
+                            if (hasMatch && stackCount < 15)
+                            {
+                                // Đếm xem có bao nhiêu thẻ tự do khác đang đăng ký bay về stack này
+                                int reservedCount = 0;
+                                foreach (var r in _reservations.Values)
+                                {
+                                    if (r.TargetStackUniqueId == otherCard.CardData.UniqueId)
+                                    {
+                                        reservedCount++;
+                                    }
+                                }
 
-									// Chỉ đăng ký nếu tổng số thẻ trong stack + số thẻ đang bay tới chưa vượt quá 15
-									if (stackCount + reservedCount < 15)
-									{
-										bestStack = otherCard;
-										break;
-									}
-								}
-							}
-						}
+                                // Chỉ đăng ký nếu tổng số thẻ trong stack + số thẻ đang bay tới chưa vượt quá 15
+                                if (stackCount + reservedCount < 15)
+                                {
+                                    bestStack = otherCard;
+                                    break;
+                                }
+                            }
+                        }
+                    }
 
-						if (bestStack != null)
-						{
-							// Đăng ký giữ chỗ thu gom an toàn (Timeout 3 giây cực nhanh)
-							_reservations[freeUid] = new CollectReservation(freeUid, bestStack.CardData.UniqueId, 3.0f);
-						}
-					}
-				}
-			}
+                    if (bestStack != null)
+                    {
+                        // Đăng ký giữ chỗ thu gom an toàn (Timeout 3 giây cực nhanh)
+                        _reservations[freeUid] = new CollectReservation(freeUid, bestStack.CardData.UniqueId, 3.0f);
+                    }
+                }
+            }
 		}
 	}
 

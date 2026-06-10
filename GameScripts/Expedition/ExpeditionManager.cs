@@ -31,7 +31,7 @@ namespace Mewtations.Expedition
         public List<CatCardData> GetExpeditionEligibleCats()
         {
             var eligible = new List<CatCardData>();
-            foreach (var gameCard in WorldManager.instance.AllCards)
+            foreach (var gameCard in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
             {
                 if (gameCard.MyBoard.IsCurrent && gameCard.CardData is CatCardData cat)
                 {
@@ -986,7 +986,7 @@ namespace Mewtations.Expedition
             foreach (var relic in RunState.ActiveRelicList) {
             Debug.Log(Mewtations.Core.MewtationsLoc.Translate("exp_log_relic_apply", "[Expedition] Kích hoạt hiệu ứng Thánh Vật tự động."));
 
-            foreach (var gc in WorldManager.instance.AllCards)
+            foreach (var gc in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
             {
                 if (gc != null && !gc.Destroyed && gc.CardData != null && gc.TimerRunning)
                 {

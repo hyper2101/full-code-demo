@@ -52,11 +52,11 @@ public class ResourceCompressionSystem : MonoBehaviour
         {
             yield return new WaitForSeconds(1.0f); // Tối ưu hiệu năng: Quét interval định kỳ 1 giây
 
-            if (WorldManager.instance == null || WorldManager.instance.AllCards == null) continue;
+            if (WorldManager.instance == null || WorldManager.instance.BoardQuery == null) continue;
 
             // Quét toàn bộ root card trên bàn chơi hiện tại
             var rootCards = new List<GameCard>();
-            foreach (var gc in WorldManager.instance.AllCards)
+            foreach (var gc in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
             {
                 if (gc != null && !gc.Destroyed && gc.CardData != null && !gc.HasParent)
                 {

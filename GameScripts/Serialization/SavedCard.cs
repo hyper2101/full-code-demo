@@ -9,6 +9,12 @@ public class SavedCard
 
 	public string ParentUniqueId;
 
+	public string SlotId;
+
+	public ChildRelationType RelationType;
+
+	public Vector3 LocalOffset;
+
 	public string BoardId = "main";
 
 	public string CardPrefabId = "";

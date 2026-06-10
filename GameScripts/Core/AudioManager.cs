@@ -94,7 +94,7 @@ public class AudioManager : MonoBehaviour
 
 	private bool AnyCardInConflict()
 	{
-		foreach (GameCard gameCard in WorldManager.instance.AllCards)
+		foreach (GameCard gameCard in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
 		{
 			if (gameCard.MyBoard.IsCurrent && gameCard.Combatable != null && gameCard.InConflict)
 			{

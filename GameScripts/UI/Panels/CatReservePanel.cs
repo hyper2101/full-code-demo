@@ -12,7 +12,7 @@ public class CatReservePanel : MonoBehaviour
     {
         session.AvailableCats.Clear();
 
-        var allCats = WorldManager.instance.AllCards
+        var allCats = WorldManager.instance.BoardQuery.GetVisibleBoardCards()
             .Where(c => c != null && c.CardData is CatCardData && !c.Destroyed)
             .Select(c => c.CardData as CatCardData)
             .ToList();

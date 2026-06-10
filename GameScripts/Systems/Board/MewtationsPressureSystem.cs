@@ -17,7 +17,7 @@ namespace Mewtations.Combat
 
             // Find all available food cards on the main board
             var foodCards = new List<GameCard>();
-            foreach (var gc in WorldManager.instance.AllCards)
+            foreach (var gc in WorldManager.instance.BoardQuery.GetVisibleBoardCards())
             {
                 if (gc != null && !gc.Destroyed && gc.CardData != null)
                 {

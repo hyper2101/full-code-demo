@@ -44,6 +44,8 @@ public class SaveRound
 
 	public int SaveVersion;
 
+	public int StructureVersion;
+
 	public List<SerializedKeyValuePair> ExtraKeyValues = new List<SerializedKeyValuePair>();
 
 	public List<SavedConflict> SavedConflicts;

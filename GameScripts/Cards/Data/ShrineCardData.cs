@@ -9,20 +9,18 @@ public class ShrineCardData : CardData
 
 	private string _cachedRelicsHash = "";
 
+    // [PHASE 4: SHRINE MIGRATION]
+    // Danh sách các Slot tĩnh. Không dùng Stacklands Child chain nữa.
+    public List<StructureSlotData> ShrineSlots = new List<StructureSlotData>();
+
 	public override bool UsesHorizontalSlots
 	{
-		get
-		{
-			return true;
-		}
+		get { return false; } // Không dùng horizontal layout mặc định nữa
 	}
 
 	public override bool DetermineCanHaveCardsWhenIsRoot
 	{
-		get
-		{
-			return true;
-		}
+		get { return true; }
 	}
 
 	public override bool CanHaveCardsWhileHasStatus()
@@ -30,25 +28,55 @@ public class ShrineCardData : CardData
 		return true;
 	}
 
+	protected override void Awake()
+	{
+		base.Awake();
+        RefreshSlotsList();
+	}
+
+    public void RefreshSlotsList()
+    {
+        // Điều chỉnh số lượng Slot vật lý dựa theo MaxSlots.
+        while (ShrineSlots.Count < MaxSlots)
+        {
+            int index = ShrineSlots.Count;
+            // Xếp các slot theo hình tròn hoặc lưới xung quanh Shrine
+            float angle = index * (Mathf.PI * 2f / (float)MaxSlots);
+            if (MaxSlots == 2) angle = index == 0 ? 0 : Mathf.PI;
+            
+            float radius = 1.5f;
+            Vector3 offset = new Vector3(Mathf.Sin(angle) * radius, 0.1f, Mathf.Cos(angle) * radius);
+
+            ShrineSlots.Add(new StructureSlotData
+            {
+                SlotId = "shrine_slot_" + index,
+                LocalOffset = offset,
+                OccupancyPolicy = OccupancyPolicy.Single,
+                AcceptedTypes = new List<string>() // Rỗng = code sẽ check IsShrineOffering | IsAncientRelic
+            });
+        }
+        
+        // Cập nhật lại vị trí các slot nếu có sự thay đổi
+        for (int i = 0; i < ShrineSlots.Count; i++)
+        {
+            float angle = i * (Mathf.PI * 2f / (float)MaxSlots);
+            if (MaxSlots == 2) angle = i == 0 ? 0 : Mathf.PI;
+            float radius = 1.5f;
+            ShrineSlots[i].LocalOffset = new Vector3(Mathf.Sin(angle) * radius, 0.1f, Mathf.Cos(angle) * radius);
+        }
+    }
+
 	protected override bool CanHaveCard(CardData otherCard)
 	{
-		if (this.MyGameCard == null) return false;
-
-		// Đếm số lượng card con hiện tại trong stack
-		int childCount = 0;
-		GameCard curr = this.MyGameCard.Child;
-		while (curr != null)
-		{
-			childCount++;
-			curr = curr.Child;
-		}
-
-		// Giới hạn số slot của Đền Thờ
-		if (childCount >= MaxSlots) return false;
-
-		// Đền Thờ chỉ chấp nhận thẻ Cống Phẩm và Cổ Vật thông qua các thuộc tính generic của CardData
-		return otherCard.IsShrineOffering || otherCard.IsAncientRelic;
+        // Để StructureAttachmentSystem bắt
+		return false;
 	}
+
+    // Kiểm tra xem 1 thẻ có thể vào đền không (Gọi bởi AttachmentSystem)
+    public bool IsValidOffering(CardData otherCard)
+    {
+        return otherCard.IsShrineOffering || otherCard.IsAncientRelic;
+    }
 
 	public override void UpdateCard()
 	{
@@ -56,12 +84,25 @@ public class ShrineCardData : CardData
 
 		if (this.MyGameCard != null)
 		{
-			// 1. Kiểm tra sự thay đổi của các cổ vật trong stack đền thờ (Event-driven)
+            // Nam châm giữ các thẻ trong slot
+            foreach (var slot in ShrineSlots)
+            {
+                if (slot.SlotOccupants.Count > 0)
+                {
+                    GameCard card = slot.SlotOccupants[0];
+                    if (card != null && !card.Destroyed)
+                    {
+                        Vector3 targetPos = transform.position + slot.LocalOffset;
+                        card.transform.position = Vector3.Lerp(card.transform.position, targetPos, Time.deltaTime * 10f);
+                    }
+                }
+            }
+
+			// 1. Kiểm tra sự thay đổi của các cổ vật trong Shrine (Event-driven)
 			string currentHash = GetRelicsHash();
 			if (currentHash != _cachedRelicsHash)
 			{
 				_cachedRelicsHash = currentHash;
-				// Bắn sự kiện lên Event Bus để báo cho RelicAutomationSystem cập nhật lập tức
 				EventBus.Publish(new OnShrineStackChangedEvent(this));
 			}
 
@@ -71,16 +112,16 @@ public class ShrineCardData : CardData
 				MaxSlots);
  
 			// 3. Quản lý timer dâng nạp Linh Bảo Cộng Hưởng (Resonance Trophy)
+            GameCard trophyToConsume = GetResonanceTrophyInSlots();
 			if (this.MyGameCard.TimerRunning && this.MyGameCard.TimerActionId == "upgrade_shrine")
 			{
-				if (!HasResonanceTrophyInStack())
+				if (trophyToConsume == null)
 				{
 					this.MyGameCard.CancelTimer("upgrade_shrine");
 				}
 			}
-			else if (!this.MyGameCard.TimerRunning && HasResonanceTrophyInStack())
+			else if (!this.MyGameCard.TimerRunning && trophyToConsume != null)
 			{
-				// Chạy tiến trình cộng hưởng Linh Bảo để tăng slot
 				this.MyGameCard.StartTimer(15.0f, new TimerAction(this.UpgradeShrineSlots), MewtationsLoc.Translate("shrine_upgrading", "Đang cộng hưởng năng lượng Điện Thờ..."), "upgrade_shrine", true, false, false);
 			}
 		}
@@ -90,31 +131,35 @@ public class ShrineCardData : CardData
 	{
 		if (this.MyGameCard == null) return "";
 		string hash = "";
-		GameCard curr = this.MyGameCard.Child;
-		while (curr != null)
-		{
-			if (curr.CardData != null && !curr.Destroyed && curr.CardData.IsAncientRelic)
-			{
-				hash += curr.CardData.Id + ",";
-			}
-			curr = curr.Child;
-		}
+        foreach (var slot in ShrineSlots)
+        {
+            if (slot.SlotOccupants.Count > 0)
+            {
+                GameCard curr = slot.SlotOccupants[0];
+                if (curr != null && !curr.Destroyed && curr.CardData != null && curr.CardData.IsAncientRelic)
+                {
+                    hash += curr.CardData.Id + ",";
+                }
+            }
+        }
 		return hash;
 	}
 
-	private bool HasResonanceTrophyInStack()
+	private GameCard GetResonanceTrophyInSlots()
 	{
-		if (this.MyGameCard == null) return false;
-		GameCard curr = this.MyGameCard.Child;
-		while (curr != null)
-		{
-			if (curr.CardData != null && curr.CardData.IsShrineOffering)
-			{
-				return true;
-			}
-			curr = curr.Child;
-		}
-		return false;
+		if (this.MyGameCard == null) return null;
+        foreach (var slot in ShrineSlots)
+        {
+            if (slot.SlotOccupants.Count > 0)
+            {
+                GameCard curr = slot.SlotOccupants[0];
+                if (curr != null && !curr.Destroyed && curr.CardData != null && curr.CardData.IsShrineOffering)
+                {
+                    return curr;
+                }
+            }
+        }
+		return null;
 	}
 
 	[TimedAction("upgrade_shrine")]
@@ -122,26 +167,27 @@ public class ShrineCardData : CardData
 	{
 		if (this.MyGameCard == null) return;
  
-		// Tiêu hủy 1 thẻ Linh Bảo Cộng Hưởng trong stack
-		GameCard curr = this.MyGameCard.Child;
-		bool foundAndDestroyed = false;
-		while (curr != null)
-		{
-			if (curr.CardData != null && curr.CardData.IsShrineOffering && !curr.Destroyed)
-			{
-				curr.DestroyCard(true, true);
-				foundAndDestroyed = true;
-				break;
-			}
-			curr = curr.Child;
-		}
- 
-		if (foundAndDestroyed)
-		{
+		// Tiêu hủy 1 thẻ Linh Bảo Cộng Hưởng trong slot
+		GameCard trophy = GetResonanceTrophyInSlots();
+        if (trophy != null)
+        {
+            // Remove from slot
+            foreach (var slot in ShrineSlots)
+            {
+                if (slot.SlotOccupants.Contains(trophy))
+                {
+                    slot.SlotOccupants.Remove(trophy);
+                    break;
+                }
+            }
+
+            trophy.DestroyCard(true, true);
+            
 			// Tăng slot đền thờ
 			MaxSlots++;
+            RefreshSlotsList();
  
-			// Bắn sự kiện thay đổi stack để tự động cập nhật registry
+			// Bắn sự kiện thay đổi
 			EventBus.Publish(new OnShrineStackChangedEvent(this));
  
 			string title = MewtationsLoc.Translate("shrine_upgraded_title", "☯️ TRẬN PHÁP KHAI MỞ!");
@@ -153,24 +199,29 @@ public class ShrineCardData : CardData
 			{
 				Mewtations.Dialogue.DialogueSystem.Instance.StartDialogue(title, text, new List<string> { MewtationsLoc.Translate("btn_wonderful", "Tuyệt vời!") }, (cIdx) => {});
 			}
-		}
+        }
 	}
 
 	public static bool IsRelicActiveInShrine(string relicId)
 	{
 		if (WorldManager.instance == null) return false;
-		var shrines = WorldManager.instance.AllCards.FindAll(c => c != null && c.CardData is ShrineCardData && !c.Destroyed);
-		foreach (var shrine in shrines)
+		var shrines = WorldManager.instance.BoardQuery.GetVisibleBoardCards().FindAll(c => c != null && c.CardData is ShrineCardData && !c.Destroyed);
+		foreach (var shrineCard in shrines)
 		{
-			GameCard curr = shrine.Child;
-			while (curr != null)
-			{
-				if (curr.CardData != null && !curr.Destroyed && curr.CardData.Id == relicId)
-				{
-					return true;
-				}
-				curr = curr.Child;
-			}
+            ShrineCardData shrine = shrineCard.CardData as ShrineCardData;
+            if (shrine == null) continue;
+
+            foreach (var slot in shrine.ShrineSlots)
+            {
+                if (slot.SlotOccupants.Count > 0)
+                {
+                    GameCard curr = slot.SlotOccupants[0];
+                    if (curr != null && !curr.Destroyed && curr.CardData != null && curr.CardData.Id == relicId)
+                    {
+                        return true;
+                    }
+                }
+            }
 		}
 		return false;
 	}

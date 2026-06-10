@@ -12,10 +12,10 @@ public class OrderingPanel : MonoBehaviour
     {
         session.AvailableEquipment.Clear();
 
-        if (WorldManager.instance == null || WorldManager.instance.AllCards == null) return;
+        if (WorldManager.instance == null || WorldManager.instance.BoardQuery == null) return;
 
         // Find the single Ordering Card (as per Phase 1f assumption)
-        var ringCard = WorldManager.instance.AllCards.FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.OrderingCardData && !c.Destroyed);
+        var ringCard = WorldManager.instance.BoardQuery.GetVisibleBoardCards().FirstOrDefault(c => c != null && c.CardData is Mewtations.Legacy.Stacklands.OrderingCardData && !c.Destroyed);
         
         if (ringCard != null && ringCard.InventoryContainer != null)
         {
