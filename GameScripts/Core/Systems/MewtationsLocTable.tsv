@@ -429,3 +429,8 @@ card_godcat_pack_mid_name	Medium Blessing	Phước Lành Trung Cấp	Medium Bles
 card_godcat_pack_mid_description	A moderate reward from the Cat God.	Phần thưởng cấp trung từ Thần Mèo.	A moderate reward from the Cat God.	A moderate reward from the Cat God.	A moderate reward from the Cat God.
 card_godcat_pack_high_name	Major Blessing	Phước Lành Cao Cấp	Major Blessing	Major Blessing	Major Blessing
 card_godcat_pack_high_description	A rare reward containing precious treasures.	Phần thưởng hiếm chứa bảo vật quý giá.	A rare reward containing precious treasures.	A rare reward containing precious treasures.	A rare reward containing precious treasures.
+dogtax_t1_intro_01	Time to pay tax.	Đến giờ đóng thuế rồi.
+dogtax_t2_warning	No one is exempt.	Không ai được miễn cả.
+dogtax_pay	Pay Tax	Trả Thuế
+dogtax_refuse	Refuse	Từ Chối
+ui_encounter_title	Encounter	Sự Kiện

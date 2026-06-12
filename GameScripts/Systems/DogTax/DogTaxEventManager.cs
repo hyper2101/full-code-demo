@@ -4,7 +4,7 @@ using Mewtations.Combat.Encounters;
 using Mewtations.Combat.Core;
 using GameScripts.Systems.Threat;
 using System.Collections;
-
+using Systems.Narrative;
 namespace GameScripts.Systems.DogTax
 {
     public enum DogTaxCycleState
@@ -63,18 +63,28 @@ namespace GameScripts.Systems.DogTax
 
         private void TriggerDogTaxDialogue()
         {
-            // IMPORTANT: Using localization keys, no hardcoded strings.
-            string title = MewtationsLoc.Translate("dogtax_event_title");
-            string desc = MewtationsLoc.Translate("dogtax_event_desc");
+            Debug.Log($"[DogTax] Triggering Narrative Event dog_tax_t1_intro");
+
+            // Create prototype data dynamically. Normally this is a ScriptableObject asset
+            var eventData = ScriptableObject.CreateInstance<NarrativeEventData>();
+            eventData.EventID = "dog_tax_t1_intro";
+            eventData.PortraitLeftID = "player";
+            eventData.PortraitRightID = "dog_mafia_t1";
             
-            // Assume GameScreen.instance.ShowDialogue with callbacks
-            Debug.Log($"[DogTax] Dialogue: {title} - {desc}");
+            eventData.Lines.Add(new DialogueLine { SpeakerId = "dog_mafia_t1", TextKey = "dogtax_t1_intro_01" });
+            eventData.Lines.Add(new DialogueLine { SpeakerId = "dog_mafia_t1", TextKey = "dogtax_t2_warning" });
             
-            // Simulate player choosing "Pay Tax"
-            // SpawnDebt(Severity.Normal);
-            
-            // Simulate player choosing "Refuse"
-            // SpawnThreat(Severity.Normal);
+            eventData.Choices.Add(new DialogueChoice { TextKey = "dogtax_pay", ResultActionId = "resolve_dogtax_pay" });
+            eventData.Choices.Add(new DialogueChoice { TextKey = "dogtax_refuse", ResultActionId = "trigger_dogtax_combat" });
+
+            if (NarrativeEventSystem.Instance != null)
+            {
+                NarrativeEventSystem.Instance.TriggerEvent(eventData);
+            }
+            else
+            {
+                Debug.LogError("NarrativeEventSystem.Instance is missing!");
+            }
         }
 
         public void SpawnDebt(Severity severity)

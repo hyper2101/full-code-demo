@@ -998,3 +998,390 @@ Sự liên kết giữa 3 hệ thống này là xương sống của cơ chế V
 
 ## 19.3. Hệ Thống Hồi Ký (Memoir System)
 Hệ thống **Memoir** thay thế cho việc theo dõi chỉ số khô khan. Mỗi khi một chú mèo trải qua sinh tử (BossKill, Combat, Đột biến, Khai mở Thiên Phú...), game sẽ ghi lại một dòng hồi ký. Điều này tạo tính nhập vai (Roleplay) cực lớn, biến mỗi chú mèo thành một nhân vật có câu chuyện cá nhân độc nhất, đồng thời giải thích rõ ràng nguồn gốc sức mạnh (hoặc sẹo/debuff) mà chúng sở hữu.
+
+---
+
+# 20. Coreloop Kịch Bản Lv1 → Lv9 (Early Game Foundation)
+
+Mục tiêu của giai đoạn này:
+* Dạy gameplay bằng hành động thay vì text dài
+* Tạo vòng dopamine đều đặn
+* Hình thành economy cơ bản
+* Dẫn player từ:
+  * combat đơn lẻ
+  * → colony nhỏ
+  * → cultivation economy
+  * → chuẩn bị boss ritual
+
+Giai đoạn này CHƯA có:
+* God Cat Mouth
+* mutation phức tạp
+* corruption nặng
+* faction war lớn
+* automation sâu
+
+Đây là:
+**“Survival Colony Phase”**
+
+---
+
+## Tổng Trục Gameplay Lv1-9
+
+Player sẽ dần học:
+
+| Phase | Học gì |
+| :--- | :--- |
+| Lv1 | Combat + equip |
+| Lv2 | Recovery + food |
+| Lv3 | Gathering |
+| Lv4 | Craft cơ bản |
+| Lv5 | Expedition |
+| Lv6 | Colony expansion |
+| Lv7 | Cultivation |
+| Lv8 | Economy + Recipe |
+| Lv9 | Boss preparation |
+
+---
+
+## LOOP TỔNG
+
+### Core Loop chính
+1. Chuẩn bị mèo
+2. Đi expedition/combat
+3. Nhận reward
+4. Hồi phục
+5. Gather/craft/sell
+6. Mua recipe/công trình
+7. Mạnh hơn
+8. Repeat
+
+---
+
+## LV1 — “First Blood”
+
+### Mở game
+Không có intro dài. Mở trực tiếp:
+
+**Pre-combat Scene**
+UI:
+* phe địch đứng trước mặt
+* 1 mèo player
+* 1 weapon card
+
+Ordering:
+* kéo vũ khí vào mèo
+* nhấn “Start Combat”
+
+### Combat
+Combat cực dễ.
+Mục tiêu:
+* cho player thắng nhanh
+* thấy animation/combat flow
+
+### Reward Screen
+Reward cố định:
+* Sacred Food x1
+* Rusty Weapon x1
+* Scrap Material x2
+
+Ordering:
+> “Mèo đang kiệt sức.”
+
+---
+
+## LV2 — “Survival”
+
+### Board chính mở ra
+Mèo:
+* HP thấp
+* stamina cạn
+
+Ordering dạy:
+* kéo Sacred Food vào mèo
+
+Player học:
+* drag/drop cơ bản
+* recovery
+* food consumption
+
+### Pack Reward đầu tiên
+Cho:
+* berry
+* wood scrap
+* stone scrap
+
+KHÔNG cho quá nhiều item.
+Mục tiêu:
+* board dễ đọc
+* tránh overwhelm
+
+### Resource Node đầu tiên
+Spawn:
+* Junk Pile
+* Berry Bush
+
+Ordering:
+> “Cần nguyên liệu để sống sót.”
+
+Player học:
+* harvest node
+* timed extraction
+* resource spawn
+
+---
+
+## LV3 — “Primitive Craft”
+
+Unlock:
+**Primitive Recipe**
+Ví dụ:
+* Rough Armor
+* Straw Hat
+* Campfire
+
+Ordering:
+> “Trang bị tốt hơn sẽ giúp sống sót.”
+
+### Player bắt đầu lựa chọn
+Resource:
+* bán?
+* craft?
+* giữ?
+
+Đây là:
+**decision economy đầu tiên**
+
+### Campfire
+Cho phép:
+* nấu thức ăn
+
+Player học:
+* raw food hồi ít
+* cooked food hồi mạnh hơn
+
+Đây là:
+**processing economy foundation**
+
+---
+
+## LV4 — “First Trade”
+
+### Shop thật mở khóa
+Không phải booster shop.
+Là: **Merchant Caravan**
+
+UI:
+* recipe
+* công cụ
+* vật phẩm cơ bản
+
+Ví dụ:
+* Pickaxe Recipe
+* Shelter Recipe
+* Storage Basket
+
+### Player học: bán hàng lấy linh thạch
+Commodity item:
+* berry
+* wood
+* scrap
+(có giá trị thấp nhưng ổn định.)
+
+### Dopamine Loop #1 chính thức hình thành
+**Farm → Sell → Unlock Recipe**
+Đây là progression ổn định.
+
+---
+
+## LV5 — “Second Expedition”
+
+Ordering:
+> “Có thể rời khỏi khu vực để tìm tài nguyên tốt hơn.”
+
+### Expedition combat thứ hai
+Vẫn dễ. Nhưng:
+* cần armor
+* cần food
+
+Player bắt đầu:
+* chuẩn bị trước combat
+
+### Reward đặc biệt
+Special Pack:
+* mở ra mèo mới
+Kèm:
+* vài resource thường
+* ít linh thạch
+
+### Colony chính thức bắt đầu
+Player giờ có:
+* 2 mèo
+* chia workload
+Ví dụ: 1 gather, 1 recover/train.
+
+---
+
+## LV6 — “Temporary Shelter”
+
+Unlock:
+**Temporary Shelter**
+Chức năng:
+* recovery tốt hơn
+* cultivation cơ bản
+
+### Resource mới
+Spawn:
+* Cracked Ore Vein
+Cho:
+* spirit shard
+* linh thạch vụn
+
+Node này:
+* hữu hạn lượt khai thác
+* sẽ biến mất
+
+Player học: **resource depletion**
+
+### Work Specialization xuất hiện
+Ví dụ:
+* combat cat
+* worker cat
+
+---
+
+## LV7 — “Cultivation”
+
+Unlock:
+**Linh Thạch System**
+Player có thể:
+* đặt mèo vào shelter
+* bỏ linh thạch vào
+* bắt đầu tu luyện
+
+### Realm đầu tiên
+Ví dụ: Mortal → Qi Gathering I
+Buff nhẹ:
+* HP
+* stamina
+* combat power
+
+### Economy Split bắt đầu
+Linh thạch giờ dùng cho:
+* cultivation
+* recipe
+* crafting
+
+Player bắt đầu phải: **ưu tiên tài nguyên**
+
+---
+
+## LV8 — “Settlement Economy”
+
+### Recipe tier 2 bắt đầu xuất hiện
+Ví dụ:
+* furnace
+* drying rack
+* better weapon
+* ore refinement
+
+### Player hiểu: processing > raw selling
+Ví dụ:
+* raw ore bán rẻ
+* refined ore giá cao hơn
+* nhưng refined ore cũng cần cho craft
+
+### Dopamine Loop #2 hoàn thiện
+**Combat → Reward Pack**
+Player bắt đầu:
+* build preparation
+* optimize gear
+* tích food
+
+### Hidden Recipe đầu tiên có thể xuất hiện
+Ví dụ: từ event node, expedition reward, exploration.
+KHÔNG giải thích rõ.
+Mục tiêu: **tạo curiosity**
+
+---
+
+## LV9 — “Black Altar”
+
+Ordering:
+> “Có thứ gì đó đang thức tỉnh…”
+
+### Unlock: Black Altar Recipe
+Player có quyền:
+* xây
+* hoặc trì hoãn
+
+Đây là: **voluntary escalation**
+
+### Trước Boss
+Player expected state:
+* Có 2-3 mèo
+* basic economy
+* cooked food
+* cultivation cơ bản
+* vài công trình
+* combat preparation habit
+
+### Player đã hiểu:
+| Hệ thống | Đã học |
+| :--- | :--- |
+| Combat | ✓ |
+| Equip | ✓ |
+| Food | ✓ |
+| Recovery | ✓ |
+| Gathering | ✓ |
+| Crafting | ✓ |
+| Selling | ✓ |
+| Merchant | ✓ |
+| Expedition | ✓ |
+| Cultivation | ✓ |
+| Multi-cat management | ✓ |
+
+---
+
+## Thiết Kế Reward Domain (Quan trọng)
+
+**Combat Reward**
+Chủ yếu: gear, combat consumable, combat pack.
+Fantasy: > *chiến đấu*
+
+**Merchant**
+Chủ yếu: recipe, progression tool, infrastructure.
+Fantasy: > *phát triển thuộc địa*
+
+**Gathering**
+Chủ yếu: raw economy.
+Fantasy: > *sinh tồn*
+
+**Hidden/Event Reward**
+Chủ yếu: unique recipe, strange item, lore hint.
+Fantasy: > *khám phá bí mật*
+
+---
+
+## Early Game Pressure
+
+Giai đoạn này pressure nên:
+* nhẹ
+* liên tục
+* không quá trừng phạt
+
+Ví dụ: đói, fatigue, thiếu food, thiếu linh thạch, expedition risk nhẹ.
+
+KHÔNG nên:
+* permadeath sớm
+* corruption nặng
+* tax nặng
+
+---
+
+## Mục tiêu tâm lý của Early Game
+Player phải cảm thấy:
+**“Mình đang từ một con mèo sống sót…”**
+→
+**“xây dựng một thuộc địa mèo nhỏ.”**
+
+Đây là fantasy cốt lõi của Lv1-9.

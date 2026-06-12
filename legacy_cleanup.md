@@ -50,6 +50,12 @@ Trước khi xây dựng bất kỳ tính năng nào hoặc dọn dẹp code, c�
 - **Các Class tồn đọng:** Logic hardcode chuyển map trong `WorldManager`: "main", "island", "death", "cities", "greed".
 - **Trạng thái:** Mewtations sử dụng Expedition Map (dạng Node) để di chuyển thám hiểm, không sử dụng board xếp bài riêng biệt.
 
+### 2.8. Dialogue System V1 (Legacy Popups)
+- **Concept cũ:** Hệ thống popup thoại 1 chiều đơn giản, dùng cho các thông báo hệ thống hoặc sự kiện đột phá ngắn.
+- **Các Class tồn đọng:** `DialogueSystem`, `DialogueChoice` (trong namespace `Mewtations.Dialogue` tại `GameScripts/Core/Systems/DialogueSystem.cs`).
+- **Nơi đang gọi:** Bị gọi rất nhiều ở file `GameScripts/Cards/Cats/CatCardData.cs` (các sự kiện đột phá bottleneck, hồi sinh, thất bại).
+- **Trạng thái:** Hệ thống mới sẽ sử dụng `NarrativeEventSystem` (hệ thống 2 portrait, data-driven TSV, dùng chung UI). Trong tương lai cần migrate từ từ các sự kiện của `CatCardData.cs` sang hệ thống mới và xóa bỏ hoàn toàn hệ thống cũ này.
+
 ---
 
 ## 3. Thay Thế Thuật Ngữ (Terminology Contamination)
