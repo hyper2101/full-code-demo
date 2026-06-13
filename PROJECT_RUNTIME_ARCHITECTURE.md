@@ -280,6 +280,14 @@ The board is the canonical interaction space.
 * **Authority:** `NarrativeEventSystem`, TSV Tables.
 * **Flow:** Data-driven popups that yield conditional rewards or combat based on user choice.
 
+### Knowledge & Codex System (Recipe Book)
+* **Purpose:** Player-facing documentation of progression and craftable recipes without breaking immersion or relying on external wikis.
+* **Authority:** `RecipeBookController`, `Blueprint` metadata.
+* **Core Philosophy (Explanation vs. Simulation):** The UI layer explicitly separates the "Simulation Truth" from the "Explanation Truth". 
+  * *Simulation Truth:* `RequiredCards` dictate physical stack merging and consumption during real-time board play.
+  * *Explanation Truth:* Metadata like `RequiredStructures` and `WorkerRequirementType` are explicitly defined for the Codex to clearly explain to the player *how* a recipe works (e.g., requires a Cat Crafter near a Furnace) without polluting the consumption simulation logic.
+* **Flow:** Scalable dynamic tabs populate based on unlocked knowledge in `SaveSystem`. Strict adherence to the `MewtationsLoc` pipeline ensures 100% localization without hardcoded strings.
+
 ---
 
 # 16. Card Lifecycle

@@ -220,6 +220,19 @@ public class GameDataValidator
 			{
 				validationResult.AddError(blueprint, "Blueprint " + blueprint.Id + " is not set to card type Ideas", ValidationCategory.Blueprints);
 			}
+
+			if (blueprint.UseCustomDisplay)
+			{
+				if (!string.IsNullOrEmpty(blueprint.CustomNameTerm) && !MewtationsLoc.FallbackSet.ContainsTerm(blueprint.CustomNameTerm))
+				{
+					validationResult.AddError(blueprint, "Blueprint " + blueprint.Id + " has an invalid custom name term", ValidationCategory.Blueprints);
+				}
+				if (!string.IsNullOrEmpty(blueprint.CustomDescriptionTerm) && !MewtationsLoc.FallbackSet.ContainsTerm(blueprint.CustomDescriptionTerm))
+				{
+					validationResult.AddError(blueprint, "Blueprint " + blueprint.Id + " has an invalid custom description term", ValidationCategory.Blueprints);
+				}
+			}
+
 			for (int i = 0; i < blueprint.Subprints.Count; i++)
 			{
 				Subprint subprint = blueprint.Subprints[i];

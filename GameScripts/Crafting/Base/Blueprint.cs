@@ -3,6 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public enum RecipeCategory
+{
+    Structure,
+    Consumable,
+    Tool,
+    Equipment,
+    Material,
+    Special
+}
+
+public enum RecipeUnlockType
+{
+    Starter,
+    Auto,
+    Merchant,
+    Event,
+    Combat,
+    Hidden
+}
+
 public class Blueprint : CardData, IKnowledge
 {
 	public string KnowledgeName
@@ -282,6 +302,19 @@ public class Blueprint : CardData, IKnowledge
 
 	[Header("Prints")]
 	public List<Subprint> Subprints = new List<Subprint>();
+
+	[Header("Codex System")]
+	public RecipeCategory CodexCategory;
+	public RecipeUnlockType UnlockSource;
+	public bool ShowInRecipeBook = true;
+	public bool HiddenUntilUnlocked = true;
+	public int CodexSortOrder = 0;
+
+	[Header("Codex Display Overrides")]
+	public bool UseCustomDisplay;
+	public Sprite CustomRecipeIcon;
+	public string CustomNameTerm;
+	public string CustomDescriptionTerm;
 
 	public BlueprintGroup BlueprintGroup;
 

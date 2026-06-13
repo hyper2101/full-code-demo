@@ -3,6 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public enum CraftingMode
+{
+    Automatic,
+    RequiresWorker
+}
+
+public enum WorkerRequirementType
+{
+    None,
+    AnyCat,
+    Cultivator,
+    Alchemist,
+    Blacksmith
+}
+
 [Serializable]
 public class Subprint
 {
@@ -186,12 +201,21 @@ public class Subprint
 	[HideInInspector]
 	public Blueprint ParentBlueprint;
 
+	[Header("Gameplay (Consumed)")]
 	[Card]
 	public string[] RequiredCards;
 
 	[Card]
 	public string[] CardsToRemove;
 
+	[Header("UI & Explanation Layer")]
+	public CraftingMode CraftingMode;
+	public WorkerRequirementType WorkerRequirementType;
+	
+	[Card]
+	public string[] RequiredStructures;
+
+	[Header("Results")]
 	public int ResultPolution;
 
 	public int ResultWellbeing;

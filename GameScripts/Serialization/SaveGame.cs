@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -93,5 +93,29 @@ public class SaveGame
 
 	public string SaveFormatIdentity = "Mewtations_Dogma";
 	public int SaveDataVersion = 1;
+
+	// --- Codex / Recipe Book System ---
+	public List<string> UnlockedRecipeIds = new List<string>();
+	public List<string> UnreadRecipeIds = new List<string>();
+
+	public void UnlockRecipe(string blueprintId)
+	{
+		if (!UnlockedRecipeIds.Contains(blueprintId))
+		{
+			UnlockedRecipeIds.Add(blueprintId);
+			if (!UnreadRecipeIds.Contains(blueprintId))
+			{
+				UnreadRecipeIds.Add(blueprintId);
+			}
+		}
+	}
+
+	public void MarkRecipeRead(string blueprintId)
+	{
+		if (UnreadRecipeIds.Contains(blueprintId))
+		{
+			UnreadRecipeIds.Remove(blueprintId);
+		}
+	}
 }
 
