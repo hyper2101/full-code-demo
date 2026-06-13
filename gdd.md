@@ -1385,3 +1385,23 @@ Player phải cảm thấy:
 **“xây dựng một thuộc địa mèo nhỏ.”**
 
 Đây là fantasy cốt lõi của Lv1-9.
+
+# 11. Economy & Institutional Debt (V2 Addition)
+
+## 11.1. Physical Denomination Economy
+Tiền tệ trong game không phải là con số UI vô hình mà là các Card vật lý.
+* Hệ thống phân cấp (Denomination): Spirit Shard (1) -> Spirit Stone (5) -> Refined Spirit Stone (20) -> Pure Spirit Stone (50).
+* Nguyên tắc thanh toán: Mệnh giá cao có thể thay thế mệnh giá thấp, nhưng mệnh giá thấp KHÔNG THỂ cộng dồn để thanh toán chi phí yêu cầu mệnh giá cao.
+* Bán đồ (Sell) vào Treasury sẽ sinh ra đúng mệnh giá phân cấp (SellTier và SellValue), không bị nghiền nát thành Shard.
+
+## 11.2. Predatory Institutional Debt
+Hệ thống khoản vay không phải ngân hàng thân thiện mà là công cụ gây áp lực sinh tồn.
+* Khoản vay cố định theo tiến độ, lãi suất 120%, chỉ được vay 1 khoản duy nhất, có thời gian Cooldown.
+* **Active Collection State (Cưỡng chế thu hồi):** Nếu quá hạn trả nợ, nợ tăng vọt lên 150%. Hợp đồng nợ chuyển sang trạng thái Cưỡng Chế.
+  * Trong trạng thái Cưỡng Chế, mọi luật lệ về mệnh giá bị xóa bỏ. Bất kỳ loại tiền nào vừa được sinh ra trên board đều bị tịch thu ngay lập tức.
+  * Không thối tiền (Over-absorb) nếu mệnh giá bị tịch thu lớn hơn số nợ còn lại.
+  * Tiền đã cất giấu từ trước trên Board sẽ không bị tự động quét, bảo toàn chiến thuật.
+
+## 11.3. Trading Post (Cửa hàng vật lý)
+* Giao dịch mua bán thông qua công trình vật lý (Trading Post) và hợp đồng (Purchase Order).
+* Người chơi nhét tiền vật lý vào Purchase Order để hoàn thành giao dịch.

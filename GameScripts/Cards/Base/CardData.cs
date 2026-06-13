@@ -148,6 +148,16 @@ public class CardData : MonoBehaviour, IGameCardOrCardData
 		!IsProtectedFromConsumption && 
 		(IsValidRitualOffering || DefaultRitualOfferingByType);
 
+	[Header("Treasury Sell Metadata")]
+	[SerializeField] protected bool _canBeSold = false;
+	[SerializeField] protected Mewtations.Systems.Economy.CurrencyTier _sellTier = Mewtations.Systems.Economy.CurrencyTier.Fragment;
+	[SerializeField] protected int _sellValue = 0;
+
+	// Xác định thẻ này có thể bị bán vào Treasury hay không.
+	public virtual bool CanBeSold => _canBeSold;
+	public virtual Mewtations.Systems.Economy.CurrencyTier SellTier => _sellTier;
+	public virtual int SellValue => _sellValue;
+
 	// Xác định thẻ này có thể dùng làm vật phẩm hỗ trợ trong Đột Phá Trận hay không.
 	public virtual bool IsBreakthroughSupport
 	{

@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 
+[Obsolete("Legacy currency. Use standardized economy definitions instead.")]
 public class Gold : CardData
 {
 	protected override bool CanHaveCard(CardData otherCard)

@@ -434,3 +434,13 @@ When touching this codebase, follow this reading order to avoid Stacklands traps
 5. **Read Cat Equipment logic.** Understand `EquipmentInstance` to grasp the "Data vs Object" philosophy.
 6. **Beware of Traps:** Do not extend `Villager` or `Worker`. Do not hook into `CitiesManager` or `QuestManager`. They are dead systems. Use `NarrativeEventSystem` for story and Threat managers for pressure.
 7. **Orchestration:** Managers in `Systems/` orchestrate logic. If adding a new feature, decouple it into a new Manager rather than bloating `WorldManager` further.
+
+# 12. Economy Architecture
+
+**12.1. Denomination Authority**
+- Economy Core relies on ICurrency, CurrencyTier, and CurrencyUtility to strictly enforce the denomination hierarchy.
+- Cards opt into the economy via virtual CanBeSold, SellTier, and SellValue properties. Defaults are strictly alse and   to prevent accidental wealth generation.
+
+**12.2. Debt & Hook Systems**
+- The DebtNotice in Active Collection State relies on the OnCurrencySpawned event hook rather than continuous board scanning. This adheres to the Orchestration vs. Simulation philosophy.
+- Forced Liquidation behavior completely ignores standard CurrencyUtility denomination rules and consumes raw value, ensuring mechanical asymmetry between player rules and institutional punishment.

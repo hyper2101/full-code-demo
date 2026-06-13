@@ -434,3 +434,30 @@ dogtax_t2_warning	No one is exempt.	KhÃ´ng ai Ä‘Æ°á»£c miá»…n cáº£.
 dogtax_pay	Pay Tax	Tráº£ Thuáº¿
 dogtax_refuse	Refuse	Tá»« Chá»‘i
 ui_encounter_title	Encounter	Sá»± Kiá»‡n
+card_spirit_shard_name	Spirit Shard	M?nh Linh Th?ch
+card_spirit_shard_desc	Fragmented primitive currency.	Ti?n t? nguyên thu? v? v?n.
+card_spirit_stone_low_name	Spirit Stone	Linh Th?ch
+card_spirit_stone_low_desc	Standardized economy currency.	Ti?n t? luu thông tiêu chu?n.
+card_spirit_stone_mid_name	Refined Spirit Stone	Linh Th?ch Tinh Ch?
+card_spirit_stone_mid_desc	Midgame compressed currency.	Ti?n t? nén b?c trung.
+card_spirit_stone_high_name	Pure Spirit Stone	Linh Th?ch Tinh Luy?n
+card_spirit_stone_high_desc	Stable high-authority currency.	Ti?n t? ?n d?nh b?c cao.
+structure_hound_treasury_name	Hound Treasury	Hound Treasury
+structure_hound_treasury_desc	The central bureau for physical currency.	Co quan luu tr? ti?n t? trung uong.
+ui_treasury_sell	Sell	Bán
+ui_treasury_loan	Loans	Kho?n Vay
+ui_treasury_exchange	Exchange	Quy Ð?i
+ui_treasury_contracts	Contracts	H?p Ð?ng
+contract_debt_notice_name	Debt Notice	Debt Notice
+contract_debt_notice_desc	Official notice of debt.	Thông báo n? chính th?c.
+contract_purchase_order_name	Purchase Order	Purchase Order
+contract_purchase_order_desc	Order for required goods.	Ðon d?t hàng thi?t y?u.
+ui_treasury_loan_offer	Emergency Credit Available.	Tín D?ng Kh?n C?p.
+ui_treasury_collection_warning	Failure to comply will invoke collection enforcement.	T? ch?i thanh toán s? b? cu?ng ch? thu h?i.
+ui_treasury_overdue	OVERDUE	QUÁ H?N
+contract_collection_contract_name	Collection Curse	L?i Nguy?n Thu H?i
+contract_collection_warning	ACTIVE COLLECTION STATE. ALL CURRENCY FORFEIT.	CU?NG CH? THU H?I. T?CH THU TÀI S?N.
+structure_trading_post_name	Trading Post	Trading Post
+structure_trading_post_desc	A place to exchange currency for goods.	Noi giao thuong hàng hoá.
+ui_shop_purchase	Purchase	Mua
+ui_shop_insufficient_denomination	Insufficient Denomination Authority	M?nh giá không d? th?m quy?n

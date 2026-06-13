@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 
+[Obsolete("Legacy currency. Use standardized economy definitions instead.")]
 public class RefinedSpiritStone : SpiritStoneData
 {
     public RefinedSpiritStone()

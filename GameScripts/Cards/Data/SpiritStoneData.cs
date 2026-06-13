@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Lớp cơ sở cho các loại Linh Thạch trong hệ thống Tu luyện Mewtations.
 /// </summary>
+[Obsolete("Legacy currency. Use standardized economy definitions instead.")]
 public abstract class SpiritStoneData : CardData
 {
     [Header("Spirit Stone Properties")]

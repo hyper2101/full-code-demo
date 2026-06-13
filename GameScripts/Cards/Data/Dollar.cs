@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 
-$attrpublic class Dollar : Resource, ICurrency
+[Obsolete("Legacy currency. Use standardized economy definitions instead.")]
+public class Dollar : Resource, ICurrency
 {
 	public CardData Card
 	{

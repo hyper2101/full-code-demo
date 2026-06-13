@@ -95,3 +95,13 @@ Khi đưa dự án vào môi trường Unity mới, bắt buộc phải cài đ�
 2. **Chỉ số Greed & Corruption gắn với hệ quả vật lý trong Expedition:**
    - Hệ thống Viễn chinh vẫn đang tính toán `GreedLevel` và `CorruptionLevel` (ví dụ: cộng dồn dựa trên số xác mèo trên bàn cờ, cộng dồn khi chọn sai sự kiện).
    - Cần thiết kế lại hệ quả (Consequence) cho các chỉ số này bằng hệ thống Threat mới thay cho quái vật lý cũ đã bị xóa.
+
+### 🔴 2.5. Đơn Giản Hóa Trading Post & Blueprint Unlock (Upcoming Session)
+Dựa theo scope hiện tại, hệ thống mua bán sẽ tuân thủ nguyên tắc đơn giản, không NPC phức tạp:
+- [ ] **Bán Blueprint trực tiếp:** Trading Post chọn vài blueprint hợp lệ để bán (chưa unlock, đúng progression tier).
+- [ ] **Flow Mua Hàng:** Mua xong -> Trừ tiền -> Unlock recipe -> Spawn blueprint card rơi ra cạnh Trading Post -> Loại khỏi shop pool.
+- [ ] **Blueprint Physical Spawn:** Mọi hình thức unlock recipe (từ shop, event, loot) đều phải gọi 1 luồng chung UnlockBlueprint() để spawn blueprint card vật lý ra bàn cờ. Đảm bảo tính tactile và giúp player awareness mà không cần popup UI.
+- [ ] **Progression Tiers:** Giữ nhẹ nhàng với các mốc: Primitive, Village, Cultivation, Industrial, Forbidden.
+- [ ] **Định Giá (Pricing):** Cố định đơn giản BlueprintValue = RawValue x 2.
+- [ ] **Lưu Trữ Tối Giản:** Dùng HashSet<string> unlockedBlueprints để theo dõi tiến độ unlock.
+- [ ] **RecipeBook UX:** Thêm icon "NEW" hoặc hiệu ứng glow nhẹ cho các recipe đã unlock nhưng chưa được craft lần nào.
